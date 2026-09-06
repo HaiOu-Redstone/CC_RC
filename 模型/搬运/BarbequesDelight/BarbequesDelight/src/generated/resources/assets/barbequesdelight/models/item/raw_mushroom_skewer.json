@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "barbequesdelight:item/raw_mushroom_skewer"
+  }
+}

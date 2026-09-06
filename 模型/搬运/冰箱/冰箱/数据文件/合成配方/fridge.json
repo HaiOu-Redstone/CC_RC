@@ -1,0 +1,14 @@
+{
+  "result": {
+    "item": "cookingforblockheads:fridge"
+  },
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "balm:wooden_chests"
+    },
+    {
+      "item": "minecraft:iron_door"
+    }
+  ]
+}

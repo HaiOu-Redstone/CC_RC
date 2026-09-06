@@ -1,0 +1,14 @@
+{
+  "result": {
+    "item": "cc_rc:fridge"
+  },
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:chest"
+    },
+    {
+      "item": "minecraft:iron_door"
+    }
+  ]
+}

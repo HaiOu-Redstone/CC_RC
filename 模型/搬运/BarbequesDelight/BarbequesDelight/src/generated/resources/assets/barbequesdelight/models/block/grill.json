@@ -1,0 +1,8 @@
+{
+  "parent": "barbequesdelight:custom/grill",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "side": "barbequesdelight:block/grill_side",
+    "top": "barbequesdelight:block/grill_top"
+  }
+}

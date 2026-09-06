@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=north": { "model": "cc_rc:block/digital_plotter/digital_plotter", "y": 180 },
+        "facing=south": { "model": "cc_rc:block/digital_plotter/digital_plotter", "y": 0 },
+        "facing=east": { "model": "cc_rc:block/digital_plotter/digital_plotter", "y": 270 },
+        "facing=west": { "model": "cc_rc:block/digital_plotter/digital_plotter", "y": 90 }
+    }
+}

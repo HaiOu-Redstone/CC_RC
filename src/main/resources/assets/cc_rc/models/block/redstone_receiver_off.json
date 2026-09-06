@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "cc_rc:block/redstone_reciver_off"
+  }
+}

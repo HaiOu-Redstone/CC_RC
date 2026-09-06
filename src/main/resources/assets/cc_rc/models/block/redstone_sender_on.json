@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "cc_rc:block/redstone_sender_bottom_on",
+    "side": "cc_rc:block/redstone_sender_side_on",
+    "top": "cc_rc:block/redstone_sender_top_on"
+  }
+}

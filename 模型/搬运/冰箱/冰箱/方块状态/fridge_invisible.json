@@ -1,0 +1,41 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "transform": "forge:default-block"
+  },
+  "variants": {
+    "type": {
+      "invisible": {
+        "model": "cookingforblockheads:fridge_invisible"
+      }
+    },
+    "facing": {
+      "west": {
+      },
+      "east": {
+      },
+      "north": {
+      },
+      "south": {
+      }
+    },
+    "flipped": {
+      "true": {
+      },
+      "false": {
+      }
+    },
+    "preservation_chamber": {
+      "true": {
+      },
+      "false": {
+      }
+    },
+    "ice_unit": {
+      "true": {
+      },
+      "false": {
+      }
+    }
+  }
+}

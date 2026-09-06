@@ -1,0 +1,14 @@
+{
+  "type": "barbequesdelight:skewering",
+  "ingredient": {
+    "item": "minecraft:brown_mushroom"
+  },
+  "ingredientCount": 4,
+  "output": {
+    "item": "barbequesdelight:raw_mushroom_skewer"
+  },
+  "sideCount": 0,
+  "tool": {
+    "item": "minecraft:stick"
+  }
+}

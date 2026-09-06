@@ -1,0 +1,17 @@
+{
+  "type": "barbequesdelight:skewering",
+  "ingredient": {
+    "tag": "forge:raw_fishes/salmon"
+  },
+  "ingredientCount": 2,
+  "output": {
+    "item": "barbequesdelight:raw_salmon_skewer"
+  },
+  "side": {
+    "tag": "forge:vegetables/tomato"
+  },
+  "sideCount": 2,
+  "tool": {
+    "item": "minecraft:stick"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "barbequesdelight:skewering",
+  "ingredient": {
+    "tag": "barbequesdelight:skewer_vegetables"
+  },
+  "ingredientCount": 2,
+  "output": {
+    "item": "barbequesdelight:raw_vegetable_skewer"
+  },
+  "side": {
+    "tag": "barbequesdelight:skewer_fruits"
+  },
+  "sideCount": 2,
+  "tool": {
+    "item": "minecraft:stick"
+  }
+}

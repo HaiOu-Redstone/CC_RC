@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "barbequesdelight:grill"
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "block": "barbequesdelight:grill",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "has_campfire": "true"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:campfire"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "barbequesdelight:blocks/grill"
+}

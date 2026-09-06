@@ -1,0 +1,234 @@
+{
+  "music_level5": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_railugun_level5_judgelight",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_level5"
+  },
+  "music_railugun": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_railugun_only_my_railugun",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_railugun"
+  },
+  "music_never": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_never_gonna_give_you_up",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_never"
+  },
+  "music_assumptions": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_assumptions",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_assumptions"
+  },
+  "music_conrnfield_chase": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_conrnfield_chase",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_conrnfield_chase"
+  },
+  "music_move": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_journey_move",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_move"
+  },
+  "music_night": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_journey_moreone_night",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_night"
+  },
+  "music_rain": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_journey_rain",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_rain"
+  },
+  "music_end": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_journey_end",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_end"
+  },
+  "music_underground_river": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_abyss_underground_river",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_underground_river"
+  },
+  "music_hanezeve_caradhina": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/music_abyss_hanezeve_caradhina",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_hanezeve_caradhina"
+  },
+  "music_cutie_mew_mew_magic": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/cutie_mew_mew_magic",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_cutie_mew_mew_magic"
+  },
+  "music_denise": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/denise",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_denise"
+  },
+  "music_gwangju": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/gwangju",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_gwangju"
+  },
+  "music_higher": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/higher",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_higher"
+  },
+  "music_king": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/king",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_king"
+  },
+  "music_marisa": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/marisa",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_marisa"
+  },
+  "music_mixue": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/mixue",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_mixue"
+  },
+  "music_raw_tell": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/raw_tell",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_raw_tell"
+  },
+  "music_reimu": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/reimu",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_reimu"
+  },
+  "music_you_will_be_perfect": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/you_will_be_perfect",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_you_will_be_perfect"
+  },
+  "music_bloom": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/bloom",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_bloom"
+  },
+  "music_jigoku_shoujo": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/jigoku_shoujo",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_jigoku_shoujo"
+  },
+  "music_the_imitation_game": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/the_imitation_game",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_the_imitation_game"
+  },
+  "nai_long": {
+    "sounds": [
+      {
+        "name": "cc_rc:nai_long"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.nai_long"
+  },
+  "server_noise": {
+    "sounds": [
+      {
+        "name": "cc_rc:server_noise"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.server_noise"
+  }
+}

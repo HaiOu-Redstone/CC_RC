@@ -1,0 +1,6 @@
+{
+  "type": "cc_rc:sink_conversion",
+  "input": { "item": "minecraft:potion" },
+  "input_nbt": "{Potion:\"minecraft:water\"}",
+  "output": { "item": "minecraft:glass_bottle" }
+}

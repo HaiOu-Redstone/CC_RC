@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "cc_rc:block/nai_long_toy/nailong" },
+    "facing=east":  { "model": "cc_rc:block/nai_long_toy/nailong", "y": 90 },
+    "facing=south": { "model": "cc_rc:block/nai_long_toy/nailong", "y": 180 },
+    "facing=west":  { "model": "cc_rc:block/nai_long_toy/nailong", "y": 270 }
+  }
+}

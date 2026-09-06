@@ -1,0 +1,16 @@
+{
+    "variants": {
+        "face=ceiling,facing=east": { "model": "cc_rc:block/console_panel/console_panel", "x": 180, "y": 270 },
+        "face=ceiling,facing=north": { "model": "cc_rc:block/console_panel/console_panel", "x": 180, "y": 180 },
+        "face=ceiling,facing=south": { "model": "cc_rc:block/console_panel/console_panel", "x": 180, "y": 0 },
+        "face=ceiling,facing=west": { "model": "cc_rc:block/console_panel/console_panel", "x": 180, "y": 90 },
+        "face=floor,facing=east": { "model": "cc_rc:block/console_panel/console_panel", "x": 0, "y": 270 },
+        "face=floor,facing=north": { "model": "cc_rc:block/console_panel/console_panel", "x": 0, "y": 180 },
+        "face=floor,facing=south": { "model": "cc_rc:block/console_panel/console_panel", "x": 0, "y": 0 },
+        "face=floor,facing=west": { "model": "cc_rc:block/console_panel/console_panel", "x": 0, "y": 90 },
+        "face=wall,facing=east": { "model": "cc_rc:block/console_panel/console_panel", "x": 90, "y": 90 },
+        "face=wall,facing=north": { "model": "cc_rc:block/console_panel/console_panel", "x": 90, "y": 0 },
+        "face=wall,facing=south": { "model": "cc_rc:block/console_panel/console_panel", "x": 90, "y": 180 },
+        "face=wall,facing=west": { "model": "cc_rc:block/console_panel/console_panel", "x": 90, "y": 270 }
+    }
+}

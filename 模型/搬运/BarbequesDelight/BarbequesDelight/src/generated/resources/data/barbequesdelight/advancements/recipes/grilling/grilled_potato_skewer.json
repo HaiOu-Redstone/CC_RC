@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_raw_potato_skewer": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "barbequesdelight:raw_potato_skewer"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "barbequesdelight:grilled_potato_skewer"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_raw_potato_skewer",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "barbequesdelight:grilled_potato_skewer"
+    ]
+  },
+  "sends_telemetry_event": true
+}

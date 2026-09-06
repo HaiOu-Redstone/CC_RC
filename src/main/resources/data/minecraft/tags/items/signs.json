@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "cc_rc:white_canvas_sign",
+    "cc_rc:orange_canvas_sign",
+    "cc_rc:magenta_canvas_sign",
+    "cc_rc:light_blue_canvas_sign",
+    "cc_rc:yellow_canvas_sign",
+    "cc_rc:lime_canvas_sign",
+    "cc_rc:pink_canvas_sign",
+    "cc_rc:gray_canvas_sign",
+    "cc_rc:light_gray_canvas_sign",
+    "cc_rc:cyan_canvas_sign",
+    "cc_rc:purple_canvas_sign",
+    "cc_rc:blue_canvas_sign",
+    "cc_rc:brown_canvas_sign",
+    "cc_rc:green_canvas_sign",
+    "cc_rc:red_canvas_sign",
+    "cc_rc:black_canvas_sign"
+  ]
+}

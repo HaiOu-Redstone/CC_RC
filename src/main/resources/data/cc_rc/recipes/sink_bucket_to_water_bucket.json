@@ -1,0 +1,5 @@
+{
+  "type": "cc_rc:sink_conversion",
+  "input": { "item": "minecraft:bucket" },
+  "output": { "item": "minecraft:water_bucket" }
+}

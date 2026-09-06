@@ -1,0 +1,10 @@
+{
+  "type": "barbequesdelight:grilling",
+  "barbecuingTime": 320,
+  "ingredient": {
+    "item": "barbequesdelight:raw_beef_skewer"
+  },
+  "output": {
+    "item": "barbequesdelight:grilled_beef_skewer"
+  }
+}

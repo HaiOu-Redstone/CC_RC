@@ -1,0 +1,17 @@
+{
+  "type": "barbequesdelight:skewering",
+  "ingredient": {
+    "tag": "forge:raw_beef"
+  },
+  "ingredientCount": 2,
+  "output": {
+    "item": "barbequesdelight:raw_beef_skewer"
+  },
+  "side": {
+    "tag": "forge:salad_ingredients/cabbage"
+  },
+  "sideCount": 2,
+  "tool": {
+    "item": "minecraft:stick"
+  }
+}

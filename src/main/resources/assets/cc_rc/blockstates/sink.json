@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "cc_rc:block/sink" },
+    "facing=east":  { "model": "cc_rc:block/sink", "y": 90 },
+    "facing=south": { "model": "cc_rc:block/sink", "y": 180 },
+    "facing=west":  { "model": "cc_rc:block/sink", "y": 270 }
+  }
+}

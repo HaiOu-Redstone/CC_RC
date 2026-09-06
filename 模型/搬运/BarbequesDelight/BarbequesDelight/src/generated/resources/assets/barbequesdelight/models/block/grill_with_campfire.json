@@ -1,0 +1,20 @@
+{
+  "ambientocclusion": false,
+  "children": {
+    "campfire": {
+      "parent": "minecraft:block/campfire",
+      "render_type": "minecraft:cutout"
+    },
+    "grill": {
+      "parent": "barbequesdelight:block/grill"
+    }
+  },
+  "item_render_order": [
+    "campfire",
+    "grill"
+  ],
+  "loader": "forge:composite",
+  "textures": {
+    "particle": "barbequesdelight:block/grill_side"
+  }
+}

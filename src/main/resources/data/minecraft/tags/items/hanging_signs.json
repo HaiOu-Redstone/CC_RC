@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "cc_rc:white_hanging_canvas_sign",
+    "cc_rc:orange_hanging_canvas_sign",
+    "cc_rc:magenta_hanging_canvas_sign",
+    "cc_rc:light_blue_hanging_canvas_sign",
+    "cc_rc:yellow_hanging_canvas_sign",
+    "cc_rc:lime_hanging_canvas_sign",
+    "cc_rc:pink_hanging_canvas_sign",
+    "cc_rc:gray_hanging_canvas_sign",
+    "cc_rc:light_gray_hanging_canvas_sign",
+    "cc_rc:cyan_hanging_canvas_sign",
+    "cc_rc:purple_hanging_canvas_sign",
+    "cc_rc:blue_hanging_canvas_sign",
+    "cc_rc:brown_hanging_canvas_sign",
+    "cc_rc:green_hanging_canvas_sign",
+    "cc_rc:red_hanging_canvas_sign",
+    "cc_rc:black_hanging_canvas_sign"
+  ]
+}

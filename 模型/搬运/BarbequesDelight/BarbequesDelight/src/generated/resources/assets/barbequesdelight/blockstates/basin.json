@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "barbequesdelight:block/basin",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "barbequesdelight:block/basin"
+    },
+    "facing=south": {
+      "model": "barbequesdelight:block/basin",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "barbequesdelight:block/basin",
+      "y": 270
+    }
+  }
+}

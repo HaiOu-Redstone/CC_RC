@@ -1,0 +1,6 @@
+﻿{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "cc_rc:item/music_disc_underground_river"
+  }
+}
