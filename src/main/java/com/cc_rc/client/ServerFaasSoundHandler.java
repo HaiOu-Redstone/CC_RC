@@ -13,6 +13,8 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -56,11 +58,20 @@ public class ServerFaasSoundHandler {
             return;
         }
 
+        // 每 tick 手动刷新各活跃音效的音量（距离衰减）。
+        // 原因：SoundEngine 对循环音效（looping）的音量只在播放/低频 tick 时按初始距离设定，
+        // 玩家移动后不会随距离变化，导致听感上"没有衰减"；这里改为完全手动控制。
+        Player player = mc.player;
+        for (FaasLoopingSound sound : ACTIVE_SOUNDS.values()) {
+            sound.updateVolume(player);
+        }
+
         // 每 SCAN_INTERVAL tick 才做全量扫描
         if (++tickCounter % SCAN_INTERVAL != 0) return;
 
         BlockPos center = mc.player.blockPosition();
-        double maxDistSq = (SCAN_RADIUS + 8.0) * (SCAN_RADIUS + 8.0);
+        // 停止距离 = 扫描半径 + 4 格裕量：16 格衰减到无声后再多留 4 格，避免边界来回抖动
+        double maxDistSq = (SCAN_RADIUS + 4.0) * (SCAN_RADIUS + 4.0);
 
         // 1) 清理失效实例：方块被破坏 / 玩家已远离 / 跨维度后旧坐标变为非 FAAS
         Iterator<Map.Entry<BlockPos, FaasLoopingSound>> iterator = ACTIVE_SOUNDS.entrySet().iterator();
@@ -102,8 +113,17 @@ public class ServerFaasSoundHandler {
     /**
      * 循环音效实例：固定在方块中心播放 server_noise，跟随方块存在性自动停止。
      * looping=true 使 SoundManager 无缝循环该音频，避免原实现"概率触发 + 时长重叠"问题。
+     * 归类为 SoundSource.BLOCKS（受游戏设置「音效/方块」滑块控制音量）。
+     * 距离衰减不再依赖 SoundEngine（循环音效的低频 tick 不会随玩家移动更新音量），
+     * 而是由 updateVolume() 每 tick 手动按玩家与方块距离计算线性衰减（16 格内 100%→0%）。
      */
     private static final class FaasLoopingSound extends AbstractTickableSoundInstance {
+        // 线性衰减范围（格）：与扫描半径一致，超出后音量归零
+        private static final float FADE_RANGE = 16.0F;
+
+        // 基础音量：满格时 100%
+        private static final float BASE_VOLUME = 1.0F;
+
         private final ClientLevel level;
         private final BlockPos pos;
 
@@ -113,12 +133,38 @@ public class ServerFaasSoundHandler {
             this.pos = pos;
             this.looping = true;
             this.delay = 0;
-            this.volume = 1.0F;
+            this.volume = BASE_VOLUME;
             this.pitch = 1.0F;
-            this.attenuation = SoundInstance.Attenuation.LINEAR;
+            // 关键：标记为相对播放 + 关闭引擎衰减，让 SoundEngine 不再按距离改音量，
+            // 音量完全由 updateVolume() 手动控制，保证玩家移动时衰减必然生效。
+            this.relative = true;
+            this.attenuation = SoundInstance.Attenuation.NONE;
             this.x = pos.getX() + 0.5;
             this.y = pos.getY() + 0.5;
             this.z = pos.getZ() + 0.5;
+        }
+
+        /**
+         * 按玩家与音源的距离手动设置音量：dist >= FADE_RANGE 时归零，线性过渡，带平滑。
+         * 由管理器在每 tick 客户端事件中调用。
+         */
+        void updateVolume(Player player) {
+            double dist = Math.sqrt(player.distanceToSqr(x, y, z));
+            float target = (float) Mth.clamp(1.0 - dist / FADE_RANGE, 0.0, 1.0);
+            // lerp 平滑过渡，避免音量跳变产生顿挫感
+            this.volume = Mth.lerp(0.2F, this.volume, target * BASE_VOLUME);
+        }
+
+        @Override
+        public SoundSource getSource() {
+            // 方块类音源：音量跟随「音效/方块」滑块，而非主音量
+            return SoundSource.BLOCKS;
+        }
+
+        @Override
+        public SoundInstance.Attenuation getAttenuation() {
+            // 引擎衰减已关闭（relative=true），衰减由 updateVolume() 手动实现
+            return SoundInstance.Attenuation.NONE;
         }
 
         @Override

@@ -36,6 +36,9 @@ public class Config
     // 红石信号发射器配置
     private static final ForgeConfigSpec.IntValue REDSTONE_TRANSMIT_RANGE;
 
+    // 密码输入器破解配置
+    private static final ForgeConfigSpec.IntValue PASSWORD_CRACK_TICKS;
+
     static {
         BUILDER.push("safe_button");
 
@@ -120,6 +123,14 @@ public class Config
                 .defineInRange("transmit_range", 8, 2, 64);
 
         BUILDER.pop();
+
+        BUILDER.push("password_inputer");
+
+        PASSWORD_CRACK_TICKS = BUILDER
+                .comment("破解密码输入器所需时间（tick），20 tick = 1 秒，默认 400（20 秒）")
+                .defineInRange("crack_ticks", 400, 20, 60000);
+
+        BUILDER.pop();
     }
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -160,6 +171,11 @@ public class Config
     /** 红石信号发射器沿面向方向搜索接收器的最大距离（格，默认 8） */
     public static int getRedstoneTransmitRange() {
         return REDSTONE_TRANSMIT_RANGE.get();
+    }
+
+    /** 破解密码输入器所需时间（tick，默认 400 = 20 秒） */
+    public static int getPasswordCrackTicks() {
+        return PASSWORD_CRACK_TICKS.get();
     }
 
     /**

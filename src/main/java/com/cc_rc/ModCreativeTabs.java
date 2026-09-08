@@ -29,6 +29,15 @@ public class ModCreativeTabs {
                         output.accept(ModItems.CONSOLE_BUTTON_1_ITEM.get());
                         output.accept(ModItems.CONSOLE_BUTTON_2_ITEM.get());
                         output.accept(ModItems.CONSOLE_BUTTON_3_ITEM.get());
+                        output.accept(ModItems.CONSOLE_BUTTON_4_ITEM.get());
+                        output.accept(ModItems.CONSOLE_BUTTON_5_ITEM.get());
+                        output.accept(ModItems.PASSWORD_INPUTER_ITEM.get());
+                        output.accept(ModItems.PASSWORD_CRACKER_ITEM.get());
+                        output.accept(ModItems.NUKE_BUTTON_ITEM.get());
+                        output.accept(ModItems.KEY_1.get());
+                        output.accept(ModItems.KEY_2.get());
+                        output.accept(ModItems.KEY_CABINET_ITEM.get());
+                        output.accept(ModItems.KEY_DISTRIBUTOR_ITEM.get());
                         output.accept(ModItems.SAFE_BUTTON_1_ITEM.get());
                         output.accept(ModItems.PLOTTER_ITEM.get());
                         output.accept(ModItems.PLOTTER_CLOCK_ITEM.get());

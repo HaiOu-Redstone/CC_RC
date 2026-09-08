@@ -1,6 +1,10 @@
 package com.cc_rc.command;
 
 import com.cc_rc.CcRc;
+import com.cc_rc.block.key_cabinet.KeyCabinetBlock;
+import com.cc_rc.block.key_distributor.KeyCabinetRecord;
+import com.cc_rc.block.key_distributor.KeyDistributorBlock;
+import com.cc_rc.block.key_distributor.KeyDistributorBlockEntity;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -16,7 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -63,7 +70,28 @@ public class CcrcCommand {
                 // list：仅查看 ids.json 计数文件内容（不扫描世界）
                 .then(Commands.literal("list")
                         .requires(src -> src.hasPermission(2))
-                        .executes(ctx -> runList(ctx.getSource()))));
+                        .executes(ctx -> runList(ctx.getSource())))
+                // keycabinet：管理钥匙分发控制器的钥匙柜记录（玩家必须站在控制器上方）
+                .then(Commands.literal("keycabinet")
+                        .executes(ctx -> runKeyCabinetList(ctx.getSource()))
+                        .then(Commands.literal("list")
+                                .executes(ctx -> runKeyCabinetList(ctx.getSource())))
+                        .then(Commands.literal("add")
+                                .then(Commands.argument("x", IntegerArgumentType.integer())
+                                        .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                        .executes(ctx -> runKeyCabinetAdd(ctx.getSource(),
+                                                                IntegerArgumentType.getInteger(ctx, "x"),
+                                                                IntegerArgumentType.getInteger(ctx, "y"),
+                                                                IntegerArgumentType.getInteger(ctx, "z")))))))
+                        .then(Commands.literal("remove")
+                                .then(Commands.argument("x", IntegerArgumentType.integer())
+                                        .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                        .executes(ctx -> runKeyCabinetRemove(ctx.getSource(),
+                                                                IntegerArgumentType.getInteger(ctx, "x"),
+                                                                IntegerArgumentType.getInteger(ctx, "y"),
+                                                                IntegerArgumentType.getInteger(ctx, "z")))))))));
     }
 
     /**
@@ -155,6 +183,73 @@ public class CcrcCommand {
                     "  " + type + " → " + id), false));
         }
         return 1;
+    }
+
+    // ---------- keycabinet 子命令 ----------
+
+    /** 取玩家脚下方的钥匙分发控制器方块实体；未站在控制器上方时返回 null。 */
+    private static KeyDistributorBlockEntity getStandingDistributor(CommandSourceStack source) {
+        if (!(source.getEntity() instanceof ServerPlayer player)) return null;
+        BlockPos below = player.blockPosition().below();
+        if (!(source.getLevel().getBlockState(below).getBlock() instanceof KeyDistributorBlock)) return null;
+        return source.getLevel().getBlockEntity(below) instanceof KeyDistributorBlockEntity be ? be : null;
+    }
+
+    /** /ccrc keycabinet list：列出控制器中录入的全部钥匙柜记录。 */
+    private static int runKeyCabinetList(CommandSourceStack source) {
+        KeyDistributorBlockEntity be = getStandingDistributor(source);
+        if (be == null) {
+            source.sendFailure(Component.literal("请站在钥匙分发控制器上方使用此指令"));
+            return 0;
+        }
+        var records = be.getRecords();
+        source.sendSuccess(() -> Component.literal("=== 钥匙柜记录（共 " + records.size() + " 条）==="), true);
+        if (records.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("  （无记录）"), false);
+        } else {
+            records.forEach(rec -> source.sendSuccess(() -> Component.literal(
+                    "  (" + rec.pos().getX() + ", " + rec.pos().getY() + ", " + rec.pos().getZ()
+                            + ") 朝向 " + rec.facing().getName()), false));
+        }
+        return 1;
+    }
+
+    /** /ccrc keycabinet add <x> <y> <z>：手动向控制器添加一条钥匙柜记录。 */
+    private static int runKeyCabinetAdd(CommandSourceStack source, int x, int y, int z) {
+        KeyDistributorBlockEntity be = getStandingDistributor(source);
+        if (be == null) {
+            source.sendFailure(Component.literal("请站在钥匙分发控制器上方使用此指令"));
+            return 0;
+        }
+        BlockPos cabinetPos = new BlockPos(x, y, z);
+        if (!(source.getLevel().getBlockState(cabinetPos).getBlock() instanceof KeyCabinetBlock)) {
+            source.sendFailure(Component.literal("(" + x + ", " + y + ", " + z + ") 处不是钥匙柜"));
+            return 0;
+        }
+        Direction facing = source.getLevel().getBlockState(cabinetPos).getValue(KeyCabinetBlock.FACING);
+        boolean added = be.addRecord(new KeyCabinetRecord(cabinetPos, facing));
+        if (added) {
+            source.sendSuccess(() -> Component.literal("已录入钥匙柜 (" + x + ", " + y + ", " + z + ") 朝向 " + facing.getName()), true);
+            return 1;
+        }
+        source.sendFailure(Component.literal("钥匙柜 (" + x + ", " + y + ", " + z + ") 已在记录中"));
+        return 0;
+    }
+
+    /** /ccrc keycabinet remove <x> <y> <z>：从控制器删除一条钥匙柜记录。 */
+    private static int runKeyCabinetRemove(CommandSourceStack source, int x, int y, int z) {
+        KeyDistributorBlockEntity be = getStandingDistributor(source);
+        if (be == null) {
+            source.sendFailure(Component.literal("请站在钥匙分发控制器上方使用此指令"));
+            return 0;
+        }
+        boolean removed = be.removeRecord(new BlockPos(x, y, z));
+        if (removed) {
+            source.sendSuccess(() -> Component.literal("已删除钥匙柜记录 (" + x + ", " + y + ", " + z + ")"), true);
+            return 1;
+        }
+        source.sendFailure(Component.literal("记录中不存在钥匙柜 (" + x + ", " + y + ", " + z + ")"));
+        return 0;
     }
 
     // ---------- 文件读写 ----------

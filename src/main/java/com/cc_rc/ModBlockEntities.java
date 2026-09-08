@@ -11,6 +11,7 @@ import com.cc_rc.block.digital_display.DigitalDisplayBlockEntity;
 import com.cc_rc.block.digital_knob.DigitalKnobBlockEntity;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBlockEntity;
 import com.cc_rc.block.fridge.FridgeBlockEntity;
+import com.cc_rc.block.key_distributor.KeyDistributorBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class ModBlockEntities {
                             ModBlocks.CONSOLE_LEVER_7.get()
                     ).build(null));
 
-    // 控制面板方块实体类型（支持 point_lamp_1, 2, 3, meter, console_panel, console_panel_large, console_button_1, 2, 3, safe_button_1）
+    // 控制面板方块实体类型（支持 point_lamp_1, 2, 3, meter, console_panel, console_panel_large, console_button_1~5, safe_button_1, password_inputer）
     public static final RegistryObject<BlockEntityType<ConsolePanelBlockEntity>> CONSOLE_PANEL_BE =
             BLOCK_ENTITY_TYPES.register("console_panel_be",
                     () -> BlockEntityType.Builder.of(
@@ -55,7 +56,10 @@ public class ModBlockEntities {
                             ModBlocks.CONSOLE_BUTTON_1.get(),
                             ModBlocks.CONSOLE_BUTTON_2.get(),
                             ModBlocks.CONSOLE_BUTTON_3.get(),
-                            ModBlocks.SAFE_BUTTON_1.get()
+                            ModBlocks.CONSOLE_BUTTON_4.get(),
+                            ModBlocks.CONSOLE_BUTTON_5.get(),
+                            ModBlocks.SAFE_BUTTON_1.get(),
+                            ModBlocks.PASSWORD_INPUTER.get()
                     ).build(null));
 
     // 圆盘记录仪方块实体类型
@@ -128,5 +132,13 @@ public class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             FridgeBlockEntity::new,
                             ModBlocks.FRIDGE.get()
+                    ).build(null));
+
+    // 钥匙分发控制器方块实体类型（存储已录入的钥匙柜记录列表）
+    public static final RegistryObject<BlockEntityType<KeyDistributorBlockEntity>> KEY_DISTRIBUTOR_BE =
+            BLOCK_ENTITY_TYPES.register("key_distributor_be",
+                    () -> BlockEntityType.Builder.of(
+                            KeyDistributorBlockEntity::new,
+                            ModBlocks.KEY_DISTRIBUTOR.get()
                     ).build(null));
 }

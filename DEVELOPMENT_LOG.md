@@ -23,7 +23,7 @@
 | 11 | 红石输入 | 圆盘记录仪时钟上升沿检测 | [二、4.5 圆盘记录仪时钟（红石输入）](#45-圆盘记录仪时钟红石输入) |
 | 12 | 红石输出 | 普通拉杆（继承原版 LeverBlock） | [二、5.1 普通拉杆](#51-普通拉杆) |
 | 13 | 红石输出 | 3 挡位拉杆（0/8/15） | [二、5.2 3挡位拉杆](#52-3挡位拉杆consolelever3stageblock) |
-| 14 | 红石输出 | 控制台按钮（按下 15 持续 20tick） | [二、5.3 控制台按钮](#53-控制台按钮consolebuttonblock) |
+| 14 | 红石输出 | 控制台按钮 1~5（按下 15 持续 20tick） | [二、5.3 控制台按钮](#53-控制台按钮consolebuttonblock) |
 | 15 | 红石输出 | 安全按钮（三阶段授权输出） | [二、5.4 安全按钮](#54-安全按钮safebuttonblock) |
 | 16 | 红石输出 | 断路器 / 刷卡机输出 | [二、5.5 断路器与刷卡机输出](#55-断路器与刷卡机红石输出) |
 | 17 | 红石输出 | 连接方向 helper（getConnectedDirection） | [二、5.6 连接方向计算](#56-连接方向计算getconnecteddirection) |
@@ -51,6 +51,9 @@
 | 39 | 物品/CC | 说明书2 instruction_book_2（原版成书机制，记录 CC 配件外设使用法：数码显示器/数字调节器/数字圆盘记录仪的每个 Lua 函数及参数类型） | [二、21 说明书2](#21-说明书2instruction_book_2) |
 | 40 | 物品/武器 | 简易长矛 simple_spear（SwordItem 自带横扫，耐久130 修改器伤害+129 总伤害130 +13攻击范围 ForgeMod.ENTITY_REACH，文字颜色类似附魔金苹果 Rarity.EPIC+附魔微光，手持模型2倍大且y前移3.2，紫色描述"魔女们的秘密武器"） | [二、22 简易长矛](#22-简易长矛simple_spear) |
 | 41 | 指令 | /ccrc set_count <设备种类> <数字>（仅允许设置 ids.json 已记录类型，写文件+反射同步内存）+ get_count（查询）+ list（仅查看 ids.json 内容，不扫描世界）；get_count/set_count 带类型自动补全 | [二、23 /ccrc 指令](#23-ccrc-指令ccrccommand) |
+| 42 | 红石/物品 | 密码输入器 password_inputer（放置/碰撞箱同控制面板，on/off 两态，破解成功向后方强充能15，1秒后自动关）+ 破解器 password_cracker（手持右键开始破解，20秒可配置，离开5格/切快捷栏即中断重置） | [二、24 密码输入器与破解器](#24-密码输入器与破解器passwordinputerblock--passwordcrackmanager) |
+| 43 | 红石/物品 | 核弹按钮 nuke_button（放置/碰撞箱同控制面板，6 状态输出 0/5/7/10/10/15，钥匙推进状态）+ 核弹发射钥匙 1/2 key_1/key_2（右键消耗推进状态） | [二、25 核弹按钮与钥匙](#25-核弹按钮与钥匙nukebuttonblock) |
+| 44 | 红石/物品 | 钥匙柜 key_cabinet（水平四向放置，多功能工具右键记录坐标朝向）+ 钥匙分发控制器 key_distributor（六面 key_sender 贴图，方块实体存记录；≤5 信号校验删除失效记录、>5 随机分发钥匙1/2 高亮不消失掉落物） | [二、26 钥匙柜与钥匙分发控制器](#26-钥匙柜与钥匙分发控制器keycabinetblock--keydistributorblock) |
 
 ---
 
@@ -106,6 +109,7 @@ public static final RegistryObject<Item> CONSOLE_LEVER_1_ITEM = ITEMS.register("
 - **safe_button**：`timeout_ticks`（默认 200，状态 2 超时回到状态 1）、`signal_ticks`（默认 20，状态 3 信号持续时间）。
 - **plotter**：模式 2~9 的数据更新间隔，默认 `5/10/20/50/100/200/500/1000` tick。`getPlotterTickInterval(mode)` 中模式 1 返回 `-1`（被动触发）。
 - **card_reader**：`on_ticks`（默认 20，激活后保持输出的时长）；每个等级刷卡机的可识别卡片规则，默认 `A→"A"、B→"AB"、C→"ABC"、D→"ABCD"、E→"ABCDE"`，由 `isCardAccepted(readerLevel, cardLetter)` 判断。
+- **password_inputer**：`crack_ticks`（默认 400 = 20 秒，破解密码输入器所需时间）。
 
 ### 3. 文字显示
 
@@ -323,6 +327,8 @@ public int getDirectSignal(...) {
     return state.getValue(POWERED) && getConnectedDirection(state) == direction ? 15 : 0;
 }
 ```
+
+`console_button_1~5` 五个变体共用本类（仅模型/贴图不同）：1~3 为原版样式；4/5 分别采用"模型/特殊控制台/A、C"的核弹面板按钮（on/off 两态模型，按下时由 blockstate `powered` 切换开/关模型与贴图），转换时 **UV 直接沿用**（源模型 UV 即 Java 0-16 归一化坐标，与贴图内容区精确对应；曾误按 Bedrock 像素坐标缩放导致贴图错乱，已按源文件验算并修正为不缩放），顶/底面做方向翻转。
 
 #### 5.4 安全按钮（SafeButtonBlock）
 
@@ -767,11 +773,14 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 ### 19. F.A.A.S服务器（server_faas）
 
-[ServerFaasBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/server_faas/ServerFaasBlock.java) 是三种变体共用的装饰方块类（`server_faas_1/2/3`），模型来源"模型/FAAS"（Bedrock 版转为 Java block 模型，含 22.5°/45° 旋转节点，UV 顶/底面已翻转适配），贴图 `textures/block/server_faas/faas_1~3.png`：
+[ServerFaasBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/server_faas/ServerFaasBlock.java) 是三种变体共用的装饰方块类（`server_faas_1/2/3`），模型来源"模型/FAAS/FAAS新"（Blockbench Bedrock 版转为 Java block 模型，含 22.5°/45° 旋转节点，UV 顶/底面已翻转适配），贴图 `textures/block/server_faas/faas_1~3.png`：
 
 - **放置**：继承 `HorizontalDirectionalBlock`，水平四方向（N/S/E/W）放置，`getStateForPlacement` 用 `context.getHorizontalDirection()`（**面向玩家**，未加 `getOpposite()`），与奶龙玩偶一致。
-- **音效**：靠近时持续循环播放 `server_noise`。播放逻辑由客户端监听器 [ServerFaasSoundHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ServerFaasSoundHandler.java)（Dist.CLIENT）负责——每 20 tick 扫描玩家周围 16 格内的 FAAS 方块，为每个方块创建 `loop=true` 的 `AbstractTickableSoundInstance`（`FaasLoopingSound`）并交给 SoundManager 无缝循环播放；玩家远离/方块被破坏/离开世界时停止并移除实例。声音文件 `sounds/server_noise.ogg`。
+- **音效**：靠近时持续循环播放 `server_noise`。播放逻辑由客户端监听器 [ServerFaasSoundHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ServerFaasSoundHandler.java)（Dist.CLIENT）负责——每 20 tick 扫描玩家周围 16 格内的 FAAS 方块，为每个方块创建 `loop=true` 的 `AbstractTickableSoundInstance`（`FaasLoopingSound`）并交给 SoundManager 无缝循环播放；玩家远离/方块被破坏/离开世界时停止并移除实例。声音文件 `sounds/server_noise.ogg`。音效归类 `SoundSource.BLOCKS`（受游戏设置「音效/方块」滑块控制音量，非主音量）；**距离衰减完全手动控制**：音效标记 `relative=true` 并关闭引擎衰减，由管理器每 tick 调用 `updateVolume()` 按玩家与音源距离计算线性音量（16 格内 100%→0%，带 lerp 平滑），扫描停止距离 20 格（16 格衰减 + 4 格裕量防边界抖动）。
   - > **修复记录（原音效断续/重叠）**：最初在 `animateTick` 中按概率（`random.nextFloat() < 0.2F`）`playLocalSound` 播放，仿原版营火/火把逻辑——但概率触发导致音效时有时无，且音效较长时会多次触发互相重叠。已改用上述"循环音效实例 + 距离开关"，移除 `animateTick` 覆写与随机播放。
+  - > **修复记录（SoundEngine 循环音效不衰减）**：委托 SoundEngine 的 `Attenuation.LINEAR` 实测仍无衰减——循环音效（looping）的音量在 SoundEngine 中**不随玩家移动刷新**（只在低频 tick/播放时按初始距离设定一次）。已改为 `relative=true` + `attenuation=NONE` 关闭引擎衰减，由 `ServerFaasSoundHandler` 每 tick 调用 `updateVolume()` 按玩家与方块距离手动计算线性音量（16 格内 100%→0%，带 lerp 平滑过渡），衰减必定随距离生效；同时把清理实例的停止距离从 24 格收敛到 20 格。`getSource()` 显式返回 `SoundSource.BLOCKS` 保证「音效/方块」滑块可调节音量。
+  - > **修复记录（模型替换）**：FAAS 模型由"模型/FAAS"旧版替换为"模型/FAAS/FAAS新"（faas_1/2/3 三组 Blockbench 导出），重新转换生成 `models/block/server_faas/faas_1~3.json`（55/52/49 元素）并更新贴图，blockstate 与 item 模型引用不变。
+  - > **修复记录（UV 坐标误缩放）**：FAAS 新模型与按钮 4/5、密码输入器源 JSON 虽标注 Bedrock 格式，但 UV 实为 Java 0-16 归一化坐标（与贴图内容区域验算吻合，如 faas 贴图 512×512 内容 0~378px ↔ UV 11.875×512/16≈380px）；曾误按 `texture_size` 像素缩放导致贴图错位残缺，已统一改为"UV 直接沿用 + 顶/底面方向翻转"并重建全部 9 个模型（faas_1~3、console_button_4/5 × off/on、password_inputer × off/on）。
 - **性质**：完整方块（模型元素可超出方块边界渲染），金属音效 `SoundType.METAL`、强度 3.0/6.0、`requiresCorrectToolForDrops`；为三种变体各补一张 `loot_tables/blocks/server_faas_N.json` 使方块可掉落。
 
 ### 20. 说明书1（instruction_book_1）
@@ -825,11 +834,51 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 ---
 
+### 24. 密码输入器与破解器（PasswordInputerBlock / PasswordCrackManager）
+
+[PasswordInputerBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/password_inputer/PasswordInputerBlock.java) 密码输入器方块，继承 `ConsolePanelBlock` 复用放置逻辑/碰撞箱/文字显示（可贴墙/地板/天花板，14x14x3 面板）：
+
+- **状态**：FACING + FACE（继承）+ POWERED（on/off，默认 off）；blockstate 24 变体（face × facing × powered），on/off 切换 `models/block/password_inputer/password_inputer_on/off`（模型来源"模型/特殊控制台/密码输入器/code_reader.json"，UV 直接沿用 + 顶/底面方向翻转；贴图 2.png / 2-on.png）。
+- **破解交互**：手持破解器（`PasswordCrackerItem`）右键本方块 → [PasswordCrackManager.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/password_inputer/PasswordCrackManager.java)（仅服务端，FORGE 总线 `ServerTickEvent`）登记破解会话。
+- **破解流程**：默认 400 tick（20 秒，`Config` 的 `password_inputer.crack_ticks` 可配置）；每 tick 校验三个中断条件——玩家距方块 > 5 格、主手不再是破解器（切快捷栏/换手）、方块被破坏/替换；任一成立 → 会话取消、计时重置并提示"破解中断"。计时走完 → `powerOn()`：方块 `POWERED=true`、播放点击音、向连接方向强充能输出 15，20 tick 后自动变回 off。破解中每 10 tick 刷新 action bar 显示剩余秒数。
+- **红石**：`isSignalSource` 恒 true；`getSignal` on 时全向 15（弱信号）；`getDirectSignal` on 时连接方向 15（强充能贴附方块，类似按钮/刷卡机）；连接方向真值表 = FLOOR→UP / CEILING→DOWN / WALL→FACING。
+
+[PasswordCrackerItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/PasswordCrackerItem.java) 破解器物品：不可堆叠，**3D 物品模型** `models/item/password_cracker.json`（模型来源"模型/特殊控制台/破解卡/破解卡.json"转换，26 元素 + 源 display + 补 gui 显示，UV 直接沿用），贴图 `textures/item/password_cracker.png`。
+  - > **修复记录（破解完成崩溃）**：原实现在服务端 tick 迭代 SESSIONS 时用 `SESSIONS.put()` 推进计时——put 会改变 HashMap 结构计数（modCount），随后迭代器 `remove()` 抛 `ConcurrentModificationException`（crash-reports 实锤，破解完成瞬间崩溃）。已改用 `Map.Entry.setValue()` 推进（不修改结构）。
+  - > **修复记录（二次崩溃 ConcurrentModificationException@onServerTick:131）**：修复 put 后仍崩溃——破解成功分支 `powerOn()` 内 `level.setBlock()` 触发 `PasswordInputerBlock.onRemove()`，其无条件调用 `PasswordCrackManager.onBlockRemoved()` 在服务器 tick 正迭代 SESSIONS 的同时移除条目，迭代器 `remove()` 再次抛并发修改异常。双重修复：① `onRemove()` 仅在方块被真正破坏/替换（`!state.is(newState.getBlock())`）时才调用 `onBlockRemoved()`，POWERED 属性切换不再触发；② `SESSIONS` 改用 `ConcurrentHashMap`，对 tick 迭代与 start()/onBlockRemoved() 的交错操作天然免疫（迭代器弱一致）。
+  - > **修复记录（提示与倒计时）**：开始/中断/成功提示由聊天栏（sendSystemMessage）改为 **action bar**（displayClientMessage + true，屏幕中间显示）；倒计时节奏改为——开始后前 20 tick 显示"开始破解…"，之后每 10 tick 刷新"破解中…剩余 N 秒"，N 从 19 倒数到 1（总时长仍为配置值）。
+  - > **修复记录（破解音效）**：新增声音 `password_crack`（`sounds/password_crack.ogg`，来自"模型/特殊控制台/破解卡/破解.ogg"）。服务端破解开始/中断/成功/方块破坏时通过 `CrackSoundPacket`（S2C 网络包，ModNetwork id=1）通知客户端；客户端 [CrackSoundClientHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/CrackSoundClientHandler.java)（Dist.CLIENT）在方块位置循环播放，收到停止包或玩家退出/切维度/远离 32 格时停止。
+  - > **修复记录（模型被覆盖成 Bedrock 1.21 格式致紫黑）**：`password_inputer_off/on.json` 被 Blockbench **新版导出直接覆盖**（`format_version: 1.21.11`，rotation 用 `{"x":90,"y":0,"z":0}` 欧拉角、origin 平级），Java 模型加载器只认 `axis/angle` → 日志 `Missing axis, expected to find a string` → 方块渲染紫黑。已以用户新版为源重新转换：欧拉角按"取非零轴"转回 `axis/angle`（34 元素全单轴，无复合旋转）、去除 format_version/credit、UV 顶/底面翻转并直接沿用，保留用户全部元素与坐标改动；贴图沿用用户 19:48 更新的版本（64×64）。
+  - > **修复记录（Invalid rotation 90 致整体紫黑）**：上述转换后日志改报 `Invalid rotation 90.0 found, only -45/-22.5/0/22.5/45 allowed` —— **Java 模型元素级旋转只允许 -45°~45°**（90° 只允许在 blockstate 层），而用户 1.21 新版模型 34 个元素全带绕 X 轴 90/67.5/112.5°（其中 8 个非轴对齐元素 Java 无法表示）。最终方案：**放弃被覆盖的 1.21 版本，改用素材源"模型/特殊控制台/密码输入器/code_reader.json"（19:40 的 Bedrock 1.9.0 合法版，rotation 全为 0/±22.5°）重新转换**，与用户 19:48 更新的贴图（MD5 与素材一致）配套；验证：坐标全在 0~16、34 元素 0 非法角度，jar 与 build/resources 均已更新。
+
+### 25. 核弹按钮与钥匙（NukeButtonBlock）
+
+[NukeButtonBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/nuke_button/NukeButtonBlock.java) 核弹按钮方块，继承 `ConsolePanelBlock` 复用放置逻辑/碰撞箱/文字显示（放置方式同控制面板）。
+
+- **状态**：FACING + FACE（继承）+ STATE（IntegerProperty 1~6）；blockstate 72 变体（face × facing × state）；6 状态模型 `models/block/nuke_button/nuke_button_1~6`（模型来源"模型/特殊控制台/B"六文件，**保持原尺寸仅 z 平移 +2 对齐 0~16**，x 方向 -4~20 按用户要求保留溢出；UV 直接沿用 + 顶/底面方向翻转；贴图 `nuke_button_1~6.png`）。
+- **状态机与信号**：状态1 初始（放置，输出 0）→ 状态2 插钥匙1（输出 5）→ 状态3 插钥匙2（输出 7）→ 状态4 双钥匙（状态3，输出 10）→ 状态5 待发（状态4，输出 10）→ 状态6 发射（状态5，输出 15，60 tick 后自动复位状态1）。
+- **钥匙交互**（`use`，仅服务端执行）：手持 `key_1` 右键：状态1→状态2、状态3→状态4；手持 `key_2` 右键：状态1→状态3、状态2→状态4；转移成功即 `held.shrink(1)` 消耗钥匙（不可堆叠 `stacksTo(1)`）。
+- **空手交互**：shift+右键在状态4（状态3）与状态5（状态4）间互相切换；状态5 普通右键 → 状态6 并 `scheduleTick(60)`，`tick()` 计时结束复位状态1。
+- **红石**：`isSignalSource` 恒 true；`getSignal` 弱信号全方向 = 当前状态信号强度；`getDirectSignal` 信号 > 0 时连接方向强充能同值（类似按钮/刷卡机）；状态切换走 `updateNeighbours`（LeverBlock 金标准双刷新），`onRemove` 在信号 > 0 时刷新。
+- **钥匙物品** `key_1` / `key_2`（`ModItems.KEY_1/KEY_2`）：`Item` 直注册，`stacksTo(1)`，贴图 `textures/item/key_1.png`、`key_2.png`（来源"特殊控制台/key_1、key_2"），物品模型 `item/generated`。
+- **渲染类型**（[CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) `ClientModEvents.onClientSetup`）：B 组贴图含大面积透明区域且被模型 UV 采样，默认 `RenderType.solid()` 会把 alpha=0 像素渲染成黑色 → 在客户端启动时 `ItemBlockRenderTypes.setRenderLayer(NUKE_BUTTON, RenderType.cutout())`（alpha test 剔除透明像素）。
+
+### 26. 钥匙柜与钥匙分发控制器（KeyCabinetBlock / KeyDistributorBlock）
+
+[KeyCabinetBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/key_cabinet/KeyCabinetBlock.java) 钥匙柜方块：水平四向放置（`HORIZONTAL_FACING` = 放置时玩家朝向的反方向，对墙放置柜体贴在远离玩家的墙侧、柜门朝玩家），无方块实体，模型（用户新版，默认贴 z 0~8 侧）blockstate 4 变体（facing 旋转：south→y0 / west→y90 / north→y180 / east→y270）。**碰撞箱为贴墙长方体**：宽 12（x 2~14 左右各空 2）、高 14（y 0~14）、厚 7（贴墙侧，south 基准 z 0~7），四个朝向随 FACING 旋转（`getShape` 四朝向 AABB）；贴图含大面积透明 → 已设 `RenderType.cutout()`（避免 solid 渲染透明处变黑，同核弹按钮修复）。
+
+[KeyDistributorBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/key_distributor/KeyDistributorBlock.java) 钥匙分发控制器：完整方块（六面同贴图 `key_sender.png`，cube_all），带方块实体 [KeyDistributorBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/key_distributor/KeyDistributorBlockEntity.java) 存储已录入的钥匙柜记录列表（[KeyCabinetRecord.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/key_distributor/KeyCabinetRecord.java)：坐标 + 朝向，NBT 列表持久化，新增 `key_distributor_be`）。
+
+- **记录录入**（[MultiToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/MultiToolItem.java) `useOn`）：多功能工具右键钥匙柜 → 坐标 + 朝向写入工具 NBT（`KC_X/Y/Z/KC_Facing`）并提示；再右键控制器 → 把记录录入 BE（重复坐标不添加）。也支持指令 `/ccrc keycabinet`（玩家须站在控制器上方）：`list` 查看 / `add <x> <y> <z>`（校验该处是钥匙柜，facing 自动读取）/ `remove <x> <y> <z>`。
+- **红石逻辑**（方块 `tick` 心跳持续自调度 + BE `lastSignal` 上升沿检测，仅服务端）：信号 ≤5 → 每 tick 遍历记录，位置不再是钥匙柜则删除该条；信号从 ≤5 跳变到 >5 → **只分发一次**（记录 ≥2 时随机取两条不同记录，在各自钥匙柜**格内柜门侧**（格中心向柜门方向 [FACING 方向本身，新模型柜门朝外一侧] 偏移 0.3 格）生成**钥匙1 / 钥匙2** 掉落物（`setDeltaMovement(0,0,0)` 无初速度静止，`setGlowingTag(true)` 高亮描边 + `lifespan = Integer.MAX_VALUE` 永不自然消失，1.20.1 无 setLifespan 方法故直接改公开字段））。修复：初版用 `neighborChanged` 直接分发，一次红石脉冲会多次触发生成多把钥匙 → 改为上升沿检测，一个脉冲只出一把钥匙1 + 一把钥匙2。
+
+---
+
 ## 三、注册物品
 
 > 约定：方块与物品 ID 一一对应；`BlockItem` 为普通方块物品，特殊物品使用专属类。以下按方块类归组。
 
-### 1. 方块（Blocks）——共 99 个
+### 1. 方块（Blocks）——共 105 个
 
 | 方块 ID | 方块类 | 说明 |
 | --- | --- | --- |
@@ -847,6 +896,12 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `console_button_1` | `ConsoleButtonBlock` | 控制台按钮（按下输出 15，20tick 弹起） |
 | `console_button_2` | `ConsoleButtonBlock` | 控制台按钮 2 |
 | `console_button_3` | `ConsoleButtonBlock` | 控制台按钮 3 |
+| `console_button_4` | `ConsoleButtonBlock` | 控制台按钮 4（模型"模型/特殊控制台/A"，on/off 两态） |
+| `console_button_5` | `ConsoleButtonBlock` | 控制台按钮 5（模型"模型/特殊控制台/C"，on/off 两态） |
+| `password_inputer` | `PasswordInputerBlock` | 密码输入器（放置/碰撞箱同控制面板；on/off 两态，破解成功向后方强充能15，1秒后自动关；模型"模型/特殊控制台/密码输入器"） |
+| `nuke_button` | `NukeButtonBlock` | 核弹按钮（放置/碰撞箱同控制面板；6 状态输出 0/5/7/10/10/15，钥匙推进状态，发射态 3 秒自动复位；模型"模型/特殊控制台/B"6 状态，保持原尺寸仅 z 平移对齐） |
+| `key_cabinet` | `KeyCabinetBlock` | 钥匙柜（水平四向放置，无方块实体；多功能工具右键记录坐标朝向；模型"模型/特殊控制台/钥匙柜/钥匙柜.json"） |
+| `key_distributor` | `KeyDistributorBlock` | 钥匙分发控制器（六面 key_sender 贴图完整方块，方块实体存钥匙柜记录；≤5 信号校验清理、>5 随机分发钥匙1/2 高亮不消失掉落物） |
 | `safe_button_1` | `SafeButtonBlock` | 安全按钮（三阶段授权） |
 | `plotter` | `PlotterBlock` | 圆盘记录仪（24 点趋势划线） |
 | `plotter_clock` | `PlotterClockBlock` | 圆盘记录仪时钟（上升沿触发划线，完整方块） |
@@ -873,11 +928,11 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | 同色 `_hanging_canvas_sign` | `CeilingHangingSignBlock` | 各色悬挂式粗布告示牌（天花板悬挂） |
 | 同色 `_canvas_wall_hanging_sign` | `WallHangingSignBlock` | 各色悬挂式粗布告示牌（壁挂悬挂，掉落对应天花板悬挂块） |
 
-> 说明：16 色 × 4 类 = 64 个告示牌方块（沿用原版 SignBlock 系列，方块实体复用原版 `BlockEntityType.SIGN` / `HANGING_SIGN`，无需新增方块实体）；`console_lever_1/2` 共用 `ConsoleLeverBlock` 类，`console_lever_6/7` 共用 `ConsoleLever3StageBlock` 类，`point_lamp_1/2/3` 共用 `PointLampBlock` 类，`console_button_1/2/3` 共用 `ConsoleButtonBlock` 类，`card_reader_a~e` 共用 `CardReaderBlock`（构造参数 grade 'A'~'E'），`server_faas_1/2/3` 共用 `ServerFaasBlock`（仅模型/贴图不同）。
+> 说明：16 色 × 4 类 = 64 个告示牌方块（沿用原版 SignBlock 系列，方块实体复用原版 `BlockEntityType.SIGN` / `HANGING_SIGN`，无需新增方块实体）；`console_lever_1/2` 共用 `ConsoleLeverBlock` 类，`console_lever_6/7` 共用 `ConsoleLever3StageBlock` 类，`point_lamp_1/2/3` 共用 `PointLampBlock` 类，`console_button_1~5` 共用 `ConsoleButtonBlock` 类，`card_reader_a~e` 共用 `CardReaderBlock`（构造参数 grade 'A'~'E'），`server_faas_1/2/3` 共用 `ServerFaasBlock`（仅模型/贴图不同）。
 
-### 2. 物品（Items）——共 111 个
+### 2. 物品（Items）——共 120 个
 
-**方块物品（67 个，`BlockItem` / `SignItem`）：**
+**方块物品（73 个，`BlockItem` / `SignItem`）：**
 
 | 物品 ID | 物品类 | 对应方块 |
 | --- | --- | --- |
@@ -887,7 +942,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `meter` | `BlockItem` | 仪表 |
 | `empty_console_panel` | `BlockItem` | 空控制面板（对应方块 console_panel） |
 | `empty_console_panel_large` | `BlockItem` | 大号空控制面板（对应方块 console_panel_large） |
-| `console_button_1` / `console_button_2` / `console_button_3` | `BlockItem` | 按钮 1/2/3 |
+| `console_button_1` / `console_button_2` / `console_button_3` / `console_button_4` / `console_button_5` | `BlockItem` | 按钮 1/2/3/4/5 |
+| `password_inputer` | `BlockItem` | 密码输入器（对应方块 password_inputer） |
 | `safe_button_1` | `BlockItem` | 安全按钮 |
 | `plotter` | `DescriptionBlockItem` | 圆盘记录仪（悬停显示模式说明） |
 | `plotter_clock` | `DescriptionBlockItem` | 圆盘记录仪时钟（悬停显示触发说明） |
@@ -910,7 +966,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 说明：16 色 × 2 = 32 个告示牌物品（复用 key `item.cc_rc.desc_potato_crate_carried` 显示黄色斜体"搬运自农夫乐事"）。
 
-**特殊物品（20 个）：**
+**特殊物品（23 个）：**
 
 | 物品 ID | 物品类 | 说明 |
 | --- | --- | --- |
@@ -930,6 +986,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `baguette` | `BaguetteItem` | 法棍（食物：营养 2 / 饱和度 2，堆叠 16；主手附加攻击伤害 4（修饰符 3.0 + 空手 1.0）与击退 ATTACK_KNOCKBACK=3.0，粗体棕色描述"坚如磐石"） |
 | `crowbar` | `CrowbarItem` | 撬棍（铁质 SwordItem 自带横扫，修改器伤害 +19 实际总伤害 20 / 攻速慢 -3.0 / 暴击 2.0 倍 / 耐久 1024 / 铁锭修复 / 铁砧落地打击音效 / 不可堆叠；浅蓝粗体描述"物理学圣剑"+深蓝"f(x)dx"） |
 | `simple_spear` | `SimpleSpearItem` | 简易长矛（铁质 SwordItem 自带横扫，耐久 130 / 修改器伤害 +129 实际总伤害 130 / +13 攻击范围 ForgeMod.ENTITY_REACH / 铁锭修复 / Rarity.EPIC 淡紫名 + isFoil 附魔微光 / 不可堆叠 / 手持模型 2 倍大且 y 前移 3.2；紫色描述"魔女们的秘密武器"） |
+| `password_cracker` | `PasswordCrackerItem` | 破解器（不可堆叠；手持右键密码输入器开始破解，20 秒可配置，离开 5 格/切快捷栏即中断；**3D 物品模型**，模型来源"模型/特殊控制台/破解卡"；破解时播放 password_crack 音效，中断即停） |
+| `key_1` / `key_2` | `Item` | 核弹发射钥匙 1 / 2（不可堆叠；右键核弹按钮消耗并推进状态：状态1+钥匙1→状态2、状态1+钥匙2→状态3、状态2+钥匙2→状态4、状态3+钥匙1→状态4；贴图"特殊控制台/key_1、key_2"） |
 
 **音乐唱片（24 个，`RecordItem`，Rarity.RARE）：**
 
@@ -962,13 +1020,13 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 唱片同时注册进原版 `minecraft:tags/items/music_discs` 标签，可被唱片机播放；比较器输出值在 1~15 之间，其中 1/2/5/6 被多张唱片复用（1 = railugun、conrnfield_chase、the_imitation_game；2 = assumptions、move、rain、end；5 = level5、more_one_night、bloom；6 = underground_river、hanezeve_caradhina、jigoku_shoujo），其余 3/4/7~15 各一张。
 
-### 3. 方块实体（Block Entity Types）——共 11 个
+### 3. 方块实体（Block Entity Types）——共 12 个
 
 | 方块实体 ID | 实体类 | 支持的方块 |
 | --- | --- | --- |
 | `console_lever_be` | `ConsoleLeverBlockEntity` | console_lever_1、console_lever_2 |
 | `console_lever_3stage_be` | `ConsoleLever3StageBlockEntity` | console_lever_6、console_lever_7 |
-| `console_panel_be` | `ConsolePanelBlockEntity` | point_lamp_1/2/3、meter、console_panel、console_panel_large、console_button_1/2/3、safe_button_1 |
+| `console_panel_be` | `ConsolePanelBlockEntity` | point_lamp_1/2/3、meter、console_panel、console_panel_large、console_button_1~5、safe_button_1、password_inputer |
 | `plotter_be` | `PlotterBlockEntity` | plotter |
 | `plotter_clock_be` | `PlotterClockBlockEntity` | plotter_clock |
 | `digital_display_be` | `DigitalDisplayBlockEntity` | digital_display |
@@ -977,14 +1035,15 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `canvas_sign_be` | `CanvasSignBlockEntity` | 16 色 × `_canvas_sign`、`_canvas_wall_sign`（立式/壁挂粗布告示牌） |
 | `canvas_hanging_sign_be` | `CanvasHangingSignBlockEntity` | 16 色 × `_hanging_canvas_sign`、`_canvas_wall_hanging_sign`（悬挂式粗布告示牌） |
 | `fridge_be` | `FridgeBlockEntity` | fridge（冰箱，27 格容器） |
+| `key_distributor_be` | `KeyDistributorBlockEntity` | key_distributor（钥匙分发控制器，存储钥匙柜记录列表） |
 
 > 注意：`breaker`（断路器）为纯逻辑方块，**没有**方块实体，状态完全由 `BlockState`（FACING/POWERED）驱动。
 >
 > **告示牌为何需要自定义方块实体类型**：原版 `BlockEntityType.SIGN` / `HANGING_SIGN` 的 `validBlocks` 只包含原版告示牌方块。`BlockEntityRenderDispatcher` 渲染时会先做 `blockEntity.getType().isValid(blockState)` 校验，若方块不在该方块实体类型的有效方块集合内则直接跳过渲染，导致告示牌完全透明（无模型、无文字、亦非紫黑块）。因此为粗布告示牌注册了专用方块实体类型（工厂复用 `CanvasSignBlockEntity`/`CanvasHangingSignBlockEntity`，`getType()` 返回自定义类型），并在客户端为这两个类型注册原版 `SignRenderer`/`HangingSignRenderer`。模型层与材质仍由原版机制按 `WoodType "cc_rc:canvas"` 自动生成。
 
-### 4. 声音（Sound Events）——共 26 个
+### 4. 声音（Sound Events）——共 27 个
 
-24 个音乐声音与 24 张唱片一一对应：`music_level5`、`railugun`、`never`、`assumptions`、`conrnfield_chase`、`move`、`night`（more_one_night）、`rain`、`end`、`underground_river`、`hanezeve_caradhina`、`cutie_mew_mew_magic`、`denise`、`gwangju`、`higher`、`king`、`marisa`、`mixue`、`raw_tell`、`reimu`、`you_will_be_perfect`、`bloom`、`jigoku_shoujo`、`the_imitation_game`；另有 2 个非唱片声音：`nai_long`（奶龙玩偶语音，右键奶龙玩偶 `nai_long_toy` 时播放）、`server_noise`（F.A.A.S服务器 `server_faas_1/2/3` 的环境音效，玩家靠近时持续播放，注册于 [sounds.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/sounds.json)）。
+24 个音乐声音与 24 张唱片一一对应：`music_level5`、`railugun`、`never`、`assumptions`、`conrnfield_chase`、`move`、`night`（more_one_night）、`rain`、`end`、`underground_river`、`hanezeve_caradhina`、`cutie_mew_mew_magic`、`denise`、`gwangju`、`higher`、`king`、`marisa`、`mixue`、`raw_tell`、`reimu`、`you_will_be_perfect`、`bloom`、`jigoku_shoujo`、`the_imitation_game`；另有 3 个非唱片声音：`nai_long`（奶龙玩偶语音，右键奶龙玩偶 `nai_long_toy` 时播放）、`server_noise`（F.A.A.S服务器 `server_faas_1/2/3` 的环境音效，玩家靠近时持续播放，注册于 [sounds.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/sounds.json)）、`password_crack`（破解器破解音效，破解密码输入器期间在方块位置循环播放，中断/成功/方块破坏时由网络包通知客户端停止）。
 
 ### 5. 创造标签
 

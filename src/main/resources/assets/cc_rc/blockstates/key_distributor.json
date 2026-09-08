@@ -1,0 +1,5 @@
+{
+    "variants": {
+        "": { "model": "cc_rc:block/key_distributor/key_distributor" }
+    }
+}

@@ -33,6 +33,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -108,6 +110,11 @@ public class CcRc
         public static void onClientSetup(FMLClientSetupEvent event)
         {
             LOGGER.info("CC: 反应堆控制台 客户端启动！");
+            // 核弹按钮贴图含透明区域，设置 cutout 渲染类型避免透明部分渲染成黑色（默认 solid 会把 alpha=0 像素写黑）
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.NUKE_BUTTON.get(), RenderType.cutout());
+            // 钥匙柜/钥匙分发控制器贴图同样含透明区域
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.KEY_CABINET.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.KEY_DISTRIBUTOR.get(), RenderType.cutout());
         }
 
         @SubscribeEvent

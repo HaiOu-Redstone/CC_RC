@@ -14,6 +14,7 @@ import com.cc_rc.item.InstructionBookItem;
 import com.cc_rc.item.InstructionBook2Item;
 import com.cc_rc.item.ModToolTiers;
 import com.cc_rc.item.MultiToolItem;
+import com.cc_rc.item.PasswordCrackerItem;
 import com.cc_rc.item.SimpleSpearItem;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,9 +92,44 @@ public class ModItems {
     public static final RegistryObject<Item> CONSOLE_BUTTON_3_ITEM = ITEMS.register("console_button_3",
             () -> new BlockItem(ModBlocks.CONSOLE_BUTTON_3.get(), new Item.Properties()));
 
+    // 控制台按钮 4 物品
+    public static final RegistryObject<Item> CONSOLE_BUTTON_4_ITEM = ITEMS.register("console_button_4",
+            () -> new BlockItem(ModBlocks.CONSOLE_BUTTON_4.get(), new Item.Properties()));
+
+    // 控制台按钮 5 物品
+    public static final RegistryObject<Item> CONSOLE_BUTTON_5_ITEM = ITEMS.register("console_button_5",
+            () -> new BlockItem(ModBlocks.CONSOLE_BUTTON_5.get(), new Item.Properties()));
+
+    // 密码输入器物品
+    public static final RegistryObject<Item> PASSWORD_INPUTER_ITEM = ITEMS.register("password_inputer",
+            () -> new BlockItem(ModBlocks.PASSWORD_INPUTER.get(), new Item.Properties()));
+
+    // 破解器物品（手持右键密码输入器开始破解，不可堆叠）
+    public static final RegistryObject<Item> PASSWORD_CRACKER_ITEM = ITEMS.register("password_cracker",
+            () -> new PasswordCrackerItem(new Item.Properties().stacksTo(1)));
+
+    // 核弹按钮物品
+    public static final RegistryObject<Item> NUKE_BUTTON_ITEM = ITEMS.register("nuke_button",
+            () -> new BlockItem(ModBlocks.NUKE_BUTTON.get(), new Item.Properties()));
+
+    // 核弹发射钥匙 1 / 2（右键核弹按钮消耗并推进状态，不可堆叠）
+    public static final RegistryObject<Item> KEY_1 = ITEMS.register("key_1",
+            () -> new Item(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> KEY_2 = ITEMS.register("key_2",
+            () -> new Item(new Item.Properties().stacksTo(1)));
+
     // 安全按钮 1 物品
     public static final RegistryObject<Item> SAFE_BUTTON_1_ITEM = ITEMS.register("safe_button_1",
             () -> new BlockItem(ModBlocks.SAFE_BUTTON_1.get(), new Item.Properties()));
+
+    // 钥匙柜物品
+    public static final RegistryObject<Item> KEY_CABINET_ITEM = ITEMS.register("key_cabinet",
+            () -> new BlockItem(ModBlocks.KEY_CABINET.get(), new Item.Properties()));
+
+    // 钥匙分发控制器物品
+    public static final RegistryObject<Item> KEY_DISTRIBUTOR_ITEM = ITEMS.register("key_distributor",
+            () -> new BlockItem(ModBlocks.KEY_DISTRIBUTOR.get(), new Item.Properties()));
 
     // 圆盘记录仪物品（悬停时显示切换模式说明）
     public static final RegistryObject<Item> PLOTTER_ITEM = ITEMS.register("plotter",

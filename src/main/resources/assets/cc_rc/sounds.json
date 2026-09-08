@@ -230,5 +230,12 @@
       }
     ],
     "subtitle": "cc_rc.subtitle.server_noise"
+  },
+  "password_crack": {
+    "sounds": [
+      {
+        "name": "cc_rc:password_crack"
+      }
+    ]
   }
 }

@@ -23,5 +23,10 @@ public class ModNetwork {
                 ThrowBaoZiPacket::encode,
                 ThrowBaoZiPacket::decode,
                 ThrowBaoZiPacket::handle);
+        // 破解音效开始/停止（S2C，服务端通知客户端播放/停止密码输入器破解音效）
+        CHANNEL.registerMessage(1, CrackSoundPacket.class,
+                CrackSoundPacket::encode,
+                CrackSoundPacket::decode,
+                CrackSoundPacket::handle);
     }
 }

@@ -40,6 +40,8 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> NAI_LONG = register("nai_long");
     // F.A.A.S服务器环境音效（非唱片，靠近时持续播放）
     public static final RegistryObject<SoundEvent> SERVER_NOISE = register("server_noise");
+    // 破解器破解音效（破解密码输入器时循环播放，中断/成功时停止）
+    public static final RegistryObject<SoundEvent> PASSWORD_CRACK = register("password_crack");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUND_EVENTS.register(name,

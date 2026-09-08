@@ -20,10 +20,14 @@ import com.cc_rc.block.canvas_sign.CanvasStandingSignBlock;
 import com.cc_rc.block.canvas_sign.CanvasWallHangingSignBlock;
 import com.cc_rc.block.canvas_sign.CanvasWallSignBlock;
 import com.cc_rc.block.fridge.FridgeBlock;
+import com.cc_rc.block.key_cabinet.KeyCabinetBlock;
+import com.cc_rc.block.key_distributor.KeyDistributorBlock;
 import com.cc_rc.block.nai_long_toy.NaiLongToyBlock;
 import com.cc_rc.block.Redstone_transmit.RedstoneReceiverBlock;
 import com.cc_rc.block.Redstone_transmit.RedstoneSenderBlock;
 import com.cc_rc.block.server_faas.ServerFaasBlock;
+import com.cc_rc.block.nuke_button.NukeButtonBlock;
+import com.cc_rc.block.password_inputer.PasswordInputerBlock;
 import com.cc_rc.block.sink.SinkBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,11 +140,51 @@ public class ModBlocks {
                     .strength(0.5F)
                     .sound(SoundType.STONE)));
 
+    // 控制台按钮 4（模型来源"模型/特殊控制台/A"，on/off 两态贴图）
+    public static final RegistryObject<ConsoleButtonBlock> CONSOLE_BUTTON_4 = BLOCKS.register("console_button_4",
+            () -> new ConsoleButtonBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .strength(0.5F)
+                    .sound(SoundType.STONE)));
+
+    // 控制台按钮 5（模型来源"模型/特殊控制台/C"，on/off 两态贴图）
+    public static final RegistryObject<ConsoleButtonBlock> CONSOLE_BUTTON_5 = BLOCKS.register("console_button_5",
+            () -> new ConsoleButtonBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .strength(0.5F)
+                    .sound(SoundType.STONE)));
+
+    // 密码输入器（模型来源"模型/特殊控制台/密码输入器"，on/off 两态贴图，放置/碰撞箱同控制面板）
+    public static final RegistryObject<PasswordInputerBlock> PASSWORD_INPUTER = BLOCKS.register("password_inputer",
+            () -> new PasswordInputerBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .strength(0.5F)
+                    .sound(SoundType.STONE)));
+
+    // 核弹按钮（模型来源"模型/特殊控制台/B"6 状态，放置/碰撞箱同控制面板，钥匙推进状态并输出对应信号）
+    public static final RegistryObject<NukeButtonBlock> NUKE_BUTTON = BLOCKS.register("nuke_button",
+            () -> new NukeButtonBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .strength(0.5F)
+                    .sound(SoundType.STONE)));
+
     // 安全按钮 1
     public static final RegistryObject<SafeButtonBlock> SAFE_BUTTON_1 = BLOCKS.register("safe_button_1",
             () -> new SafeButtonBlock(BlockBehaviour.Properties.of()
                     .noCollission()
                     .strength(0.5F)
+                    .sound(SoundType.STONE)));
+
+    // 钥匙柜（模型"模型/特殊控制台/钥匙柜"，水平四向放置，无方块实体）
+    public static final RegistryObject<KeyCabinetBlock> KEY_CABINET = BLOCKS.register("key_cabinet",
+            () -> new KeyCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(1.0F)
+                    .sound(SoundType.STONE)));
+
+    // 钥匙分发控制器（六面同贴图完整方块，方块实体存储已录入的钥匙柜记录列表）
+    public static final RegistryObject<KeyDistributorBlock> KEY_DISTRIBUTOR = BLOCKS.register("key_distributor",
+            () -> new KeyDistributorBlock(BlockBehaviour.Properties.of()
+                    .strength(1.0F)
                     .sound(SoundType.STONE)));
 
     // 圆盘记录仪
