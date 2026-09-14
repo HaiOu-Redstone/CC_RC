@@ -28,5 +28,10 @@ public class ModNetwork {
                 CrackSoundPacket::encode,
                 CrackSoundPacket::decode,
                 CrackSoundPacket::handle);
+        // 编辑工具提交方块显示文字（C2S，客户端把输入框文本写入目标 ITextDisplay 方块）
+        CHANNEL.registerMessage(2, EditTextPacket.class,
+                EditTextPacket::encode,
+                EditTextPacket::decode,
+                EditTextPacket::handle);
     }
 }

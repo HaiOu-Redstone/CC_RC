@@ -1,6 +1,7 @@
 package com.cc_rc.block.console_panel;
 
 import com.cc_rc.ModBlockEntities;
+import com.cc_rc.block.ITextDisplay;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -18,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
  * 存储和管理方块上显示的文本，通过 NBT 持久化，支持网络同步
  * 支持 ticksRemaining 倒计时功能（安全按钮使用）
  */
-public class ConsolePanelBlockEntity extends BlockEntity {
+public class ConsolePanelBlockEntity extends BlockEntity implements ITextDisplay {
     private Component text = Component.empty();
     private int ticksRemaining = 0;
 

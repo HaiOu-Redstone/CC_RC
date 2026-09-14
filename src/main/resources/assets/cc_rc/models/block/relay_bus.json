@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "cc_rc:block/redstone_relay_bus_bottom",
+    "side": "cc_rc:block/redstone_relay_bus",
+    "top": "cc_rc:block/redstone_relay_bus_top"
+  }
+}

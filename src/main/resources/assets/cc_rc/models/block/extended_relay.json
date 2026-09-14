@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "cc_rc:block/redstone_relay_expansion_front",
+    "down": "cc_rc:block/redstone_relay_expansion",
+    "up": "cc_rc:block/redstone_relay_expansion",
+    "north": "cc_rc:block/redstone_relay_expansion_front",
+    "east": "cc_rc:block/redstone_relay_expansion",
+    "south": "cc_rc:block/redstone_relay_expansion",
+    "west": "cc_rc:block/redstone_relay_expansion"
+  }
+}

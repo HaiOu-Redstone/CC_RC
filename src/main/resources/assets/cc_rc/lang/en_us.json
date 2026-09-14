@@ -1,7 +1,6 @@
 {
     "itemGroup.cc_rc": "CC: Reactor Console",
     "itemGroup.cc_rc_carried": "CCRC: Carried Items",
-
     "block.cc_rc.ccrc_block": "CCRC Block",
     "block.cc_rc.console_lever_1": "Console Lever 1",
     "block.cc_rc.console_lever_2": "Console Lever 2",
@@ -38,9 +37,7 @@
     "block.cc_rc.server_faas_2": "F.A.A.S Server 2",
     "block.cc_rc.server_faas_3": "F.A.A.S Server 3",
     "cc_rc.subtitle.server_noise": "F.A.A.S server hum",
-
     "item.cc_rc.reactor_link_card": "Reactor Link Card",
-
     "item.cc_rc.frozen_tilapia": "Frozen Tilapia",
     "item.cc_rc.green_wine": "Green Wine",
     "item.cc_rc.green_wine_barrel": "Green Wine Barrel",
@@ -61,7 +58,6 @@
     "item.cc_rc.desc_crowbar": "The Holy Sword of Physics",
     "item.cc_rc.desc_crowbar_fx": "f(x)dx",
     "item.cc_rc.potato_crate": "Crate of Potatoes",
-
     "item.cc_rc.desc_digital_knob": "Use multi-tool right-click to switch display mode",
     "item.cc_rc.desc_frozen_tilapia": "The strongest weapon in the Three-Body universe (bushi)",
     "item.cc_rc.desc_green_wine": "Can you drink this? ...it's all green",
@@ -73,11 +69,9 @@
     "item.cc_rc.desc_potato_crate": "!? Server ?!",
     "item.cc_rc.desc_potato_crate_carried": "Carried from Farmer's Delight",
     "item.cc_rc.desc_carried_cfb": "Carried from Cooking for Blockheads",
-
     "block.cc_rc.fridge": "Fridge",
     "block.cc_rc.sink": "Sink",
     "container.cc_rc.fridge": "Fridge",
-
     "block.cc_rc.white_canvas_sign": "White Canvas Sign",
     "block.cc_rc.white_canvas_wall_sign": "White Canvas Wall Sign",
     "block.cc_rc.white_hanging_canvas_sign": "White Hanging Canvas Sign",
@@ -174,7 +168,6 @@
     "item.cc_rc.red_hanging_canvas_sign": "Red Hanging Canvas Sign",
     "item.cc_rc.black_canvas_sign": "Black Canvas Sign",
     "item.cc_rc.black_hanging_canvas_sign": "Black Hanging Canvas Sign",
-
     "item.cc_rc.music_disc_level5": "Music Disc",
     "item.cc_rc.music_disc_level5.desc": "LEVEL5 -judgelight- (Toaru Kagaku no Railgun)",
     "item.cc_rc.music_disc_railugun": "Music Disc",
@@ -197,7 +190,6 @@
     "item.cc_rc.music_disc_underground_river.desc": "Underground River (Made in Abyss)",
     "item.cc_rc.music_disc_hanezeve_caradhina": "Music Disc",
     "item.cc_rc.music_disc_hanezeve_caradhina.desc": "Hanezeve Caradhina (Made in Abyss)",
-
     "cc_rc.subtitle.music_level5": "Music Disc - Level5 -judgelight-",
     "cc_rc.subtitle.music_railugun": "Music Disc - Only My Railgun",
     "cc_rc.subtitle.music_never": "Music Disc - Never Gonna Give You Up",
@@ -209,7 +201,30 @@
     "cc_rc.subtitle.music_end": "Music Disc - End Song",
     "cc_rc.subtitle.music_underground_river": "Music Disc - Underground River",
     "cc_rc.subtitle.music_hanezeve_caradhina": "Music Disc - Hanezeve Caradhina",
-
+    "item.cc_rc.music_disc_bit": "Music Disc",
+    "item.cc_rc.music_disc_bit.desc": "Bit",
+    "item.cc_rc.music_disc_broken_boy": "Music Disc",
+    "item.cc_rc.music_disc_broken_boy.desc": "Broken Boy",
+    "item.cc_rc.music_disc_panic_track": "Music Disc",
+    "item.cc_rc.music_disc_panic_track.desc": "Panic Track",
+    "item.cc_rc.music_disc_resonance": "Music Disc",
+    "item.cc_rc.music_disc_resonance.desc": "Resonance",
+    "item.cc_rc.music_disc_roller_mobster": "Music Disc",
+    "item.cc_rc.music_disc_roller_mobster.desc": "Roller Mobster",
+    "item.cc_rc.music_disc_sabotage": "Music Disc",
+    "item.cc_rc.music_disc_sabotage.desc": "Sabotage",
+    "item.cc_rc.music_disc_friends_wine": "Music Disc",
+    "item.cc_rc.music_disc_friends_wine.desc": "Friends' Wine",
+    "item.cc_rc.music_disc_air": "Music Disc",
+    "item.cc_rc.music_disc_air.desc": "Tori no Uta (Air)",
+    "cc_rc.subtitle.music_bit": "Music Disc - Bit",
+    "cc_rc.subtitle.music_broken_boy": "Music Disc - Broken Boy",
+    "cc_rc.subtitle.music_panic_track": "Music Disc - Panic Track",
+    "cc_rc.subtitle.music_resonance": "Music Disc - Resonance",
+    "cc_rc.subtitle.music_roller_mobster": "Music Disc - Roller Mobster",
+    "cc_rc.subtitle.music_sabotage": "Music Disc - Sabotage",
+    "cc_rc.subtitle.music_friends_wine": "Music Disc - Friends' Wine",
+    "cc_rc.subtitle.music_air": "Music Disc - Tori no Uta",
     "message.cc_rc.digital_knob_percent": "Digital Knob Percent Mode: %s",
     "message.cc_rc.on": "On",
     "message.cc_rc.off": "Off",
@@ -217,9 +232,22 @@
     "message.cc_rc.key_distributor_no_record": "Use the Multi-Tool on a Key Cabinet first to record its position",
     "message.cc_rc.key_distributor_added": "Key Cabinet (%s, %s, %s) added to records",
     "message.cc_rc.key_distributor_duplicate": "Key Cabinet (%s, %s, %s) is already in records",
-
     "message.cc_rc.reactor_online": "Reactor is online",
     "message.cc_rc.reactor_offline": "Reactor is offline",
     "message.cc_rc.reactor_overheat": "Reactor is overheating!",
-    "message.cc_rc.reactor_stable": "Reactor is running stably"
+    "message.cc_rc.reactor_stable": "Reactor is running stably",
+    "entity.cc_rc.error_mob": "Error Mob",
+    "item.cc_rc.error_mob_spawn_egg": "Error Mob Spawn Egg",
+    "entity.cc_rc.error_mob_null": "Error Mob (null)",
+    "entity.cc_rc.error_mob_warn": "Error Mob (WARN)",
+    "item.cc_rc.error_mob_null_spawn_egg": "Error Mob (null) Spawn Egg",
+    "item.cc_rc.error_mob_warn_spawn_egg": "Error Mob (WARN) Spawn Egg",
+    "item.cc_rc.edit_tool": "Edit Tool",
+    "item.cc_rc.desc_edit_tool": "Edits text displayed on nameable blocks",
+    "entity.cc_rc.gajin": "Gajin Snail",
+    "item.cc_rc.gajin_spawn_egg": "Gajin Snail Spawn Egg",
+    "item.cc_rc.golden_eagle": "Golden Eagle",
+    "cc_rc.subtitle.gajin": "Gajin Snail squeaks",
+    "block.cc_rc.extended_relay": "Extended Redstone Relay",
+    "block.cc_rc.relay_bus": "Extended Redstone Relay Bus"
 }

@@ -39,6 +39,9 @@ public class Config
     // 密码输入器破解配置
     private static final ForgeConfigSpec.IntValue PASSWORD_CRACK_TICKS;
 
+    // 扩展红石继电器总线配置
+    private static final ForgeConfigSpec.IntValue RELAY_BUS_MAX_DISTANCE;
+
     static {
         BUILDER.push("safe_button");
 
@@ -131,6 +134,14 @@ public class Config
                 .defineInRange("crack_ticks", 400, 20, 60000);
 
         BUILDER.pop();
+
+        BUILDER.push("relay_bus");
+
+        RELAY_BUS_MAX_DISTANCE = BUILDER
+                .comment("扩展红石继电器总线沿面向方向搜索扩展红石继电器的最大距离（格），紧贴距离为 1，默认 16")
+                .defineInRange("max_distance", 16, 1, 64);
+
+        BUILDER.pop();
     }
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -176,6 +187,11 @@ public class Config
     /** 破解密码输入器所需时间（tick，默认 400 = 20 秒） */
     public static int getPasswordCrackTicks() {
         return PASSWORD_CRACK_TICKS.get();
+    }
+
+    /** 扩展红石继电器总线沿面向方向搜索继电器的最大距离（格，默认 16） */
+    public static int getRelayBusMaxDistance() {
+        return RELAY_BUS_MAX_DISTANCE.get();
     }
 
     /**

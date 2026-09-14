@@ -30,11 +30,12 @@ public class DigitalDisplayPeripheral implements IPeripheral {
 
     /**
      * 向数码显示器传入字符串，修改橙色状态文字内容。
+     * 无 mainThread：直接写 volatile 字段（0 tick），广播由主线程 tick 节流执行。
      *
      * @param text 要显示的文字
      * @return 设置后的文字
      */
-    @LuaFunction(mainThread = true)
+    @LuaFunction
     public final String setStatus(String text) {
         String value = text == null ? DigitalDisplayBlockEntity.DEFAULT_STATUS : text;
         blockEntity.setStatus(Component.literal(value));
@@ -43,10 +44,11 @@ public class DigitalDisplayPeripheral implements IPeripheral {
 
     /**
      * 读取当前显示的橙色状态文字。
+     * 无 mainThread：直接读 volatile 字段（0 tick）。
      *
      * @return 当前橙色文字内容
      */
-    @LuaFunction(mainThread = true)
+    @LuaFunction
     public final String getStatus() {
         return blockEntity.getStatus().getString();
     }

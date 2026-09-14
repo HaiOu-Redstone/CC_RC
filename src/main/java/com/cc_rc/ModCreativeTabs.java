@@ -48,7 +48,12 @@ public class ModCreativeTabs {
                         output.accept(ModItems.NAI_LONG_TOY_ITEM.get());
                         output.accept(ModItems.REDSTONE_SENDER_ITEM.get());
                         output.accept(ModItems.REDSTONE_RECEIVER_ITEM.get());
+                        // 扩展红石继电器 + 总线
+                        output.accept(ModItems.EXTENDED_RELAY_ITEM.get());
+                        output.accept(ModItems.RELAY_BUS_ITEM.get());
                         output.accept(ModItems.MULTI_TOOL.get());
+                        // 编辑工具：编辑可显示名称的方块文字
+                        output.accept(ModItems.EDIT_TOOL.get());
                         output.accept(ModItems.MUSIC_DISC_LEVEL5.get());
                         output.accept(ModItems.MUSIC_DISC_RAILUGUN.get());
                         output.accept(ModItems.MUSIC_DISC_NEVER.get());
@@ -73,6 +78,14 @@ public class ModCreativeTabs {
                         output.accept(ModItems.MUSIC_DISC_BLOOM.get());
                         output.accept(ModItems.MUSIC_DISC_JIGOKU_SHOUJO.get());
                         output.accept(ModItems.MUSIC_DISC_THE_IMITATION_GAME.get());
+                        output.accept(ModItems.MUSIC_DISC_BIT.get());
+                        output.accept(ModItems.MUSIC_DISC_BROKEN_BOY.get());
+                        output.accept(ModItems.MUSIC_DISC_PANIC_TRACK.get());
+                        output.accept(ModItems.MUSIC_DISC_RESONANCE.get());
+                        output.accept(ModItems.MUSIC_DISC_ROLLER_MOBSTER.get());
+                        output.accept(ModItems.MUSIC_DISC_SABOTAGE.get());
+                        output.accept(ModItems.MUSIC_DISC_FRIENDS_WINE.get());
+                        output.accept(ModItems.MUSIC_DISC_AIR.get());
                         output.accept(ModItems.CARD_READER_A_ITEM.get());
                         output.accept(ModItems.CARD_READER_B_ITEM.get());
                         output.accept(ModItems.CARD_READER_C_ITEM.get());
@@ -96,6 +109,13 @@ public class ModCreativeTabs {
                         output.accept(ModItems.CROWBAR.get());
                         output.accept(ModItems.SIMPLE_SPEAR.get());
                         output.accept(ModItems.CCRC_BLOCK_ITEM.get());
+                        // 错误生物刷怪蛋（error_mob + 变种 null/warn）
+                        output.accept(ModItems.ERROR_MOB_SPAWN_EGG.get());
+                        output.accept(ModItems.ERROR_MOB_NULL_SPAWN_EGG.get());
+                        output.accept(ModItems.ERROR_MOB_WARN_SPAWN_EGG.get());
+                        // 金鹰（吸引/繁殖盖金蜗牛）+ 盖金蜗牛刷怪蛋
+                        output.accept(ModItems.GOLDEN_EAGLE.get());
+                        output.accept(ModItems.GAJIN_SPAWN_EGG.get());
                         output.accept(ModItems.SERVER_FAAS_1_ITEM.get());
                         output.accept(ModItems.SERVER_FAAS_2_ITEM.get());
                         output.accept(ModItems.SERVER_FAAS_3_ITEM.get());

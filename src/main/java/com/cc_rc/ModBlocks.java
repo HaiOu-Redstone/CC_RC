@@ -25,6 +25,8 @@ import com.cc_rc.block.key_distributor.KeyDistributorBlock;
 import com.cc_rc.block.nai_long_toy.NaiLongToyBlock;
 import com.cc_rc.block.Redstone_transmit.RedstoneReceiverBlock;
 import com.cc_rc.block.Redstone_transmit.RedstoneSenderBlock;
+import com.cc_rc.block.extended_relay.ExtendedRelayBlock;
+import com.cc_rc.block.extended_relay.ExtendedRelayBusBlock;
 import com.cc_rc.block.server_faas.ServerFaasBlock;
 import com.cc_rc.block.nuke_button.NukeButtonBlock;
 import com.cc_rc.block.password_inputer.PasswordInputerBlock;
@@ -390,4 +392,20 @@ public class ModBlocks {
                             .lootFrom(hanging), woodType)));
         }
     }
+
+    // ==================== 扩展红石继电器 ====================
+
+    // 扩展红石继电器：完整方块，水平四向放置，作为总线远端的红石端口
+    public static final RegistryObject<ExtendedRelayBlock> EXTENDED_RELAY = BLOCKS.register("extended_relay",
+            () -> new ExtendedRelayBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(1.0F)
+                    .sound(SoundType.METAL)));
+
+    // 扩展红石继电器总线：完整方块，六方向放置，CC 外设宿主
+    public static final RegistryObject<ExtendedRelayBusBlock> RELAY_BUS = BLOCKS.register("relay_bus",
+            () -> new ExtendedRelayBusBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(1.0F)
+                    .sound(SoundType.METAL)));
 }

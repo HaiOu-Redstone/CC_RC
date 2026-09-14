@@ -1,5 +1,6 @@
 package com.cc_rc.block.digital_plotter;
 
+import com.cc_rc.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
@@ -9,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -47,6 +50,15 @@ public class DigitalPlotterBlock extends Block implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new DigitalPlotterBlockEntity(pos, state);
+    }
+
+    /** 注册方块实体 tick：用于 dirty 节流广播（每 tick 至多一次同步） */
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return type == ModBlockEntities.DIGITAL_PLOTTER_BE.get()
+                ? (l, p, s, be) -> DigitalPlotterBlockEntity.tick(l, p, s, (DigitalPlotterBlockEntity) be)
+                : null;
     }
 
     /**

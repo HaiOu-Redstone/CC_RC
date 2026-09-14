@@ -271,6 +271,40 @@ public class ModItems {
             () -> new RecordItem(1, ModSounds.MUSIC_THE_IMITATION_GAME.get(),
                     new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 3160));
 
+    // 新增 6 张音乐唱片（GitHub issue #1，comparatorOutput 复用 3/4/7/8/9/10）
+    public static final RegistryObject<RecordItem> MUSIC_DISC_BIT = ITEMS.register("music_disc_bit",
+            () -> new RecordItem(3, ModSounds.MUSIC_BIT.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 3187));
+
+    public static final RegistryObject<RecordItem> MUSIC_DISC_BROKEN_BOY = ITEMS.register("music_disc_broken_boy",
+            () -> new RecordItem(4, ModSounds.MUSIC_BROKEN_BOY.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 4847));
+
+    public static final RegistryObject<RecordItem> MUSIC_DISC_PANIC_TRACK = ITEMS.register("music_disc_panic_track",
+            () -> new RecordItem(7, ModSounds.MUSIC_PANIC_TRACK.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 3075));
+
+    public static final RegistryObject<RecordItem> MUSIC_DISC_RESONANCE = ITEMS.register("music_disc_resonance",
+            () -> new RecordItem(8, ModSounds.MUSIC_RESONANCE.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 4254));
+
+    public static final RegistryObject<RecordItem> MUSIC_DISC_ROLLER_MOBSTER = ITEMS.register("music_disc_roller_mobster",
+            () -> new RecordItem(9, ModSounds.MUSIC_ROLLER_MOBSTER.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 4286));
+
+    public static final RegistryObject<RecordItem> MUSIC_DISC_SABOTAGE = ITEMS.register("music_disc_sabotage",
+            () -> new RecordItem(10, ModSounds.MUSIC_SABOTAGE.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 4540));
+
+    // 新增 2 张音乐唱片（comparatorOutput 复用 11/12）
+    public static final RegistryObject<RecordItem> MUSIC_DISC_FRIENDS_WINE = ITEMS.register("music_disc_friends_wine",
+            () -> new RecordItem(11, ModSounds.MUSIC_FRIENDS_WINE.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 5145));
+
+    public static final RegistryObject<RecordItem> MUSIC_DISC_AIR = ITEMS.register("music_disc_air",
+            () -> new RecordItem(12, ModSounds.MUSIC_AIR.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 7003));
+
     // 刷卡机物品（A ~ E 共 5 种）
     public static final RegistryObject<Item> CARD_READER_A_ITEM = ITEMS.register("card_reader_a",
             () -> new BlockItem(ModBlocks.CARD_READER_A.get(), new Item.Properties()));
@@ -527,4 +561,65 @@ public class ModItems {
                             carriedDesc)));
         }
     }
+
+    // ==================== 错误生物刷怪蛋 ====================
+
+    // 错误生物（error_mob）刷怪蛋：主色红（实体贴图主色 220,40,40），
+    // 次色深灰蓝（背景 30,30,40）。实体不自然生成，只能靠本刷怪蛋或刷怪笼召唤。
+    // 使用 ForgeSpawnEggItem（接受 Supplier 惰性解析实体类型），避免在物品注册
+    // 阶段直接 get() 实体导致 "Registry Object not present" 崩溃。
+    public static final RegistryObject<Item> ERROR_MOB_SPAWN_EGG = ITEMS.register("error_mob_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(() -> ModEntities.ERROR_MOB.get(),
+                    // 主色：实体红色字样（约 0xDC2828）
+                    0xDC2828,
+                    // 次色：背景深灰蓝（约 0x1E1E28）
+                    0x1E1E28,
+                    new Item.Properties()));
+
+    // 错误生物变种（null）刷怪蛋：主色暗紫灰（NULL 贴图 140,130,180），次色深紫褐。
+    public static final RegistryObject<Item> ERROR_MOB_NULL_SPAWN_EGG = ITEMS.register("error_mob_null_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(() -> ModEntities.ERROR_MOB_NULL.get(),
+                    0x8C82B4,
+                    0x282338,
+                    new Item.Properties()));
+
+    // 错误生物变种（warn）刷怪蛋：主色琥珀黄（WARN 贴图 230,170,60），次色深棕褐。
+    public static final RegistryObject<Item> ERROR_MOB_WARN_SPAWN_EGG = ITEMS.register("error_mob_warn_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(() -> ModEntities.ERROR_MOB_WARN.get(),
+                    0xE6AA3C,
+                    0x372D14,
+                    new Item.Properties()));
+
+    // ==================== 编辑工具 ====================
+
+    // 编辑工具（edit_tool）：主手右键 ITextDisplay 方块打开文字编辑 GUI；
+    // 副手放置可显示名称的方块时自动打开编辑界面。不可堆叠。
+    public static final RegistryObject<Item> EDIT_TOOL = ITEMS.register("edit_tool",
+            () -> new com.cc_rc.item.EditToolItem(new Item.Properties()
+                    .stacksTo(1)));
+
+    // ==================== 盖金蜗牛与金鹰 ====================
+
+    // 金鹰（golden_eagle）：可堆叠 64 的普通物品；手持金鹰可吸引（TemptGoal）
+    // 与繁殖（BreedGoal）盖金蜗牛。贴图来源「模型/生物/蜗牛/金鹰.png」。
+    public static final RegistryObject<Item> GOLDEN_EAGLE = ITEMS.register("golden_eagle",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+
+    // 盖金蜗牛刷怪蛋：主色金褐（外壳贴图主色），次色深褐（蜗牛身体暗部）。
+    // 使用 ForgeSpawnEggItem + Supplier 惰性解析，避免注册阶段 get() 崩溃。
+    public static final RegistryObject<Item> GAJIN_SPAWN_EGG = ITEMS.register("gajin_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(() -> ModEntities.GAJIN.get(),
+                    0xD8B24A,
+                    0x5A3A1E,
+                    new Item.Properties()));
+
+    // ==================== 扩展红石继电器 ====================
+
+    // 扩展红石继电器方块物品
+    public static final RegistryObject<Item> EXTENDED_RELAY_ITEM = ITEMS.register("extended_relay",
+            () -> new BlockItem(ModBlocks.EXTENDED_RELAY.get(), new Item.Properties()));
+
+    // 扩展红石继电器总线方块物品
+    public static final RegistryObject<Item> RELAY_BUS_ITEM = ITEMS.register("relay_bus",
+            () -> new BlockItem(ModBlocks.RELAY_BUS.get(), new Item.Properties()));
 }

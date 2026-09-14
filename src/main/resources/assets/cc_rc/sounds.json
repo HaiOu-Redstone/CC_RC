@@ -215,6 +215,78 @@
     ],
     "subtitle": "cc_rc.subtitle.music_the_imitation_game"
   },
+  "music_bit": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/bit",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_bit"
+  },
+  "music_broken_boy": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/broken_boy",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_broken_boy"
+  },
+  "music_panic_track": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/panic_track",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_panic_track"
+  },
+  "music_resonance": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/resonance",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_resonance"
+  },
+  "music_roller_mobster": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/roller_mobster",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_roller_mobster"
+  },
+  "music_sabotage": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/sabotage",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_sabotage"
+  },
+  "music_friends_wine": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/friends_wine",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_friends_wine"
+  },
+  "music_air": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/air",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_air"
+  },
   "nai_long": {
     "sounds": [
       {
@@ -237,5 +309,13 @@
         "name": "cc_rc:password_crack"
       }
     ]
+  },
+  "gajin": {
+    "sounds": [
+      {
+        "name": "cc_rc:gajin"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.gajin"
   }
 }

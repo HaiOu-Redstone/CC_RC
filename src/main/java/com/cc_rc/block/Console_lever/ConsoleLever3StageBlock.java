@@ -105,8 +105,11 @@ public class ConsoleLever3StageBlock extends LeverBlock implements EntityBlock {
 
     @Override
     public int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-        // 强信号只向"连接方向"输出（与 LeverBlock 一致），防止向四周泄漏
-        return state.getValue(STAGE) > 0 && getConnectedDirection(state) == direction ? 15 : 0;
+        // 强信号只向"连接方向"输出（与 LeverBlock 一致），防止向四周泄漏；
+        // 强度按档位输出（二档 8 / 三档 15），与 getSignal 保持一致。
+        return getSignal(state, level, pos, direction) > 0
+                && getConnectedDirection(state) == direction
+                ? getSignal(state, level, pos, direction) : 0;
     }
 
     /**

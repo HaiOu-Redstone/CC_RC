@@ -47,13 +47,20 @@
 | 35 | 物品 | 撬棍 crowbar（SwordItem 自带横扫，修改器伤害+19 实际总伤害20 攻速慢 暴击2.0x 耐久1024 铁砧打击音效，浅蓝粗体"物理学圣剑"+深蓝"f(x)dx"） | [二、17 撬棍](#17-撬棍crowbar) |
 | 36 | 红石 | 红石信号发射器 redstone_sender（六方向，收到信号沿面向方向2~配置距离无线传输给接收器，on/off 贴图）+ 接收器 redstone_receiver（无方向，向相邻方块输出信号强度） | [二、18 红石信号发射器与接收器](#18-红石信号发射器与接收器redstone_sender--redstone_receiver) |
 | 37 | 装饰/音效 | F.A.A.S服务器 server_faas_1/2/3（水平四方向放置朝向玩家，贴近持续播放 server_noise 环境音效，三种变体共用方块类） | [二、19 F.A.A.S服务器](#19-faas服务器server_faas) |
-| 38 | 物品 | 说明书1 instruction_book_1（原版成书 WrittenBookItem 机制，右键打开书籍界面，固定内容：目录 + 控制面板类/圆盘记录仪/断路器/刷卡机/红石信号收发） | [二、20 说明书1](#20-说明书1instruction_book_1) |
-| 39 | 物品/CC | 说明书2 instruction_book_2（原版成书机制，记录 CC 配件外设使用法：数码显示器/数字调节器/数字圆盘记录仪的每个 Lua 函数及参数类型） | [二、21 说明书2](#21-说明书2instruction_book_2) |
+| 38 | 物品 | 说明书1 instruction_book_1（原版成书 WrittenBookItem 机制，右键打开书籍界面，固定内容：目录 + 控制面板类/编辑工具/圆盘记录仪/断路器/刷卡机/红石信号收发） | [二、20 说明书1](#20-说明书1instruction_book_1) |
+| 39 | 物品/CC | 说明书2 instruction_book_2（原版成书机制，记录 CC 配件外设使用法：数码显示器/数字调节器/数字圆盘记录仪/扩展红石继电器与总线的每个 Lua 函数及参数类型） | [二、21 说明书2](#21-说明书2instruction_book_2) |
 | 40 | 物品/武器 | 简易长矛 simple_spear（SwordItem 自带横扫，耐久130 修改器伤害+129 总伤害130 +13攻击范围 ForgeMod.ENTITY_REACH，文字颜色类似附魔金苹果 Rarity.EPIC+附魔微光，手持模型2倍大且y前移3.2，紫色描述"魔女们的秘密武器"） | [二、22 简易长矛](#22-简易长矛simple_spear) |
-| 41 | 指令 | /ccrc set_count <设备种类> <数字>（仅允许设置 ids.json 已记录类型，写文件+反射同步内存）+ get_count（查询）+ list（仅查看 ids.json 内容，不扫描世界）；get_count/set_count 带类型自动补全 | [二、23 /ccrc 指令](#23-ccrc-指令ccrccommand) |
+| 41 | 指令 | /ccrc peripheral set_count <设备种类> <数字>（仅允许设置 ids.json 已记录类型，写文件+反射同步内存）+ get_count（查询）+ list（仅查看 ids.json 内容，不扫描世界）；get_count/set_count 带类型自动补全；旧顶层别名已删除 | [二、23 /ccrc 指令](#23-ccrc-指令ccrccommand) |
 | 42 | 红石/物品 | 密码输入器 password_inputer（放置/碰撞箱同控制面板，on/off 两态，破解成功向后方强充能15，1秒后自动关）+ 破解器 password_cracker（手持右键开始破解，20秒可配置，离开5格/切快捷栏即中断重置） | [二、24 密码输入器与破解器](#24-密码输入器与破解器passwordinputerblock--passwordcrackmanager) |
 | 43 | 红石/物品 | 核弹按钮 nuke_button（放置/碰撞箱同控制面板，6 状态输出 0/5/7/10/10/15，钥匙推进状态）+ 核弹发射钥匙 1/2 key_1/key_2（右键消耗推进状态） | [二、25 核弹按钮与钥匙](#25-核弹按钮与钥匙nukebuttonblock) |
 | 44 | 红石/物品 | 钥匙柜 key_cabinet（水平四向放置，多功能工具右键记录坐标朝向）+ 钥匙分发控制器 key_distributor（六面 key_sender 贴图，方块实体存记录；≤5 信号校验删除失效记录、>5 随机分发钥匙1/2 高亮不消失掉落物） | [二、26 钥匙柜与钥匙分发控制器](#26-钥匙柜与钥匙分发控制器keycabinetblock--keydistributorblock) |
+| 45 | 生物/物品 | 错误生物 error_mob（由 QQ 发送的 error.obj 立体化生成的敌对生物实体，仿蠹虫寻路/攻击，无方块交互，不自然生成）+ 刷怪蛋 error_mob_spawn_egg + 变种 error_mob_null/error_mob_warn（null.zip/WARN.zip，仅模型贴图不同）+ 各自刷怪蛋 | [二、27 错误生物](#27-错误生物error_mob) |
+| 46 | 物品/GUI | 编辑工具 edit_tool（主手右键可显示名称方块打开文字编辑 GUI；副手放置自动打开编辑界面）+ 统一接口 ITextDisplay | [二、28 编辑工具](#28-编辑工具edit_tool) |
+| 47 | 红石/CC外设 | 扩展红石继电器 extended_relay（总线远端红石端口）+ 扩展红石继电器总线 relay_bus（CC 外设 redstone_relay_bus，沿朝向距离搜索继电器读写信号） | [二、29 扩展红石继电器与总线](#29-扩展红石继电器与总线extendedrelayblock--relaybusblock) |
+| 48 | 生物/物品 | 盖金蜗牛 gajin（AI 参考原版猪无乘骑机制，金鹰作为食物吸引/繁殖，右键播放 gajin 音效，平常无叫声）+ 刷怪蛋 gajin_spawn_egg + 金鹰 golden_eagle（堆叠 64，蜗牛食物） | [二、30 盖金蜗牛与金鹰](#30-盖金蜗牛与金鹰gajinsnail--golden_eagle) |
+| 49 | 物品/音乐 | 唱片音乐 6 张（GitHub issue #1：bit / broken_boy / panic_track / resonance / roller_mobster / sabotage，VLC mono OGG + RecordItem 注册 + 双语 lang） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
+| 50 | CC 外设 | CC 外设无延迟改造（风险最小方案）：knob/display/plotter volatile+dirty+tick 节流广播，relay_bus RelayState 双缓存 + 总线缓存 + Lua 零 Level 访问，修复 Inputs 落盘 | [二、32 CC 外设无延迟改造](#32-cc-外设无延迟改造风险最小方案实施) |
+| 51 | 物品/音乐 | 唱片音乐 2 张（friends_wine 朋友的酒 / air 鸟之诗，mp4 源文件经 ffmpeg 提取音频转 mono OGG + RecordItem 注册 + 双语 lang） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
 
 ---
 
@@ -85,7 +92,7 @@ public class CcRc {
 }
 ```
 
-客户端在 [CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java#L88-L107) 的 `ClientModEvents` 中注册 9 个方块实体渲染器（BER）与 1 个实体渲染器（`bao_zi` 复用原版 `ThrownItemRenderer`）。
+客户端在 [CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java#L88-L107) 的 `ClientModEvents` 中注册 9 个方块实体渲染器（BER）与 2 个实体渲染器（`bao_zi` 复用原版 `ThrownItemRenderer`；`error_mob` 使用自定义 `ErrorMobRenderer` + 模型层 `error_mob`）。
 
 **方块注册示例（[ModBlocks.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModBlocks.java)）：**
 
@@ -296,13 +303,16 @@ public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Directio
     };
 }
 
-// 直接输出：挡位 > 0 时在连接方向输出 15（与按钮相同模式）
+// 直接输出（强充能）：与 getSignal 同强度，仅在连接方向输出（防止向四周泄漏）
 @Override
 public int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-    return state.getValue(STAGE) > 0
-            && getConnectedDirection(state) == direction ? 15 : 0;
+    return getSignal(state, level, pos, direction) > 0
+            && getConnectedDirection(state) == direction
+            ? getSignal(state, level, pos, direction) : 0;
 }
 ```
+
+> **修复记录（v0.0.8）3挡位拉杆强充能信号恒为 15**：初版 `getDirectSignal` 按"挡位 > 0 → 15"写死，二档（8）对后方强充能时错误输出 15（相邻方块弱信号正常）；改为调用 `getSignal` 按挡位输出（二档 8 / 三档 15），与按钮/刷卡机"强充能同值"模式一致。
 
 挡位切换时需 `onRemove` 更新新旧位置邻居，保证输出实时刷新。
 
@@ -776,7 +786,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 [ServerFaasBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/server_faas/ServerFaasBlock.java) 是三种变体共用的装饰方块类（`server_faas_1/2/3`），模型来源"模型/FAAS/FAAS新"（Blockbench Bedrock 版转为 Java block 模型，含 22.5°/45° 旋转节点，UV 顶/底面已翻转适配），贴图 `textures/block/server_faas/faas_1~3.png`：
 
 - **放置**：继承 `HorizontalDirectionalBlock`，水平四方向（N/S/E/W）放置，`getStateForPlacement` 用 `context.getHorizontalDirection()`（**面向玩家**，未加 `getOpposite()`），与奶龙玩偶一致。
-- **音效**：靠近时持续循环播放 `server_noise`。播放逻辑由客户端监听器 [ServerFaasSoundHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ServerFaasSoundHandler.java)（Dist.CLIENT）负责——每 20 tick 扫描玩家周围 16 格内的 FAAS 方块，为每个方块创建 `loop=true` 的 `AbstractTickableSoundInstance`（`FaasLoopingSound`）并交给 SoundManager 无缝循环播放；玩家远离/方块被破坏/离开世界时停止并移除实例。声音文件 `sounds/server_noise.ogg`。音效归类 `SoundSource.BLOCKS`（受游戏设置「音效/方块」滑块控制音量，非主音量）；**距离衰减完全手动控制**：音效标记 `relative=true` 并关闭引擎衰减，由管理器每 tick 调用 `updateVolume()` 按玩家与音源距离计算线性音量（16 格内 100%→0%，带 lerp 平滑），扫描停止距离 20 格（16 格衰减 + 4 格裕量防边界抖动）。
+- **音效**：靠近时持续循环播放 `server_noise`。播放逻辑由客户端监听器 [ServerFaasSoundHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ServerFaasSoundHandler.java)（Dist.CLIENT）负责——每 20 tick 扫描玩家周围 16 格内的 FAAS 方块，为每个方块创建 `loop=true` 的 `AbstractTickableSoundInstance`（`FaasLoopingSound`）并交给 SoundManager 无缝循环播放；玩家远离/方块被破坏/离开世界时停止并移除实例。声音文件 `sounds/server_noise.ogg`（当前为约 20 秒长循环环境音 `server_loop_10_whisper.ogg`，loop=true 无缝循环，时长不影响听感）。音效归类 `SoundSource.BLOCKS`（受游戏设置「音效/方块」滑块控制音量，非主音量）；**距离衰减完全手动控制**：音效标记 `relative=true` 并关闭引擎衰减，由管理器每 tick 调用 `updateVolume()` 按玩家与音源距离计算线性音量（16 格内 100%→0%，带 lerp 平滑），扫描停止距离 20 格（16 格衰减 + 4 格裕量防边界抖动）。
   - > **修复记录（原音效断续/重叠）**：最初在 `animateTick` 中按概率（`random.nextFloat() < 0.2F`）`playLocalSound` 播放，仿原版营火/火把逻辑——但概率触发导致音效时有时无，且音效较长时会多次触发互相重叠。已改用上述"循环音效实例 + 距离开关"，移除 `animateTick` 覆写与随机播放。
   - > **修复记录（SoundEngine 循环音效不衰减）**：委托 SoundEngine 的 `Attenuation.LINEAR` 实测仍无衰减——循环音效（looping）的音量在 SoundEngine 中**不随玩家移动刷新**（只在低频 tick/播放时按初始距离设定一次）。已改为 `relative=true` + `attenuation=NONE` 关闭引擎衰减，由 `ServerFaasSoundHandler` 每 tick 调用 `updateVolume()` 按玩家与方块距离手动计算线性音量（16 格内 100%→0%，带 lerp 平滑过渡），衰减必定随距离生效；同时把清理实例的停止距离从 24 格收敛到 20 格。`getSource()` 显式返回 `SoundSource.BLOCKS` 保证「音效/方块」滑块可调节音量。
   - > **修复记录（模型替换）**：FAAS 模型由"模型/FAAS"旧版替换为"模型/FAAS/FAAS新"（faas_1/2/3 三组 Blockbench 导出），重新转换生成 `models/block/server_faas/faas_1~3.json`（55/52/49 元素）并更新贴图，blockstate 与 item 模型引用不变。
@@ -789,7 +799,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 - **机制**：继承原版成书类；**右键打开书籍界面的逻辑已移交给客户端事件监听器 [InstructionBookClientHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/InstructionBookClientHandler.java)**（`Dist.CLIENT` 注册，监听 `PlayerInteractEvent.RightClickItem`，仅处理 `LogicalSide.CLIENT` 侧，直接 `Minecraft.setScreen(new BookViewScreen(...))` 打开）；贴图使用 `textures/item/instruction_book_1.png`（来源"模型/其他物品/instruction_book_1.png"），模型 `models/item/instruction_book_1.json`（`item/generated` + layer0）。
 - **内容注入**：`createBook()` 方法构造带完整成书 NBT 的 ItemStack——`title="说明书1"`、`author="海鸥的红石"`、`resolved=true`、`generation=0`、`pages`（每页为 `Component.Serializer.toJson(Component.literal(...))` 生成的 JSON 文本组件字符串，支持 `\n` 换行）。创造标签 `output.accept(ModItems.INSTRUCTION_BOOK_1.get().createBook())` 发放带内容的书本。
-- **页面结构**（共 7 页）：封面 → 目录 → 控制面板类 → 圆盘记录仪 → 断路器 → 刷卡机 → 红石信号发射/接收器。
+- **页面结构**（共 8 页）：封面 → 目录 → 控制面板类 → 编辑工具（控制面板类续）→ 圆盘记录仪 → 断路器 → 刷卡机 → 红石信号发射/接收器。
 - **注册**：`ModItems.INSTRUCTION_BOOK_1`（`instruction_book_1`，堆叠 1）；lang 中英"说明书1 / Instruction Book 1"。
   - > **修复记录（右键无法打开）**：原版打开成书的链路为「服务端 `ServerPlayer.openItemGui` 发送 `ClientboundOpenBookPacket` → 客户端 `ClientPacketListener.handleOpenBook` 打开界面」，两处均用 `itemstack.is(Items.WRITTEN_BOOK)` **精确匹配原版成书物品**，自定义 WrittenBookItem 子类永远无法触发。已改为由客户端事件监听器 `InstructionBookClientHandler`（`Dist.CLIENT`）在右键物品时直接 `Minecraft.setScreen` 打开 `BookViewScreen`。
   - > **修复记录（服务端 ClassNotFoundException 崩溃）**：最初把 `Minecraft.getInstance().setScreen(new BookViewScreen(...))` 直接写在 `use()` 方法内，导致专用服务器（Mohist forgeserver）加载物品类时因引用客户端类 `net.minecraft.client.gui.screens.inventory.BookViewScreen` 而 `ClassNotFoundException` 崩溃（`ModItems` 注册阶段即失败）。已改为：`use()` 中**不再引用任何 `net.minecraft.client.*` 类**（只返回 `sidedSuccess`），打开界面的逻辑全部移入 `Dist.CLIENT` 的 `InstructionBookClientHandler` 事件监听，服务端不加载该客户端类。
@@ -799,10 +809,11 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 [InstructionBook2Item.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/InstructionBook2Item.java) 与说明书1同机制（继承 `WrittenBookItem`、覆写 `use()` 客户端打开 `BookViewScreen`），记录 **CC: Tweaked 配件外设的使用方法**：
 
-- **页面结构**（共 9 页）：封面 → 目录 → 数码显示器（2 页）→ 数字调节器（2 页）→ 数字圆盘记录仪（3 页）。内容与三个外设类 [DigitalDisplayPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_display/DigitalDisplayPeripheral.java)、[DigitalKnobPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_knob/DigitalKnobPeripheral.java)、[DigitalPlotterPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_plotter/DigitalPlotterPeripheral.java) 中的 `@LuaFunction` 一一对应，精确记录每个函数名、参数类型与返回值：
+- **页面结构**（共 12 页）：封面 → 目录 → 数码显示器（2 页）→ 数字调节器（2 页）→ 数字圆盘记录仪（3 页）→ 扩展红石继电器/总线（3 页）。内容与四个外设类 [DigitalDisplayPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_display/DigitalDisplayPeripheral.java)、[DigitalKnobPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_knob/DigitalKnobPeripheral.java)、[DigitalPlotterPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_plotter/DigitalPlotterPeripheral.java)、[ExtendedRelayBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBusPeripheral.java) 中的 `@LuaFunction` 一一对应，精确记录每个函数名、参数类型与返回值：
   - **数码显示器** `digital_display`：`setStatus(text: string) -> string`（设置橙色状态文字）、`getStatus() -> string`（读取当前文字）。
   - **数字调节器** `digital_knob`：`setValue(value: int) -> int`（设置整数 0~1000，越界钳制，返回钳制后值）、`getValue() -> int`（读取当前值）。
   - **数字圆盘记录仪** `digital_plotter`：`push(value: int) -> int`（写入新值并移位，0~100 钳制）、`setValue(index: int, value: int) -> boolean`（设置第 index 位，索引越界返回 false）、`getValue(index: int) -> int | nil`（读取第 index 位，越界返回 nil）、`getList() -> table`（读取整表 50 元素）。索引采用 Lua 惯例 1~50。
+  - **扩展红石继电器/总线** `redstone_relay_bus`：`isRelay(distance) -> boolean`（判断该处是否为继电器）、`setOutput(distance, side, on)`（布尔输出 15/0）、`getOutput(distance, side) -> boolean`、`setAnalogOutput(distance, side, value)`（模拟输出 0~15 越界报错）、`getAnalogOutput(distance, side) -> int`、`getInput(distance, side) -> boolean`、`getAnalogInput(distance, side) -> int`。distance 紧贴=1，最大 `relay_bus.max_distance`（默认 16，范围 1~64）；side 以**继电器自身朝向**为基准（top/bottom/left/right/front/back）。
 - **内容注入**：`createBook()` 写入 `title="说明书2"`、`author="海鸥的红石"`、`resolved=true`、`generation=0`、`pages`。
 - **注册**：`ModItems.INSTRUCTION_BOOK_2`（`instruction_book_2`，堆叠 1）；贴图 `textures/item/instruction_book_2.png`（来源"模型/其他物品/instruction_book_2.png"），模型 `models/item/instruction_book_2.json`；lang 中英"说明书2 / Instruction Book 2"；创造标签发放 `createBook()`。
 
@@ -821,15 +832,17 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 [CcrcCommand.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/command/CcrcCommand.java) 注册 `/ccrc` 根指令，用于查看/强制修改 CC: Tweaked 外设编号计数（配合《说明书》中"monitor_0"式命名机制的运维）：
 
-- **`/ccrc get_count <设备种类名称>`**：查询该种类当前计数值（无权限要求）。
-  - 优先读内存（反射 `ServerContext.idAssigner` 的私有 `ids` Map，已初始化时），否则读文件。
-  - 未记录过该种类时显示 0，并提示"下一个新外设将从 0 开始"。
-- **`/ccrc set_count <设备种类名称> <数字>`**：强制把该种类计数值改为指定值（需 OP 权限 2 级）。
-  - **双写保证一致**：① 直接写 CC 计数文件 `<存档>/computercraft/ids.json`（`ServerContext.storageDir()` 定位，Gson 格式 `{"类型": 最大编号}`）；② 反射同步内存 `IDAssigner.ids`（否则 `getNextId` 会按内存旧值继续分配并覆盖文件）。
-  - **存在性校验**：仅允许设置 `ids.json` 中已记录的类型（= 曾被有线调制解调器连接/分配过编号）；设置不存在或从未连接过的类型会拒绝执行并提示"可用 /ccrc list 查看已记录的类型"。
-  - 提示"下一个该种类新外设将从 <值> 继续递增分配"。
+- **设备数量相关指令统一归在 `/ccrc peripheral` 分支下**（读取/处理 CC: Tweaked 设备数量）：
+  - **`/ccrc peripheral get_count <设备种类名称>`**：查询该种类当前计数值（无权限要求）。
+    - 优先读内存（反射 `ServerContext.idAssigner` 的私有 `ids` Map，已初始化时），否则读文件。
+    - 未记录过该种类时显示 0，并提示"下一个新外设将从 0 开始"。
+  - **`/ccrc peripheral set_count <设备种类名称> <数字>`**：强制把该种类计数值改为指定值（需 OP 权限 2 级）。
+    - **双写保证一致**：① 直接写 CC 计数文件 `<存档>/computercraft/ids.json`（`ServerContext.storageDir()` 定位，Gson 格式 `{"类型": 最大编号}`）；② 反射同步内存 `IDAssigner.ids`（否则 `getNextId` 会按内存旧值继续分配并覆盖文件）。
+    - **存在性校验**：仅允许设置 `ids.json` 中已记录的类型（= 曾被有线调制解调器连接/分配过编号）；设置不存在或从未连接过的类型会拒绝执行并提示"可用 /ccrc peripheral list 查看已记录的类型"。
+    - 提示"下一个该种类新外设将从 <值> 继续递增分配"。
+  - **`/ccrc peripheral list`（OP 权限 2 级）**：**仅查看 CC 计数文件 `ids.json` 的内容**（每行 `类型 → 编号`），不做世界扫描，便于与补全候选对照。
 - **自动补全（get_count/set_count）**：`设备种类名称` 参数注册 Brigadier `.suggests()` 建议提供器，候选 = `ids.json` 中已记录的全部类型（下拉菜单，类似原版 `/setblock` 列出方块）。
-- **`/ccrc list`（OP 权限 2 级）**：**仅查看 CC 计数文件 `ids.json` 的内容**（每行 `类型 → 编号`），不做世界扫描，便于与补全候选对照。
+- **已删除旧顶层别名**（`/ccrc get_count / set_count / list`）——设备数量相关指令仅保留 `/ccrc peripheral` 分支，避免指令重名/歧义。
 - **实现要点**：`RegisterCommandsEvent`（FORGE 总线）注册；参数用 Brigadier `StringArgumentType.word()` + `IntegerArgumentType.integer(0)`；`sendSuccess(Supplier<Component>, boolean)` 形式反馈中文消息。
 
 ---
@@ -872,13 +885,145 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 - **记录录入**（[MultiToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/MultiToolItem.java) `useOn`）：多功能工具右键钥匙柜 → 坐标 + 朝向写入工具 NBT（`KC_X/Y/Z/KC_Facing`）并提示；再右键控制器 → 把记录录入 BE（重复坐标不添加）。也支持指令 `/ccrc keycabinet`（玩家须站在控制器上方）：`list` 查看 / `add <x> <y> <z>`（校验该处是钥匙柜，facing 自动读取）/ `remove <x> <y> <z>`。
 - **红石逻辑**（方块 `tick` 心跳持续自调度 + BE `lastSignal` 上升沿检测，仅服务端）：信号 ≤5 → 每 tick 遍历记录，位置不再是钥匙柜则删除该条；信号从 ≤5 跳变到 >5 → **只分发一次**（记录 ≥2 时随机取两条不同记录，在各自钥匙柜**格内柜门侧**（格中心向柜门方向 [FACING 方向本身，新模型柜门朝外一侧] 偏移 0.3 格）生成**钥匙1 / 钥匙2** 掉落物（`setDeltaMovement(0,0,0)` 无初速度静止，`setGlowingTag(true)` 高亮描边 + `lifespan = Integer.MAX_VALUE` 永不自然消失，1.20.1 无 setLifespan 方法故直接改公开字段））。修复：初版用 `neighborChanged` 直接分发，一次红石脉冲会多次触发生成多把钥匙 → 改为上升沿检测，一个脉冲只出一把钥匙1 + 一把钥匙2。
 
+### 27. 错误生物（ErrorMob）
+
+错误生物是本模组**第一个生物实体**（非弹射物），由用户通过 QQ 发送的模型「模型/错误生物/error.obj」（扁平 "ERROR" 字样、5 个部件 object_1~5、32x32 贴图）立体化生成：
+
+- **模型立体化**（[ErrorMobModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/ErrorMobModel.java)）：原模型 z 厚度仅 0.05 方块（平贴字牌），转换时加厚为 0.35 方块（约 5.6 像素）成为立体字块；5 个字母（E/R/R/O/R）横向排列，模型以脚底中心为原点、整体宽约 2.1 方块、高约 1.04 方块。贴图 `textures/entity/error_mob.png`（64x32，深灰半透明底 + 红色 ERROR 字样，由脚本生成）。
+- **实体**（[ErrorMob.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/ErrorMob.java)）：继承原版 `Monster`（敌对）。**AI 完全复制原版蠹虫（Silverfish）的寻路与攻击逻辑**，但不含任何方块交互（无虫蚀方块、无藏匿/钻出、无受击召唤同伴）：
+  - `FloatGoal`（游泳防溺水）→ `MeleeAttackGoal(this, 1.0D, false)`（近战，攻击伤害 3）→ `WaterAvoidingRandomStrollGoal(this, 1.0D)`（绕水随机游走）→ `LookAtPlayerGoal(this, Player.class, 8.0F)`（注视玩家）→ `RandomLookAroundGoal(this)`（随机环视）→ `HurtByTargetGoal(this)`（受击反击）→ `NearestAttackableTargetGoal<>(this, Player.class, true)`（主动索敌玩家）。
+  - 属性：最大生命 8、移动速度 0.25、攻击伤害 3.0（与蠹虫一致）。
+  - **不注册 SpawnPlacements** → 不会在世界中自然生成；只能通过刷怪蛋或原版刷怪笼（`MobCategory.MONSTER` 自动支持）召唤。
+- **注册**（[ModEntities.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModEntities.java)）：`EntityType.Builder.of(ErrorMob::new, MobCategory.MONSTER).sized(0.6F, 1.5F).clientTrackingRange(8).updateInterval(3)`；实体属性在 [CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 的 `EntityAttributeCreationEvent` 中注册。
+- **刷怪蛋**（[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java)）：`error_mob_spawn_egg`（主色红 0xDC2828 / 次色深灰蓝 0x1E1E28，贴图 `textures/item/error_mob_spawn_egg.png` 双色点纹），加入主创造标签。
+  - **使用 `ForgeSpawnEggItem`**（`net.minecraftforge.common.ForgeSpawnEggItem`，接受 `Supplier<EntityType>` 惰性解析实体类型）：避免在物品注册阶段直接 `ModEntities.ERROR_MOB.get()` 导致 `Registry Object not present` 崩溃。
+  - **注册顺序**：[CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 构造函数中 `ModEntities.ENTITY_TYPES.register` 必须排在 `ModItems.ITEMS.register` **之前**（实体先于依赖它的物品注册）。
+  - 曾因初版直接 `new SpawnEggItem(ModEntities.ERROR_MOB.get(), ...)` + 物品先于实体注册，客户端启动时在 `common_setup` 阶段抛 `NullPointerException: Registry Object not present: cc_rc:error_mob` 崩溃（见 `run/crash-reports/crash-2026-09-10_19.20.03-client.txt`），已按上述两点修复。
+- **渲染**（[ErrorMobRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/ErrorMobRenderer.java)）：客户端注册实体渲染器 + 模型层定义（`EntityRenderersEvent.RegisterRenderers` / `RegisterLayerDefinitions`），模型层 `error_mob`；渲染时缩放 0.45 使字牌宽度与碰撞箱相称。
+
+**变种（null / warn）**：用户追加两个模型「模型/错误生物/null.zip」「模型/错误生物/WARN.zip」（同为扁平字牌 OBJ），注册为独立实体 `error_mob_null` / `error_mob_warn`：
+- **模型**：[ErrorMobNullModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/ErrorMobNullModel.java)（"null" 字样，4 部件，宽约 0.8 方块）、[ErrorMobWarnModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/ErrorMobWarnModel.java)（"WARN" 字样，4 部件，宽约 2.0 方块），沿用立体化转换（z 厚 0.05→0.35 方块）；贴图 `textures/entity/error_mob_null.png`（暗紫灰 NULL）、`error_mob_warn.png`（琥珀黄 WARN）
+- **共用基类**：[ErrorMobModelBase.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/ErrorMobModelBase.java)——三个模型类共用（root 持有 + setupAnim 按 yaw 转身）
+- **实体/渲染**：`ModEntities.ERROR_MOB_NULL/WARN`（共用 `ErrorMob` 类与属性，碰撞箱 0.6×0.6 / 0.6×1.2）；`ErrorMobRenderer` 重构为按变种注入模型工厂/贴图/缩放（NULL 0.75 / WARN 0.45）；三个模型层均在 `RegisterLayerDefinitions` 注册
+- **刷怪蛋**：`error_mob_null_spawn_egg`（0x8C82B4/0x282338）、`error_mob_warn_spawn_egg`（0xE6AA3C/0x372D14），均用 `ForgeSpawnEggItem`，加入主创造标签；行为与主变种一致（仿蠹虫、不自然生成）
+- **【修复】贴图文字错位**（2026-09-14）：用户反馈三个模型正面贴图文字位置不对（y 方向正确），贴图上文字左下角像素 x=2/15/28/41/54、y=18（error_mob.png）；null/warn 贴图为 x=8/21/34/47。根因：三模型的字母方块均使用默认 `texOffs(0,0)`，而 vanilla 盒自动 UV 中正面（+z/SOUTH 面）采样区为 `U∈[u+sz+sx+sz, u+sz+sx+sz+sx]`、`V∈[v+sz, v+sz+sy]`（经反汇编 `ModelPart$Cube` 构造器字节码确认），所有方块正面都采样纹理同一角落区域（x≈15~22），贴图上的字母从未被采样。修复：按公式 `u = 字母x − sz − sx − sz` 给每个字母方块单独设置 texOffs（ERROR 5 块 u=-14/-1/12/22/38、v=0；NULL 4 块 u=-4/9/19/32、v=6/6/7/7；WARN 4 块 u=-10/5/16/26、v=5）；NULL/WARN 方块高度（4.68/6.55/7.95px）小于字母纵向带，v 取 `12 − sz − (sy−6)/2` 使 7px 字母行在采样窗内居中。负 texOffs 合法（BlockBench 惯例，超界采样为透明）；texOffs 为 int，取整误差约 0.5px。三模型已加中文注释说明根因与计算方式；gradlew build BUILD SUCCESSFUL。
+
+### 28. 编辑工具（EditTool）
+
+编辑工具（`edit_tool`，模型「模型/其他物品/edit_tool.png」）用于修改「可显示名称的方块」表面文字——即所有放置时会从物品自定义名称写入文字、并渲染到方块表面的方块实体：
+
+- **统一接口**（[ITextDisplay.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/ITextDisplay.java)）：定义 `setText(Component)` / `getText()`，让编辑工具统一识别可编辑方块，避免逐个 instanceof。已实现于：
+  - `ConsolePanelBlockEntity`（基类——其子类 `ConsoleLever*BlockEntity`、`PlotterBlockEntity` 等自动继承）
+  - `DigitalDisplayBlockEntity`、`DigitalKnobBlockEntity`、`DigitalPlotterBlockEntity`
+- **物品**（[EditToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/EditToolItem.java)，`stacksTo(1)`）：
+  - **主手右键** ITextDisplay 方块 → `NetworkHooks.openScreen` 打开编辑菜单（MenuProvider 携带方块坐标 + 当前文字，经 IForgeMenuType 同步给客户端）；
+  - **副手放置**可显示名称方块时 → `BlockEvent.EntityPlaceEvent` 检测放置者是玩家且副手持编辑工具、新方块是 ITextDisplay → 延迟 1 tick（`TickTask`）自动打开编辑界面（确保 setPlacedBy 已把名称写入 BE）。
+- **GUI**：
+  - 菜单 [EditTextMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/EditTextMenu.java)：无物品槽位的纯文本菜单（携带方块坐标 + 当前文字；`quickMoveStack` 返回空栈），注册于 `ModMenuTypes.EDIT_TEXT`（`IForgeMenuType` 构造从同步数据读坐标与文字）；
+  - 屏幕 [EditTextScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/EditTextScreen.java)：**自定义 GUI 背景** `textures/gui/edit_tool_gui.png`（256x256 画布，来源「模型/其他物品/edit_tool_gui.png」），**布局保持原版铁砧原位规格**（imageWidth=176 / imageHeight=166，背景取画布左上 176x166 区域，控件坐标不移动：输入框 12,34 宽 152、完成按钮 12,68）。
+    - **自定义标签渲染**（覆写 `renderLabels`）：只画界面标题（"编辑文字"）于左上角原位，**不调用 super.renderLabels 避免出现"物品栏"字样**（无物品槽位界面不需要玩家物品栏标题）；原文字"当前：xxx"显示在标题右侧同行。
+    - **修复**：覆写 `keyPressed` 拦截背包键（E）——编辑工具界面为纯输入界面，按 E 不应触发原版背包键的关闭行为（`keyInventory.matches` 拦截），仅 Esc 可关闭。
+- **网络**（[EditTextPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/EditTextPacket.java)，C2S，通道 index 2）：客户端提交方块坐标 + 文本 → 服务端权威校验（BE 为 ITextDisplay + 玩家距离 ≤ 8 格）→ `setText(Component)`（去换行 + trim，空文本 = 清除显示）。
+- **注册**：`ModItems.EDIT_TOOL`、`ModMenuTypes.EDIT_TEXT`（CcRc 注册 MENU_TYPES + 客户端 `MenuScreens.register`）、物品模型 `item/generated` + 贴图 `textures/item/edit_tool.png`、lang 中英文（含悬停描述）、主创造标签。
+
+### 29. 扩展红石继电器与总线（ExtendedRelayBlock / RelayBusBlock）
+
+两个配套方块：**扩展红石继电器**（远端红石端口）与**扩展红石继电器总线**（CC 外设宿主），实现"总线沿自身朝向在任意距离遥控继电器"的无线红石：
+
+- **扩展红石继电器** `extended_relay`（[ExtendedRelayBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBlock.java) + [ExtendedRelayBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBlockEntity.java)）：
+  - 完整方块，水平四向放置（front 贴图朝放置方向）；方块实体存 **outputs[6]**（对外输出强度 0~15）与 **inputs[6]**（从世界读入信号），索引 = CC `ComputerSide.ordinal()`；
+  - **side 与朝向**：本地方向 ↔ 世界方向按**继电器自身 FACING** 映射（front=FACING / back=反向 / left/right=逆/顺时针 / top=UP / bottom=DOWN，与 CC `DirectionUtil.toLocal` 一致）；
+  - `getSignal/getDirectSignal` 转发实体输出（isSignalSource）；`tick` 每 tick 刷新四周输入；放置后首个 tick 初始化输入读取。
+- **扩展红石继电器总线** `relay_bus`（[ExtendedRelayBusBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBusBlock.java) + [ExtendedRelayBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBusBlockEntity.java)）：
+  - 完整方块，六方向放置（FACING 同红石信号发射器），`canConnectRedstone=true`；贴图 bus 六面 + top/bottom；
+  - BE 提供 `findRelay(distance)`：沿自身 FACING 在 `distance` 格处（紧贴=1，最大 **Config.relay_bus.max_distance**，默认 16，范围 1~64）查找继电器；`isRelayAt(distance)`。
+- **总线 CC 外设**（[ExtendedRelayBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBusPeripheral.java)，类型 `redstone_relay_bus`，经 `ForgeComputerCraftAPI.registerPeripheralProvider` 注册，有线调制解调器可连接）：
+  - `isRelay(distance)`：检查距离 distance 处是否为扩展红石继电器；
+  - `setOutput(distance, side, on)` / `getOutput(distance, side)`：布尔输出（15/0）；
+  - `setAnalogOutput(distance, side, 0-15)` / `getAnalogOutput(distance, side)`：模拟输出（校验范围）；
+  - `getInput(distance, side)` / `getAnalogInput(distance, side)`：读取继电器该侧输入；
+  - **side 语义**：以**目标继电器自身朝向**为基准的 CC 本地方向（top/bottom/left/right/front/back），与总线朝向无关——不同距离的继电器各自按自身朝向解释 side。
+
+> **修复记录（v0.0.8）总线 FACING 属性读取崩溃**：`ExtendedRelayBusBlockEntity.findRelay` 初版误用 `HorizontalDirectionalBlock.FACING`（仅 north/south/east/west 四值）读取总线朝向，而总线注册的是 `BlockStateProperties.FACING`（六方向）——CC 电脑访问外设时报 `IllegalArgumentException: Cannot get property ... as it does not exist in Block{cc_rc:relay_bus}`。已改为读取 `ExtendedRelayBusBlock.FACING`（六方向）修正。
+>
+> **修复记录（v0.0.8）总线识别不到继电器**：总线外设所有 Lua 方法（isRelay/setOutput/getOutput/setAnalogOutput/getAnalogOutput/getInput/getAnalogInput）补充 `@LuaFunction(mainThread = true)`。根因：CC 电脑在独立线程运行 Lua，外设方法默认在计算机线程执行；而 `findRelay` 需访问 Minecraft 主线程的 `Level`/方块实体（`level.getBlockEntity`、`level.isLoaded`），非主线程访问不可靠导致 findRelay 返回 null → 总线"识别不到继电器"。与数码显示器外设 `@LuaFunction(mainThread = true)` 的既有写法保持一致。
+>
+> **修复记录（v0.0.8）继电器红石输出/输入不生效**：
+> - **输出无信号**：`setOutput` 只更新 BE 内部 outputs 数组并同步 NBT，但未通知邻居重新查询红石——红石线/机械不会感知 BE 内部状态变化。修复：`setOutput` 变化时调用 `updateNeighborsAt`（含输出方向对侧）刷新四周；同时修正 `getRedstoneOutput` 的方向映射——Minecraft 红石信号方法（getSignal/getDirectSignal）的 direction 参数是**反向语义**（实际输出到 direction.getOpposite() 方向，与原版 LeverBlock/刷卡机修复一致），初版直接用 direction 映射导致方向错位（设置 front 却输出到其它方向）。
+> - **输入读不到**：`tick` 仅放置时调度一次，inputs 不持续刷新。修复：`tick` 内持续自调度（`scheduleTick(pos, this, 1)`）每 tick 刷新输入；并新增 `neighborChanged` 在邻居变化时立即刷新输入。
+> - **自身传导红石**：用户要求继电器/总线像玻璃一样不传导信号。修复：两个方块的 `canConnectRedstone` 改为 `false`（红石线不连接到方块、不穿过传导），信号完全由总线外设经继电器 BE 手动读写。
+> - 附：`setOutput(int level)` 参数名与 BE 的 `Level level` 字段冲突导致编译错误，已改名 `power` 并显式用 `this.level`。
+>
+> **修复记录（v0.0.8）继电器红石行为对齐 CC RedstoneRelayBlock**：
+> - **仍传导红石/充能问题**：参考 CC 官方 `RedstoneRelayBlock` 源码修正——CC 继电器 `getSignal` 与 `getDirectSignal` 均返回**真实定向输出**（`incomingSide.getOpposite()` 反向换算），`canConnectRedstone` 不覆写（默认 false）。此前尝试把 `getDirectSignal` 改为 0 属过度修复（导致继电器无法向目标方向强充能输出）。最终：`canConnectRedstone=false`（红石线不连接/不将其作为导体）、`getSignal=getDirectSignal` 返回定向真实输出、`isRedstoneConductor` 保持完整方块默认 `true`（实心阻断红石线跨格跳跃），与 CC 继电器行为一致。
+> - **外设调用约 1 tick 延迟**：这是 CC: Tweaked `@LuaFunction(mainThread = true)` 的**固有机制**——CC 电脑在独立线程运行 Lua，标 `mainThread` 的方法会投递到主线程**下一 tick** 执行（保证世界/方块实体访问线程安全）。因此 `isRelay`/`setOutput`/`getInput` 等每次调用天然有 ≤1 tick 延迟，非 bug；数码显示器等既有外设同样如此。
+>
+> **修复记录（v0.0.8）玻璃式不传导（isRedstoneConductor）**：用户反馈继电器/总线仍会传导红石。根因：**1.20.1 中 `isRedstoneConductor` 是 `BlockBehaviour.Properties` 的 `StatePredicate` 设置方法**（构造时以 `properties.isRedstoneConductor((state, level, pos) -> bool)` 链式传入），**Block 层已没有可覆写的实例方法**——曾尝试以 `@Override public boolean isRedstoneConductor(BlockState, BlockGetter, BlockPos)` 覆写导致编译失败（"method does not override"），构建中断、jar 未更新，测试 jar 中继电器仍是完整方块默认导体（isRedstoneConductor=true）。修复：两个方块（ExtendedRelayBlock / ExtendedRelayBusBlock）构造器改为 `super(properties.isRedstoneConductor((state, level, pos) -> false))`，配合 `canConnectRedstone=false` 真正实现"红石线不连接、信号不穿透"（同玻璃）；同步修正总线 Javadoc 中过时的 `canConnectRedstone=true` 描述。
+
+### 30. 盖金蜗牛与金鹰（GajinSnail / GoldenEagle）
+
+两个配套内容：**盖金蜗牛**（被动动物实体）与**金鹰**（其食物物品），实现"用金鹰吸引/繁殖蜗牛、右键蜗牛播放音效"的养殖玩法：
+
+- **盖金蜗牛** `gajin`（[GajinSnail.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/GajinSnail.java) + [GajinModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/GajinModel.java) + [GajinRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/GajinRenderer.java)）：
+  - **被动动物**（`Animal`，MobCategory.CREATURE），实体尺寸 0.5×0.5，**不自然生成**（不注册 SpawnPlacements），只能刷怪蛋召唤；
+  - **AI 参考原版猪**（但**无乘骑机制**，不实现鞍座/骑乘相关方法）：FloatGoal（游泳）→ PanicGoal（恐慌逃跑 2.0）→ BreedGoal（繁殖）→ TemptGoal（手持金鹰吸引跟随 1.25）→ FollowParentGoal（跟随父母）→ WaterAvoidingRandomStrollGoal（绕水游走）→ LookAtPlayerGoal（注视玩家 6 格）→ RandomLookAroundGoal（随机环视）；
+  - **右键播放音效**：`mobInteract` 覆写——服务端播放 `gajin` 音效（SoundSource.NEUTRAL）；若手持金鹰则额外进入 `super.mobInteract` 喂食/繁殖逻辑。**平常无 ambient 叫声**（不覆写 getAmbientSound，默认 null）；
+  - **食物判定**：`isFood` = 金鹰（Ingredient.of(GOLDEN_EAGLE)）；`getBreedOffspring` 生成新的盖金蜗牛；
+  - **属性对齐原版猪**：最大生命 10、移动速度 0.25；
+  - **模型**：由「模型/生物/蜗牛/gaijin.bbmodel」（java_block 自由 UV）重排为 Java 实体 Mojang 布局（64×64），4 个 box（身体 8×3×12 / 外壳 6×6×8 / 左右触角 2×4×1），无腿部动画仅随实体 yaw 转身；
+  - **贴图** `textures/entity/gajin.png`（重排自 bbmodel 内嵌 64×64 贴图），渲染器 shadow 0.3。
+
+> **修复记录（v0.0.8）模型颠倒/悬空 + 刷怪蛋贴图**：用户反馈蜗牛"上下颠倒、浮在空中、太小"。三个问题及根因：
+> 1. **上下颠倒 + 浮空**：根因是**坐标系语义差异**——`gaijin.bbmodel` 是 **java_block 格式（Y 轴向上）**，而 **Java 实体模型（ModelPart/LayerDefinition）的 Y 轴向下为正**（`LivingEntityRenderer` 渲染时 `scale(-1,-1,1)` + `translate(0,-1.501,0)` → 模型 `y=24` 才是脚底贴地，`y=0` 在约 1.5 方块高处）。之前把 bb_y 原样（0~9）填入 `addBox` 的 y，导致整个模型被渲染在离地 0.94~1.5 方块的高空且上下颠倒。修复：坐标整体翻转——body `y 21..24`（底部贴地）、shell `y 15..21`（上方）、触角 `y 17..21`。
+> 2. **模型太小**：原 box 宽 4px=0.25 方块，无法与 0.5×0.5 碰撞箱相称。放大至约半方块：body 8×3×12（0.5×0.19×0.75）、shell 6×6×8、触角 2×4×1。
+> 3. **贴图需随新 box 尺寸重排**：Mojang 布局中每个 box 的 texOffs 由 box 尺寸决定，box 放大后旧 64×64 布局不再匹配。重新执行重排（PowerShell 脚本按 ModelPart.Cube 面方向映射）：shell `texOffs(0,0)` / tentR `(28,0)` / tentL `(34,0)` / body `(0,16)` 写入 textures/entity/gajin.png。
+> 4. **刷怪蛋贴图**：误用了 bbmodel 内嵌实体贴图（64×64），正确应为素材文件夹中的 `gaijin.png`（16×16 刷怪蛋贴图）。已替换 `textures/item/gajin_spawn_egg.png`。
+- **金鹰** `golden_eagle`（[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java)）：普通物品堆叠 64，贴图 `textures/item/golden_eagle.png`（来源「模型/生物/蜗牛/金鹰.png」），作为蜗牛的食物（吸引/繁殖）。
+- **音效** `gajin`（[ModSounds.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModSounds.java)）：sounds.json 注册 `gajin`（sounds/gajin.ogg，由「模型/生物/蜗牛/蜗牛音效.mp4」经 VLC 转码 vorbis），带字幕 `cc_rc.subtitle.gajin`。
+- **刷怪蛋** `gajin_spawn_egg`：ForgeSpawnEggItem（Supplier 惰性解析），主色金褐 0xD8B24A、次色深褐 0x5A3A1E。
+- **受击能力**（新增）：覆写 `hurt`——蜗牛实际受到伤害时自动获得「抗性提升 II」+「生命回复 II」效果（amplifier 1），持续 30 秒（600 tick），仅服务端施加。
+- **音效修复**（v0.0.9 前）：用户反馈右键点击一次音效会"播放完整一遍再放半遍停止"。根因：源素材「模型/生物/蜗牛/蜗牛音效.mp4」本身时长 16.7s，内容即「完整一遍(~11s) + 半遍(~5.5s)」重复录制未剪干净。本沙箱中 VLC 播放/转码被拦截（环境差异），改用 npm 镜像 `registry.npmmirror.com` 下载便携 ffmpeg（`@ffmpeg-installer/win32-x64`，64MB，留存 `run/package/ffmpeg.exe` 供后续音频处理）→ `ffmpeg -t 11 -ac 1 -c:a libvorbis -b:a 160k` 重新转码 `sounds/gajin.ogg` = **11.00 秒 / mono / 44100Hz / 160kbps**（194KB）。另在 `mobInteract` 加 **0.5 秒播放防抖**（服务端 `lastSoundGameTime`，防连点/双触发叠加）。
+- **音效修复（续）右键完全无声**：用户复测重转码后的 `gajin.ogg` 右键无任何音效、`/playsound` 也无声。排查结论：**文件本身无问题**——ffmpeg volumedetect 显示音量正常（mean -10.5dB / max -3.5dB）、可正常解码、`src` 与 `build/resources` 两份 MD5 一致（用户确认此前 /playsound 无声为游戏端资源未刷新所致）。真正根因是**防抖 long 整数溢出**：`lastSoundGameTime` 初始为 `Long.MIN_VALUE`，`now - lastSoundGameTime` 在 Java 中整数溢出成约 -9.2e18 的负数，`>= 10` 恒为 false → 首次及后续右键音效永远不播放。修复：比较前先排除哨兵值（`lastSoundGameTime == Long.MIN_VALUE || now - lastSoundGameTime >= 10`），注释同步更新。gradlew build BUILD SUCCESSFUL（34s）。
+- **注册**：ModEntities（实体）、CcRc（属性/渲染器/模型层各 1）、ModCreativeTabs（金鹰 + 刷怪蛋入主物品栏）、lang 中英（实体/物品/音效字幕）。
+
+### 31. 唱片音乐（GitHub issue #1 新增 6 张）
+
+处理 GitHub issue [#1](https://github.com/HaiOu-Redstone/CC_RC/issues/1)（用户 Romarku 上传 6 首歌曲 + 封面，请求添加为唱片）：
+
+- **素材**：6 个 mp3 + 6 个 16×16 封面 png 下载至「模型/唱片/」（bit / broken_boy / panic_track / resonance / roller_mobster / sabotage）；6 个 mp3 经 VLC 转码为 **mono OGG**（44.1kHz / vorb / 160kbps / 单声道）存 `sounds/music/<key>.ogg`，验证 ch=1 并实测时长 ticks（3187 / 4847 / 3075 / 4254 / 4286 / 4540）；
+- **注册**：ModSounds（6 个 `music_<key>` SoundEvent）、ModItems（6 个 RecordItem，comparator 复用 3/4/7/8/9/10，Rarity.RARE stacksTo 1）、sounds.json（stream:true + subtitle）、models/item 6 个、lang 中英（名称/desc/subtitle）、`minecraft:tags/items/music_discs` 标签、ModCreativeTabs；
+- **构建**：gradlew build BUILD SUCCESSFUL。
+
+**补充（2026-09-14）：新增 2 张唱片 friends_wine（朋友的酒）/ air（鸟之诗）**：
+- **素材**：`模型/唱片/friends_wine.mp4`、`air.mp4` 为视频文件，经 ffmpeg（run/package/ffmpeg.exe）`-vn` 提取音频轨转码为 **mono OGG**（44.1kHz / vorb / 160kbps），验证 ch=1 且时长完整（friends_wine 4:17 = 5145 tick、air 5:50 = 7003 tick）；封面 png 复制为 `textures/item/music_disc_<key>.png`；
+- **注册**：ModSounds（`music_friends_wine` / `music_air`）、ModItems（RecordItem，comparator 复用 11/12，Rarity.RARE stacksTo 1）、sounds.json（stream:true + subtitle）、models/item 2 个、lang 中英（物品名称/desc/subtitle）、`music_discs` 标签、ModCreativeTabs；
+- **构建**：gradlew build BUILD SUCCESSFUL。
+- 注：ffmpeg 转码 mp4 必须加 `-vn` 忽略视频轨，否则便携版 ffmpeg 会把 1080p 视频流转成 theora 拖慢转码（初次转码即因此被中断，产生残缺 2:56 文件，已重新转码为完整 4:17）。
+
+### 32. CC 外设无延迟改造（风险最小方案实施）
+
+背景：实测证实 CC 的 `mainThread=true` 外设调用**每个调用单独消耗 1 个主线程 tick**（任务执行后 resume Lua 需经 ComputerThread 异步排队，下一个任务只能下一 tick 才执行），连续 N 次调用 ≈ N tick 延迟。按此前定案的风险最小方案改造全部 4 个 CC 外设：
+
+- **digital_knob / digital_display / digital_plotter**（低风险类）：
+  - 状态字段 volatile 化（display 的 text/status 为 volatile 引用；plotter 的 data 为 volatile 引用 + **写时复制快照**，写永不修改共享数组，读方拿到不可变快照）；
+  - 写方法不再直接调用主线程 API（setChanged/sendBlockUpdated），只置 dirty；三个方块新增 BE 静态 tick（`Block.getTicker` 注册），每 tick 合并广播（至多 1 次同步包）；
+  - 外设方法全部去掉 `mainThread=true`（setter/getter 均 0 tick，写后立即读 = 新值）。
+- **redstone_relay_bus**（高风险类）：
+  - 新增 [RelayState](文件内类)（ReentrantLock 双缓存）：internalOutputs（Lua 读写，0 tick）/ appliedOutputs（主线程应用层，方块 getSignal 读取）/ inputs（主线程写、Lua 读）；
+  - 总线 BE 主线程每 tick 重建「distance → RelayState」不可变缓存（volatile 整体替换），**Lua 线程零 Level 访问**（Level 非线程安全）；
+  - 继电器输出由主线程方块 tick 合并应用到世界（变化面位掩码决定 updateNeighborsAt 去向），输入沿用 `neighborChanged` 事件 + tick 刷新；
+  - **修复**：Inputs 不再落盘（瞬态世界信号），load 后由首个 tick 从世界重刷（原实现持久化 Inputs 导致重启读到过期输入）。
+- **构建**：gradlew build BUILD SUCCESSFUL（25s）。
+- **修复（总线无法识别继电器）**：总线 BE 的继电器缓存刷新依赖主线程 tick，但 ExtendedRelayBusBlock 漏覆写 `getTicker`（改造前外设是 mainThread 实时 `findRelay` 查 Level，不依赖缓存；改造后读缓存但缓存从不重建 → `relayCache` 恒空、`isRelay` 恒 false、其余方法抛 "No extension relay"）。已补 `getTicker`（手写 lambda，与 knob/display/plotter 同款风格）驱动 `ExtendedRelayBusBlockEntity.tick` 每 tick 重建缓存，并加 `level.isClientSide` 过滤；继电器侧无此问题（ExtendedRelayBlock.tick 方块自调度持续运行，驱动 applyOutputsToWorld/refreshInputs）。gradlew build BUILD SUCCESSFUL（34s）。
+- **红石线主动连接继电器**（用户反馈）：ExtendedRelayBlock.canConnectRedstone 由 false 改为 **true**——红石线可主动连接相邻继电器读取定向输出（isSignalSource 原本即 true）；配合 Properties 的 isRedstoneConductor=false 仍保持"非导体"语义（红石线不从继电器穿透传导）。
+
 ---
 
 ## 三、注册物品
 
 > 约定：方块与物品 ID 一一对应；`BlockItem` 为普通方块物品，特殊物品使用专属类。以下按方块类归组。
 
-### 1. 方块（Blocks）——共 105 个
+### 1. 方块（Blocks）——共 107 个
 
 | 方块 ID | 方块类 | 说明 |
 | --- | --- | --- |
@@ -930,7 +1075,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 说明：16 色 × 4 类 = 64 个告示牌方块（沿用原版 SignBlock 系列，方块实体复用原版 `BlockEntityType.SIGN` / `HANGING_SIGN`，无需新增方块实体）；`console_lever_1/2` 共用 `ConsoleLeverBlock` 类，`console_lever_6/7` 共用 `ConsoleLever3StageBlock` 类，`point_lamp_1/2/3` 共用 `PointLampBlock` 类，`console_button_1~5` 共用 `ConsoleButtonBlock` 类，`card_reader_a~e` 共用 `CardReaderBlock`（构造参数 grade 'A'~'E'），`server_faas_1/2/3` 共用 `ServerFaasBlock`（仅模型/贴图不同）。
 
-### 2. 物品（Items）——共 120 个
+### 2. 物品（Items）——共 134 个
 
 **方块物品（73 个，`BlockItem` / `SignItem`）：**
 
@@ -966,13 +1111,13 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 说明：16 色 × 2 = 32 个告示牌物品（复用 key `item.cc_rc.desc_potato_crate_carried` 显示黄色斜体"搬运自农夫乐事"）。
 
-**特殊物品（23 个）：**
+**特殊物品（29 个）：**
 
 | 物品 ID | 物品类 | 说明 |
 | --- | --- | --- |
 | `multi_tool` | `MultiToolItem` | 多功能工具（不可堆叠，切换百分比模式 / 圆盘记录仪模式） |
-| `instruction_book_1` | `InstructionBookItem` | 说明书1（原版成书 WrittenBookItem 机制，右键打开书籍阅读界面，固定内容：目录 + 控制面板类/圆盘记录仪/断路器/刷卡机/红石信号收发） |
-| `instruction_book_2` | `InstructionBook2Item` | 说明书2（原版成书机制，记录 CC 配件外设使用法：数码显示器/数字调节器/数字圆盘记录仪，含每个 Lua 函数名与参数/返回类型） |
+| `instruction_book_1` | `InstructionBookItem` | 说明书1（原版成书 WrittenBookItem 机制，右键打开书籍阅读界面，固定内容：目录 + 控制面板类/编辑工具/圆盘记录仪/断路器/刷卡机/红石信号收发） |
+| `instruction_book_2` | `InstructionBook2Item` | 说明书2（原版成书机制，记录 CC 配件外设使用法：数码显示器/数字调节器/数字圆盘记录仪/扩展红石继电器与总线，含每个 Lua 函数名与参数/返回类型） |
 | `card_a` ~ `card_e` | `CardItem` | 门禁卡 A~E（不可堆叠，等级 'A'~'E'） |
 | `frozen_tilapia` | `DescriptionSwordItem` | 冰冻罗非鱼（旧模组移植，修改器伤害 +255 实际总伤害 256 / 攻速 -2.0 / 耐久 2，蓝冰修复，不可堆叠，Rarity.RARE 蓝色名，金色描述"三体宇宙最强武器（bushi）"） |
 | `green_wine` | `DescriptionItem` | 沉船绿酒（旧模组移植，饮用后剧毒 4 + 反胃 3，各 114514 刻，堆叠 16，绿色描述） |
@@ -988,8 +1133,14 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `simple_spear` | `SimpleSpearItem` | 简易长矛（铁质 SwordItem 自带横扫，耐久 130 / 修改器伤害 +129 实际总伤害 130 / +13 攻击范围 ForgeMod.ENTITY_REACH / 铁锭修复 / Rarity.EPIC 淡紫名 + isFoil 附魔微光 / 不可堆叠 / 手持模型 2 倍大且 y 前移 3.2；紫色描述"魔女们的秘密武器"） |
 | `password_cracker` | `PasswordCrackerItem` | 破解器（不可堆叠；手持右键密码输入器开始破解，20 秒可配置，离开 5 格/切快捷栏即中断；**3D 物品模型**，模型来源"模型/特殊控制台/破解卡"；破解时播放 password_crack 音效，中断即停） |
 | `key_1` / `key_2` | `Item` | 核弹发射钥匙 1 / 2（不可堆叠；右键核弹按钮消耗并推进状态：状态1+钥匙1→状态2、状态1+钥匙2→状态3、状态2+钥匙2→状态4、状态3+钥匙1→状态4；贴图"特殊控制台/key_1、key_2"） |
+| `error_mob_spawn_egg` | `ForgeSpawnEggItem` | 错误生物刷怪蛋（主色红 0xDC2828 / 次色深灰蓝 0x1E1E28，双色点纹贴图；右键生成 `error_mob` 实体，实体不自然生成只能靠刷怪蛋/刷怪笼；用 ForgeSpawnEggItem 惰性解析实体类型避免注册顺序崩溃） |
+| `error_mob_null_spawn_egg` | `ForgeSpawnEggItem` | 错误生物（null 变种）刷怪蛋（主色紫灰 0x8C82B4 / 次色深紫褐 0x282338；生成 `error_mob_null`） |
+| `error_mob_warn_spawn_egg` | `ForgeSpawnEggItem` | 错误生物（warn 变种）刷怪蛋（主色琥珀黄 0xE6AA3C / 次色深棕褐 0x372D14；生成 `error_mob_warn`） |
+| `edit_tool` | `EditToolItem` | 编辑工具（不可堆叠；主手右键可显示名称方块打开文字编辑 GUI，副手放置可显示名称方块自动打开编辑界面；悬停青色粗体"用于编辑可显示名称的方块文字"） |
+| `golden_eagle` | `Item` | 金鹰（堆叠 64；盖金蜗牛的食物，手持可吸引（TemptGoal）与繁殖（BreedGoal）；贴图"模型/生物/蜗牛/金鹰.png"） |
+| `gajin_spawn_egg` | `ForgeSpawnEggItem` | 盖金蜗牛刷怪蛋（主色金褐 0xD8B24A / 次色深褐 0x5A3A1E；生成 `gajin` 实体，实体不自然生成只能靠刷怪蛋/刷怪笼） |
 
-**音乐唱片（24 个，`RecordItem`，Rarity.RARE）：**
+**音乐唱片（32 个，`RecordItem`，Rarity.RARE）：**
 
 | 物品 ID | 比较器输出 | 音轨 |
 | --- | --- | --- |
@@ -1017,10 +1168,18 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `music_disc_bloom` | 5 | bloom（5930 tick） |
 | `music_disc_jigoku_shoujo` | 6 | jigoku_shoujo（1891 tick） |
 | `music_disc_the_imitation_game` | 1 | the_imitation_game（3160 tick） |
+| `music_disc_bit` | 3 | bit（3187 tick） |
+| `music_disc_broken_boy` | 4 | broken_boy（4847 tick） |
+| `music_disc_panic_track` | 7 | panic_track（3075 tick） |
+| `music_disc_resonance` | 8 | resonance（4254 tick） |
+| `music_disc_roller_mobster` | 9 | roller_mobster（4286 tick） |
+| `music_disc_sabotage` | 10 | sabotage（4540 tick） |
+| `music_disc_friends_wine` | 11 | friends_wine（5145 tick） |
+| `music_disc_air` | 12 | air（7003 tick） |
 
-> 唱片同时注册进原版 `minecraft:tags/items/music_discs` 标签，可被唱片机播放；比较器输出值在 1~15 之间，其中 1/2/5/6 被多张唱片复用（1 = railugun、conrnfield_chase、the_imitation_game；2 = assumptions、move、rain、end；5 = level5、more_one_night、bloom；6 = underground_river、hanezeve_caradhina、jigoku_shoujo），其余 3/4/7~15 各一张。
+> 唱片同时注册进原版 `minecraft:tags/items/music_discs` 标签，可被唱片机播放；比较器输出值在 1~15 之间，其中 1~12 被多张唱片复用（1 = railugun、conrnfield_chase、the_imitation_game；2 = assumptions、move、rain、end；3 = cutie_mew_mew_magic、bit；4 = denise、broken_boy；5 = level5、more_one_night、bloom；6 = underground_river、hanezeve_caradhina、jigoku_shoujo；7 = gwangju、panic_track；8 = higher、resonance；9 = king、roller_mobster；10 = marisa、sabotage；11 = mixue、friends_wine；12 = raw_tell、air），其余 13~15 各一张。
 
-### 3. 方块实体（Block Entity Types）——共 12 个
+### 3. 方块实体（Block Entity Types）——共 14 个
 
 | 方块实体 ID | 实体类 | 支持的方块 |
 | --- | --- | --- |
@@ -1041,18 +1200,29 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 >
 > **告示牌为何需要自定义方块实体类型**：原版 `BlockEntityType.SIGN` / `HANGING_SIGN` 的 `validBlocks` 只包含原版告示牌方块。`BlockEntityRenderDispatcher` 渲染时会先做 `blockEntity.getType().isValid(blockState)` 校验，若方块不在该方块实体类型的有效方块集合内则直接跳过渲染，导致告示牌完全透明（无模型、无文字、亦非紫黑块）。因此为粗布告示牌注册了专用方块实体类型（工厂复用 `CanvasSignBlockEntity`/`CanvasHangingSignBlockEntity`，`getType()` 返回自定义类型），并在客户端为这两个类型注册原版 `SignRenderer`/`HangingSignRenderer`。模型层与材质仍由原版机制按 `WoodType "cc_rc:canvas"` 自动生成。
 
-### 4. 声音（Sound Events）——共 27 个
+### 4. 声音（Sound Events）——共 36 个
 
-24 个音乐声音与 24 张唱片一一对应：`music_level5`、`railugun`、`never`、`assumptions`、`conrnfield_chase`、`move`、`night`（more_one_night）、`rain`、`end`、`underground_river`、`hanezeve_caradhina`、`cutie_mew_mew_magic`、`denise`、`gwangju`、`higher`、`king`、`marisa`、`mixue`、`raw_tell`、`reimu`、`you_will_be_perfect`、`bloom`、`jigoku_shoujo`、`the_imitation_game`；另有 3 个非唱片声音：`nai_long`（奶龙玩偶语音，右键奶龙玩偶 `nai_long_toy` 时播放）、`server_noise`（F.A.A.S服务器 `server_faas_1/2/3` 的环境音效，玩家靠近时持续播放，注册于 [sounds.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/sounds.json)）、`password_crack`（破解器破解音效，破解密码输入器期间在方块位置循环播放，中断/成功/方块破坏时由网络包通知客户端停止）。
+32 个音乐声音与 32 张唱片一一对应：`music_level5`、`railugun`、`never`、`assumptions`、`conrnfield_chase`、`move`、`night`（more_one_night）、`rain`、`end`、`underground_river`、`hanezeve_caradhina`、`cutie_mew_mew_magic`、`denise`、`gwangju`、`higher`、`king`、`marisa`、`mixue`、`raw_tell`、`reimu`、`you_will_be_perfect`、`bloom`、`jigoku_shoujo`、`the_imitation_game`、`bit`、`broken_boy`、`panic_track`、`resonance`、`roller_mobster`、`sabotage`（GitHub issue #1 新增 6 首）、`friends_wine`、`air`（2026-09-14 新增 2 首）；另有 4 个非唱片声音：`nai_long`（奶龙玩偶语音，右键奶龙玩偶 `nai_long_toy` 时播放）、`server_noise`（F.A.A.S服务器 `server_faas_1/2/3` 的环境音效，玩家靠近时持续播放，注册于 [sounds.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/sounds.json)）、`password_crack`（破解器破解音效，破解密码输入器期间在方块位置循环播放，中断/成功/方块破坏时由网络包通知客户端停止）、`gajin`（盖金蜗牛右键音效，玩家右键 `gajin` 时播放，平常无 ambient 叫声）。
 
 ### 5. 创造标签
 
 方块与物品通过 [ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入标签 `cc_rc_tab`（"CC：反应堆控制台"）；另注册第二个标签 `cc_rc_tab_carried`（"CCRC：搬运的物品"），Forge 按注册名对模组创造标签排序，此前缀更长的注册名位于主标签之后，图标为箱装土豆，仅收录搬运类物品（当前为箱装土豆、冰箱、水槽与 16 色粗布告示牌/悬挂式粗布告示牌，均不加入主标签）。
 
-### 6. 弹射物实体（Projectile Entities）——共 1 个
+### 6. 实体（Entities）——共 5 个
+
+**弹射物实体（Projectile Entities）——1 个：**
 
 | 实体 ID | 实体类 | 说明 |
 | --- | --- | --- |
 | `bao_zi` | `BaoZi` | 包子（继承原版雪球类 `Snowball`，飞行逻辑与雪球一致；命中实体或方块时触发半径 4 的爆炸，仅伤害实体、不破坏方块，粒子/音效为原版爆炸；客户端复用原版 `ThrownItemRenderer` 渲染） |
+
+**生物实体（Mobs）——4 个：**
+
+| 实体 ID | 实体类 | 说明 |
+| --- | --- | --- |
+| `error_mob` | `ErrorMob` | 错误生物（由「模型/错误生物/error.obj」立体化生成的敌对实体，详见 [二、27 错误生物](#27-错误生物error_mob)） |
+| `error_mob_null` | `ErrorMob` | 错误生物变种（「模型/错误生物/null.obj」，NULL 字牌，仅模型/贴图不同） |
+| `error_mob_warn` | `ErrorMob` | 错误生物变种（「模型/错误生物/WARN/warn.obj」，WARN 字牌，仅模型/贴图不同） |
+| `gajin` | `GajinSnail` | 盖金蜗牛（被动动物，AI 参考原版猪无乘骑机制，金鹰食物，右键播放 gajin 音效，不自然生成，详见 [二、30 盖金蜗牛与金鹰](#30-盖金蜗牛与金鹰gajinsnail--golden_eagle)） |
 
 > 实体类型注册于 [ModEntities.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModEntities.java)（`DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ...)`），在 [CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 构造函数中 `ModEntities.ENTITY_TYPES.register(modEventBus)`。左键投掷由客户端 `InputEvent.InteractionKeyMappingTriggered` 事件 + C2S 数据包实现（见「二、15 包子」）。

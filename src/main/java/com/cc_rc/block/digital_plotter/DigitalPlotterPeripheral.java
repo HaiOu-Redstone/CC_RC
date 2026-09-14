@@ -36,19 +36,20 @@ public class DigitalPlotterPeripheral implements IPeripheral {
 
     /**
      * 写入一个新值：删除最后一位，其他值后移，新值写入首位。
+     * 无 mainThread：写时复制 + volatile 引用原子替换（0 tick），广播由主线程节流。
      * 写入值只能为整型，超过100按100计，小于0按0计。
      *
      * @param value 要写入的整数
      * @return 写入后的值（钳制到 0~100）
      */
-    @LuaFunction(mainThread = true)
+    @LuaFunction
     public final int push(int value) {
-        blockEntity.push(value);
-        return blockEntity.getValue(0);
+        return blockEntity.push(value);
     }
 
     /**
      * 手动设置列表中某个位置的值。
+     * 无 mainThread：写时复制 + volatile 引用原子替换（0 tick），广播由主线程节流。
      * 写入值只能为整型，超过100按100计，小于0按0计。
      * 索引超出列表范围（1~50）时不予写入。
      *
@@ -56,7 +57,7 @@ public class DigitalPlotterPeripheral implements IPeripheral {
      * @param value 要设置的整数
      * @return 是否写入成功（索引越界返回 false）
      */
-    @LuaFunction(mainThread = true)
+    @LuaFunction
     public final boolean setValue(int index, int value) {
         return blockEntity.setValue(index - 1, value);
     }

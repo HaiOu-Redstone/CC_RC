@@ -31,14 +31,15 @@ import net.minecraftforge.fml.common.Mod;
 /**
  * /ccrc 指令：查看/强制修改 CC: Tweaked 外设编号计数器。
  *
- * - /ccrc get_count &lt;设备种类名称&gt;：查询该种类已分配到的最大编号（id 文件内存储值，
+ * 设备数量相关指令统一归在 /ccrc peripheral 下：
+ * - /ccrc peripheral get_count &lt;设备种类名称&gt;：查询该种类已分配到的最大编号（id 文件内存储值，
  *   未记录过则显示 0，即下一个新外设将获得编号 0）；参数带自动补全（候选 = ids.json
  *   中已记录的类型）。
- * - /ccrc set_count &lt;设备种类名称&gt; &lt;数字&gt;：强制把该种类计数值改为指定值
+ * - /ccrc peripheral set_count &lt;设备种类名称&gt; &lt;数字&gt;：强制把该种类计数值改为指定值
  *   （需 OP 权限），同时写入 CC 的 ids.json 与内存中的 IDAssigner.ids（保持两者一致，
  *   否则 getNextId 会继续按内存旧值分配并覆盖文件）。参数带自动补全；仅允许设置
  *   ids.json 中已存在（= 曾被有线调制解调器连接/分配过编号）的类型，防止误设不存在的外设。
- * - /ccrc list：仅查看 CC 计数文件 ids.json 的内容（类型 → 编号），不做世界扫描。
+ * - /ccrc peripheral list：仅查看 CC 计数文件 ids.json 的内容（类型 → 编号），不做世界扫描。
  *
  * CC 的计数文件位于 存档目录/computercraft/ids.json（ServerContext.storageDir() 定位），
  * 内存 Map 为 IDAssigner 私有字段，通过反射同步。
@@ -52,25 +53,27 @@ public class CcrcCommand {
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
+        // peripheral 分支：读取/处理 CC: Tweaked 设备数量（get_count / set_count / list）
         event.getDispatcher().register(Commands.literal("ccrc")
-                // set_count 需要 OP 权限（2 级）；get_count 无权限要求
-                .then(Commands.literal("set_count")
-                        .requires(src -> src.hasPermission(2))
-                        .then(Commands.argument("设备种类名称", StringArgumentType.word())
-                                .suggests(CcrcCommand::suggestTypes)
-                                .then(Commands.argument("数字", IntegerArgumentType.integer(0))
-                                        .executes(ctx -> runSetCount(ctx.getSource(),
-                                                StringArgumentType.getString(ctx, "设备种类名称"),
-                                                IntegerArgumentType.getInteger(ctx, "数字"))))))
-                .then(Commands.literal("get_count")
-                        .then(Commands.argument("设备种类名称", StringArgumentType.word())
-                                .suggests(CcrcCommand::suggestTypes)
-                                .executes(ctx -> runGetCount(ctx.getSource(),
-                                        StringArgumentType.getString(ctx, "设备种类名称")))))
-                // list：仅查看 ids.json 计数文件内容（不扫描世界）
-                .then(Commands.literal("list")
-                        .requires(src -> src.hasPermission(2))
-                        .executes(ctx -> runList(ctx.getSource())))
+                .then(Commands.literal("peripheral")
+                        // set_count 需要 OP 权限（2 级）；get_count/list 无权限要求
+                        .then(Commands.literal("set_count")
+                                .requires(src -> src.hasPermission(2))
+                                .then(Commands.argument("设备种类名称", StringArgumentType.word())
+                                        .suggests(CcrcCommand::suggestTypes)
+                                        .then(Commands.argument("数字", IntegerArgumentType.integer(0))
+                                                .executes(ctx -> runSetCount(ctx.getSource(),
+                                                        StringArgumentType.getString(ctx, "设备种类名称"),
+                                                        IntegerArgumentType.getInteger(ctx, "数字"))))))
+                        .then(Commands.literal("get_count")
+                                .then(Commands.argument("设备种类名称", StringArgumentType.word())
+                                        .suggests(CcrcCommand::suggestTypes)
+                                        .executes(ctx -> runGetCount(ctx.getSource(),
+                                                StringArgumentType.getString(ctx, "设备种类名称")))))
+                        // list：仅查看 ids.json 计数文件内容（不扫描世界）
+                        .then(Commands.literal("list")
+                                .requires(src -> src.hasPermission(2))
+                                .executes(ctx -> runList(ctx.getSource()))))
                 // keycabinet：管理钥匙分发控制器的钥匙柜记录（玩家必须站在控制器上方）
                 .then(Commands.literal("keycabinet")
                         .executes(ctx -> runKeyCabinetList(ctx.getSource()))
@@ -112,7 +115,7 @@ public class CcrcCommand {
         return builder.buildFuture();
     }
 
-    /** /ccrc set_count <类型> <值>：强制改写 CC 该种类计数值（文件 + 内存）。 */
+    /** /ccrc peripheral set_count <类型> <值>：强制改写 CC 该种类计数值（文件 + 内存）。 */
     private static int runSetCount(CommandSourceStack source, String type, int value) {
         ServerContext context = ServerContext.get(source.getServer());
         Path idFile = context.storageDir().resolve("ids.json");
@@ -146,7 +149,7 @@ public class CcrcCommand {
         return 1;
     }
 
-    /** /ccrc get_count <类型>：查询该种类当前计数值。 */
+    /** /ccrc peripheral get_count <类型>：查询该种类当前计数值。 */
     private static int runGetCount(CommandSourceStack source, String type) {
         ServerContext context = ServerContext.get(source.getServer());
         Integer value = null;
@@ -168,8 +171,9 @@ public class CcrcCommand {
     }
 
     /**
-     * /ccrc list：仅查看 CC 计数文件 ids.json 的内容（类型 → 编号），不做世界扫描。
-     * 输出格式与文件保持一致，便于与 get_count/set_count 的补全候选对照。
+     * /ccrc peripheral list：仅查看 CC 计数文件 ids.json 的内容
+     * （类型 → 编号），不做世界扫描。输出格式与文件保持一致，便于与 get_count/set_count
+     * 的补全候选对照。
      */
     private static int runList(CommandSourceStack source) {
         ServerContext context = ServerContext.get(source.getServer());

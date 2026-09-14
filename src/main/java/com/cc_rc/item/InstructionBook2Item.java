@@ -53,7 +53,7 @@ public class InstructionBook2Item extends WrittenBookItem {
         // 封面
         pages.add(page("说明书 2\n\n--CC: 反应堆控制台--\n\n本说明书收录本模组 CC 相关配件的 Lua 外设使用方法。"));
         // 目录
-        pages.add(page("【目录】\n1. 数码显示器\n2. 数字调节器\n3. 数字圆盘记录仪"));
+        pages.add(page("【目录】\n1. 数码显示器\n2. 数字调节器\n3. 数字圆盘记录仪\n4. 扩展红石继电器/总线"));
         // 数码显示器 - 外设与 setStatus
         pages.add(page("1. 数码显示器\n\n外设类型: digital_display\n通过 CC 调制解调器连接后即可调用。\n\nsetStatus(text: string)\n  -> string\n设置橙色状态文字，参数为字符串。\n返回设置后的文字。"));
         // 数码显示器 - getStatus 与示例
@@ -68,6 +68,12 @@ public class InstructionBook2Item extends WrittenBookItem {
         pages.add(page("3. 数字圆盘记录仪(续)\n\npush(value: int)\n  -> int\n写入新值(自动删除末位并移位)，\n返回写入后的值(0~100)。\n\nsetValue(index: int, value: int)\n  -> boolean\n设置第 index 个位置的值，\n索引越界返回 false。"));
         // 数字圆盘记录仪 - getValue / getList 与示例
         pages.add(page("3. 数字圆盘记录仪(续)\n\ngetValue(index: int)\n  -> int | nil\n读取第 index 个位置的值，\n索引越界返回 nil。\n\ngetList()\n  -> table\n读取整个列表(50个整数)。\n\n示例(Lua):\np=peripheral.find(\"digital_plotter\")\np.push(30)\nprint(p.getList()[1])"));
+        // 扩展红石继电器/总线 - 概述
+        pages.add(page("4. 扩展红石继电器/总线\n\n由总线(relay_bus)沿自身朝向搜索前方\ndistance 格处的继电器(extended_relay)，\n向对应侧读出/写入红石信号。\n\n距离：紧贴=1，最大可在配置\nrelay_bus.max_distance 中调整\n(默认16，范围1~64)。\n\nside 以继电器自身朝向为基准：\ntop/bottom/left/right/front/back"));
+        // 扩展红石继电器/总线 - 输出函数
+        pages.add(page("4. 扩展红石继电器/总线(续)\n\nisRelay(distance)\n  -> boolean 判断该处是否为继电器\n\nsetOutput(distance, side, on)\n  布尔输出：on=true 输出15，false 输出0\n\ngetOutput(distance, side)\n  -> boolean 读取布尔输出\n\nsetAnalogOutput(distance, side, value)\n  模拟输出 0~15（越界报错）"));
+        // 扩展红石继电器/总线 - 输入函数与示例
+        pages.add(page("4. 扩展红石继电器/总线(续)\n\ngetAnalogOutput(distance, side)\n  -> int 读取输出强度 0~15\n\ngetInput(distance, side)\n  -> boolean 该侧是否收到信号\n\ngetAnalogInput(distance, side)\n  -> int 该侧读入强度 0~15\n\n示例(Lua):\np=peripheral.find(\"redstone_relay_bus\")\np.setAnalogOutput(3,\"front\",15)\nprint(p.getAnalogInput(3,\"back\"))"));
         tag.put(WrittenBookItem.TAG_PAGES, pages);
 
         return stack;

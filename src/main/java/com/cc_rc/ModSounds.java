@@ -36,12 +36,24 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> MUSIC_BLOOM = register("music_bloom");
     public static final RegistryObject<SoundEvent> MUSIC_JIGOKU_SHOUJO = register("music_jigoku_shoujo");
     public static final RegistryObject<SoundEvent> MUSIC_THE_IMITATION_GAME = register("music_the_imitation_game");
+    // 新增 6 张唱片音乐（GitHub issue #1）
+    public static final RegistryObject<SoundEvent> MUSIC_BIT = register("music_bit");
+    public static final RegistryObject<SoundEvent> MUSIC_BROKEN_BOY = register("music_broken_boy");
+    public static final RegistryObject<SoundEvent> MUSIC_PANIC_TRACK = register("music_panic_track");
+    public static final RegistryObject<SoundEvent> MUSIC_RESONANCE = register("music_resonance");
+    public static final RegistryObject<SoundEvent> MUSIC_ROLLER_MOBSTER = register("music_roller_mobster");
+    public static final RegistryObject<SoundEvent> MUSIC_SABOTAGE = register("music_sabotage");
+    // 新增 2 张唱片音乐
+    public static final RegistryObject<SoundEvent> MUSIC_FRIENDS_WINE = register("music_friends_wine");
+    public static final RegistryObject<SoundEvent> MUSIC_AIR = register("music_air");
     // 奶龙玩偶声音（非唱片）
     public static final RegistryObject<SoundEvent> NAI_LONG = register("nai_long");
     // F.A.A.S服务器环境音效（非唱片，靠近时持续播放）
     public static final RegistryObject<SoundEvent> SERVER_NOISE = register("server_noise");
     // 破解器破解音效（破解密码输入器时循环播放，中断/成功时停止）
     public static final RegistryObject<SoundEvent> PASSWORD_CRACK = register("password_crack");
+    // 盖金蜗牛音效（玩家右键蜗牛播放；平常无 ambient 叫声）
+    public static final RegistryObject<SoundEvent> GAJIN = register("gajin");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUND_EVENTS.register(name,

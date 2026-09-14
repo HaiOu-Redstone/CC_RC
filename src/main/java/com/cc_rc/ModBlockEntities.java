@@ -12,6 +12,8 @@ import com.cc_rc.block.digital_knob.DigitalKnobBlockEntity;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBlockEntity;
 import com.cc_rc.block.fridge.FridgeBlockEntity;
 import com.cc_rc.block.key_distributor.KeyDistributorBlockEntity;
+import com.cc_rc.block.extended_relay.ExtendedRelayBlockEntity;
+import com.cc_rc.block.extended_relay.ExtendedRelayBusBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.ArrayList;
@@ -140,5 +142,21 @@ public class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             KeyDistributorBlockEntity::new,
                             ModBlocks.KEY_DISTRIBUTOR.get()
+                    ).build(null));
+
+    // 扩展红石继电器方块实体类型（总线远端红石端口：6 向输入/输出）
+    public static final RegistryObject<BlockEntityType<ExtendedRelayBlockEntity>> EXTENDED_RELAY_BE =
+            BLOCK_ENTITY_TYPES.register("extended_relay_be",
+                    () -> BlockEntityType.Builder.of(
+                            ExtendedRelayBlockEntity::new,
+                            ModBlocks.EXTENDED_RELAY.get()
+                    ).build(null));
+
+    // 扩展红石继电器总线方块实体类型（CC 外设宿主：沿朝向搜索继电器）
+    public static final RegistryObject<BlockEntityType<ExtendedRelayBusBlockEntity>> RELAY_BUS_BE =
+            BLOCK_ENTITY_TYPES.register("relay_bus_be",
+                    () -> BlockEntityType.Builder.of(
+                            ExtendedRelayBusBlockEntity::new,
+                            ModBlocks.RELAY_BUS.get()
                     ).build(null));
 }

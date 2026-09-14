@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "cc_rc:block/extended_relay" },
+    "facing=south": { "model": "cc_rc:block/extended_relay", "y": 180 },
+    "facing=east": { "model": "cc_rc:block/extended_relay", "y": 90 },
+    "facing=west": { "model": "cc_rc:block/extended_relay", "y": 270 }
+  }
+}

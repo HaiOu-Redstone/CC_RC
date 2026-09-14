@@ -30,11 +30,13 @@ public class DigitalKnobPeripheral implements IPeripheral {
 
     /**
      * 设置数值（整数），小于0设为0，大于1000设为1000。
+     * 无 mainThread：直接写方块实体的 volatile 字段（0 tick），
+     * 广播由主线程 tick 节流合并执行。
      *
      * @param value 传入的整数
      * @return 钳制后的整数
      */
-    @LuaFunction(mainThread = true)
+    @LuaFunction
     public final int setValue(int value) {
         blockEntity.setValue(value);
         return blockEntity.getValue();
