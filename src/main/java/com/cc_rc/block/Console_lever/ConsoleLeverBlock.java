@@ -1,8 +1,12 @@
 package com.cc_rc.block.Console_lever;
 
+import com.cc_rc.block.console_panel.ConsolePanelBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -12,6 +16,7 @@ import net.minecraft.world.level.block.LeverBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +61,16 @@ public class ConsoleLeverBlock extends LeverBlock implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new ConsoleLeverBlockEntity(pos, state);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
+                                 InteractionHand hand, BlockHitResult hit) {
+        // 手持染料右键 → 优先染色面板文字（不影响拉杆切换功能）
+        if (ConsolePanelBlock.handleDyeInteraction(level, pos, player, hand)) {
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return super.use(state, level, pos, player, hand, hit);
     }
 
     @Override

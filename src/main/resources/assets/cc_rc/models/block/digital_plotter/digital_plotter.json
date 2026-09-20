@@ -3,8 +3,8 @@
     "ambientocclusion": false,
     "render_type": "cutout",
     "textures": {
-        "0": "cc_rc:block/digital_plotter",
-        "particle": "cc_rc:block/digital_plotter"
+        "0": "cc_rc:block/digital_plotter/digital_plotter",
+        "particle": "cc_rc:block/digital_plotter/digital_plotter"
     },
     "elements": [
         {

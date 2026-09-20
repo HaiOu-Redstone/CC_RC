@@ -114,7 +114,11 @@ public class ExtendedRelayBlockEntity extends BlockEntity {
     public void refreshInputs(Level level, BlockState blockState) {
         for (ComputerSide side : ComputerSide.values()) {
             Direction dir = toWorldDirection(blockState, side);
-            int value = level.getSignal(getBlockPos().relative(dir), dir.getOpposite());
+            // 方向语义与 CC RedstoneUtil.getRedstoneInput 一致：getSignal(邻居位置, dir)
+            // 的 dir 是"从本方块指向信号源的方向"，即中继器/拉杆等朝本方块输出时
+            // 信号源方块收到 direction==dir 的查询（CHANGED：原实现误用 dir.getOpposite()
+            // 导致方向相关信号源如红石中继器的输入读不到）
+            int value = level.getSignal(getBlockPos().relative(dir), dir);
             state.setInput(side, value);
         }
     }
@@ -126,11 +130,14 @@ public class ExtendedRelayBlockEntity extends BlockEntity {
 
     /**
      * 某世界方向的对外输出（方块 getSignal/getDirectSignal 转发，读 applied 层）。
-     * Minecraft 红石信号方法（getSignal/getDirectSignal）的 direction 参数是
-     * **反向语义**（backwards，与原版 LeverBlock/项目刷卡机修复一致）：实际输出到
-     * direction.getOpposite() 方向。故此处用 direction.getOpposite() 换算本地方向——
-     * 总线 setOutput("front") 写入 internal[FRONT]，继电器前方（FACING 方向）查询时
-     * 传入 direction=FACING.getOpposite()，取反得 FACING → FRONT，正确命中。
+     *
+     * 方向语义（用户实测校正，与 refreshInputs 的输入查询恰好对称）：
+     *  - 输入（本方块查邻居）：getSignal(邻居, dir)，dir = 本方块指向邻居的方向，不取反；
+     *  - 输出（邻居/红石线查本方块）：查询方调用 level.getSignal(本方块, direction) 时，
+     *    direction 是"查询方指向本方块"的方向，与本方块实际输出方向相反，故此处取反——
+     *    总线 setOutput("front") 写入 internal[FRONT]，relay 前方（FACING 方向）的红石线
+     *    从北侧查询时传入 direction=FACING.getOpposite()，取反得 FACING → FRONT 命中 ✓
+     *    （v0.0.9 曾误判此处理论上应"不取反"，用户实测前后左右上下全反，遂恢复取反）。
      */
     public int getRedstoneOutput(Direction direction) {
         return state.getAppliedOutput(toLocalSide(getBlockState(), direction.getOpposite()));

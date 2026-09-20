@@ -1,6 +1,7 @@
 package com.cc_rc;
 
 import com.cc_rc.block.Breaker.BreakerBlock;
+import com.cc_rc.block.block_detector.BlockDetectorBlock;
 import com.cc_rc.block.Console_button.ConsoleButtonBlock;
 import com.cc_rc.block.Console_lever.ConsoleLever3StageBlock;
 import com.cc_rc.block.Console_lever.ConsoleLeverBlock;
@@ -10,6 +11,7 @@ import com.cc_rc.block.Safe_button.SafeButtonBlock;
 import com.cc_rc.block.Plotter.PlotterBlock;
 import com.cc_rc.block.Plotter.PlotterClockBlock;
 import com.cc_rc.block.card_reader.CardReaderBlock;
+import com.cc_rc.block.data_unit.DataUnitBlock;
 import com.cc_rc.block.digital_display.DigitalDisplayBlock;
 import com.cc_rc.block.digital_knob.DigitalKnobBlock;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBlock;
@@ -408,4 +410,19 @@ public class ModBlocks {
                     .mapColor(MapColor.METAL)
                     .strength(1.0F)
                     .sound(SoundType.METAL)));
+
+    // 数据单元（无方向完整方块，外观暂用原版书架模型/贴图占位；方块实体存「名称+空数据列表」，CC 外设读写）
+    public static final RegistryObject<DataUnitBlock> DATA_UNIT = BLOCKS.register("data_unit",
+            () -> new DataUnitBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD)));
+
+    // 方块探测器（完整方块，六方向放置，外观暂用原版观察者模型/贴图占位；CC 外设只读探测面向方块信息）
+    public static final RegistryObject<BlockDetectorBlock> BLOCK_DETECTOR = BLOCKS.register("block_detector",
+            () -> new BlockDetectorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)));
 }

@@ -48,6 +48,10 @@ public class PasswordInputerBlock extends ConsolePanelBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
+        // 手持染料右键 → 优先染色面板文字（不影响密码破解功能）
+        if (ConsolePanelBlock.handleDyeInteraction(level, pos, player, hand)) {
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (level.isClientSide) return InteractionResult.SUCCESS;
 
         // 只有手持破解器且方块处于关闭状态时才启动破解

@@ -1,5 +1,5 @@
 {
-    "parent": "cc_rc:block/digital_display",
+    "parent": "cc_rc:block/digital_display/digital_display",
     "display": {
     "gui": {"rotation": [30, 45, 0], "translation": [0,0,0], "scale": [0.6,0.6,0.6]}
   }

@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "cc_rc:block/ccrc_block" }
+    "": { "model": "cc_rc:block/ccrc_block/ccrc_block" }
   }
 }

@@ -17,9 +17,10 @@ import net.minecraft.world.level.Level;
  * 采用原版成书（WrittenBookItem）的样式与阅读界面，记录 CC: Tweaked 配件外设的使用方法。
  * 本类在 createBook() 中把固定内容写入成书 NBT：
  *   - title / author / resolved / generation / pages（每页为 JSON 文本组件字符串）。
- * 内容页包括：数码显示器、数字调节器、数字圆盘记录仪，并精确记录各外设注册的
- * 每一个 Lua 函数及其参数/返回类型（与 DigitalDisplayPeripheral / DigitalKnobPeripheral /
- * DigitalPlotterPeripheral 中的 @LuaFunction 一一对应）。
+ * 内容页包括：数码显示器、数字调节器、数字圆盘记录仪、
+ * 扩展红石继电器/总线、方块探测器，并精确记录各外设注册的
+ * 每一个 Lua 函数及其参数/返回类型（与各 Peripheral 中的
+ * @LuaFunction 一一对应）。
  *
  * 注意（服务端兼容）：
  *   - 原版打开成书的链路（ServerPlayer.openItemGui 与客户端 handleOpenBook）
@@ -53,7 +54,7 @@ public class InstructionBook2Item extends WrittenBookItem {
         // 封面
         pages.add(page("说明书 2\n\n--CC: 反应堆控制台--\n\n本说明书收录本模组 CC 相关配件的 Lua 外设使用方法。"));
         // 目录
-        pages.add(page("【目录】\n1. 数码显示器\n2. 数字调节器\n3. 数字圆盘记录仪\n4. 扩展红石继电器/总线"));
+        pages.add(page("【目录】\n1. 数码显示器\n2. 数字调节器\n3. 数字圆盘记录仪\n4. 扩展红石继电器/总线\n5. 方块探测器"));
         // 数码显示器 - 外设与 setStatus
         pages.add(page("1. 数码显示器\n\n外设类型: digital_display\n通过 CC 调制解调器连接后即可调用。\n\nsetStatus(text: string)\n  -> string\n设置橙色状态文字，参数为字符串。\n返回设置后的文字。"));
         // 数码显示器 - getStatus 与示例
@@ -74,6 +75,12 @@ public class InstructionBook2Item extends WrittenBookItem {
         pages.add(page("4. 扩展红石继电器/总线(续)\n\nisRelay(distance)\n  -> boolean 判断该处是否为继电器\n\nsetOutput(distance, side, on)\n  布尔输出：on=true 输出15，false 输出0\n\ngetOutput(distance, side)\n  -> boolean 读取布尔输出\n\nsetAnalogOutput(distance, side, value)\n  模拟输出 0~15（越界报错）"));
         // 扩展红石继电器/总线 - 输入函数与示例
         pages.add(page("4. 扩展红石继电器/总线(续)\n\ngetAnalogOutput(distance, side)\n  -> int 读取输出强度 0~15\n\ngetInput(distance, side)\n  -> boolean 该侧是否收到信号\n\ngetAnalogInput(distance, side)\n  -> int 该侧读入强度 0~15\n\n示例(Lua):\np=peripheral.find(\"redstone_relay_bus\")\np.setAnalogOutput(3,\"front\",15)\nprint(p.getAnalogInput(3,\"back\"))"));
+        // 方块探测器 - 概述
+        pages.add(page("5. 方块探测器\n\n外设类型: block_detector\n探测器沿放置朝向探测前方一格的\n方块信息，只读不可修改。\n\n注意：探测需访问主线程世界数据，\n每次调用有 1 tick 延迟。\n\n函数: getFacing / getBlockInfo /\ngetBlockEntityData"));
+        // 方块探测器 - getFacing 与 getBlockInfo
+        pages.add(page("5. 方块探测器(续)\n\ngetFacing()\n  -> string\n返回探测方向字符串：\nnorth/south/west/east/up/down\n\ngetBlockInfo()\n  -> table | nil\n返回面向方块信息表：\n{x, y, z, id, name, mod,\nisBlockEntity}\n目标区块未加载返回 nil。"));
+        // 方块探测器 - getBlockEntityData 与示例
+        pages.add(page("5. 方块探测器(续)\n\ngetBlockEntityData()\n  -> table | nil\n目标为方块实体时返回其完整 NBT\n数据(类似 /data get block，\n含 id 与坐标)，不可修改；\n无方块实体或未加载返回 nil。\n\n示例(Lua):\np=peripheral.find(\"block_detector\")\nlocal t=p.getBlockInfo()\nprint(t.id, t.mod, t.x, t.y, t.z)"));
         tag.put(WrittenBookItem.TAG_PAGES, pages);
 
         return stack;

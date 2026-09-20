@@ -4,9 +4,11 @@ import com.cc_rc.block.Console_lever.ConsoleLever3StageBlockEntity;
 import com.cc_rc.block.Console_lever.ConsoleLeverBlockEntity;
 import com.cc_rc.block.Plotter.PlotterBlockEntity;
 import com.cc_rc.block.Plotter.PlotterClockBlockEntity;
+import com.cc_rc.block.block_detector.BlockDetectorBlockEntity;
 import com.cc_rc.block.canvas_sign.CanvasHangingSignBlockEntity;
 import com.cc_rc.block.canvas_sign.CanvasSignBlockEntity;
 import com.cc_rc.block.console_panel.ConsolePanelBlockEntity;
+import com.cc_rc.block.data_unit.DataUnitBlockEntity;
 import com.cc_rc.block.digital_display.DigitalDisplayBlockEntity;
 import com.cc_rc.block.digital_knob.DigitalKnobBlockEntity;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBlockEntity;
@@ -158,5 +160,21 @@ public class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ExtendedRelayBusBlockEntity::new,
                             ModBlocks.RELAY_BUS.get()
+                    ).build(null));
+
+    // 数据单元方块实体类型（存名称 + 数据列表，CC 外设宿主）
+    public static final RegistryObject<BlockEntityType<DataUnitBlockEntity>> DATA_UNIT_BE =
+            BLOCK_ENTITY_TYPES.register("data_unit_be",
+                    () -> BlockEntityType.Builder.of(
+                            DataUnitBlockEntity::new,
+                            ModBlocks.DATA_UNIT.get()
+                    ).build(null));
+
+    // 方块探测器方块实体类型（空实体，仅作 CC 外设承载）
+    public static final RegistryObject<BlockEntityType<BlockDetectorBlockEntity>> BLOCK_DETECTOR_BE =
+            BLOCK_ENTITY_TYPES.register("block_detector_be",
+                    () -> BlockEntityType.Builder.of(
+                            BlockDetectorBlockEntity::new,
+                            ModBlocks.BLOCK_DETECTOR.get()
                     ).build(null));
 }

@@ -41,6 +41,10 @@ public class ConsoleButtonBlock extends ConsolePanelBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        // 手持染料右键 → 优先染色面板文字（不影响按钮按下功能）
+        if (ConsolePanelBlock.handleDyeInteraction(level, pos, player, hand)) {
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (state.getValue(POWERED)) {
             return InteractionResult.CONSUME;
         }

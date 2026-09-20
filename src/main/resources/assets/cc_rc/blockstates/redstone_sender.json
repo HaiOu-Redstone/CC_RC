@@ -1,16 +1,16 @@
 {
   "multipart": [
-    {"when": {"facing": "up", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender_off"}},
-    {"when": {"facing": "up", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender_on"}},
-    {"when": {"facing": "down", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender_off", "x": 180}},
-    {"when": {"facing": "down", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender_on", "x": 180}},
-    {"when": {"facing": "north", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender_off", "x": 90}},
-    {"when": {"facing": "north", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender_on", "x": 90}},
-    {"when": {"facing": "south", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender_off", "x": 270}},
-    {"when": {"facing": "south", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender_on", "x": 270}},
-    {"when": {"facing": "east", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender_off", "x": 90, "y": 90}},
-    {"when": {"facing": "east", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender_on", "x": 90, "y": 90}},
-    {"when": {"facing": "west", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender_off", "x": 90, "y": 270}},
-    {"when": {"facing": "west", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender_on", "x": 90, "y": 270}}
+    {"when": {"facing": "up", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_off"}},
+    {"when": {"facing": "up", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_on"}},
+    {"when": {"facing": "down", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_off", "x": 180}},
+    {"when": {"facing": "down", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_on", "x": 180}},
+    {"when": {"facing": "north", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_off", "x": 90}},
+    {"when": {"facing": "north", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_on", "x": 90}},
+    {"when": {"facing": "south", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_off", "x": 270}},
+    {"when": {"facing": "south", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_on", "x": 270}},
+    {"when": {"facing": "east", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_off", "x": 90, "y": 90}},
+    {"when": {"facing": "east", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_on", "x": 90, "y": 90}},
+    {"when": {"facing": "west", "power": "0"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_off", "x": 90, "y": 270}},
+    {"when": {"facing": "west", "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"}, "apply": {"model": "cc_rc:block/redstone_sender/redstone_sender_on", "x": 90, "y": 270}}
   ]
 }

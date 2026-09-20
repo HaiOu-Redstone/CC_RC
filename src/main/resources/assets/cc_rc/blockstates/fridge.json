@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "cc_rc:block/fridge" },
-    "facing=east":  { "model": "cc_rc:block/fridge", "y": 90 },
-    "facing=south": { "model": "cc_rc:block/fridge", "y": 180 },
-    "facing=west":  { "model": "cc_rc:block/fridge", "y": 270 }
+    "facing=north": { "model": "cc_rc:block/fridge/fridge" },
+    "facing=east":  { "model": "cc_rc:block/fridge/fridge", "y": 90 },
+    "facing=south": { "model": "cc_rc:block/fridge/fridge", "y": 180 },
+    "facing=west":  { "model": "cc_rc:block/fridge/fridge", "y": 270 }
   }
 }

@@ -303,6 +303,24 @@
     ],
     "subtitle": "cc_rc.subtitle.server_noise"
   },
+  "reactor_start": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/reactor_start",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.reactor_start"
+  },
+  "reactor_start_full": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/reactor_start_full",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.reactor_start_full"
+  },
   "password_crack": {
     "sounds": [
       {

@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "cc_rc:block/ccrc_block"
+    "all": "cc_rc:block/ccrc_block/ccrc_block"
   }
 }

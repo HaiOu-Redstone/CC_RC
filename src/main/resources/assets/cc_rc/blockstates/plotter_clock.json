@@ -1,5 +1,5 @@
 {
     "variants": {
-        "": { "model": "cc_rc:block/plotter_clock" }
+        "": { "model": "cc_rc:block/plotter_clock/plotter_clock" }
     }
 }

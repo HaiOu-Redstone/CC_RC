@@ -96,7 +96,7 @@ public class ServerFaasSoundHandler {
             if (ACTIVE_SOUNDS.containsKey(immutable)) continue;
             BlockState state = level.getBlockState(immutable);
             if (!(state.getBlock() instanceof ServerFaasBlock)) continue;
-            FaasLoopingSound sound = new FaasLoopingSound(level, ModSounds.SERVER_NOISE.get(), immutable);
+            FaasLoopingSound sound = new FaasLoopingSound(level, ModSounds.SERVER_NOISE.get(), immutable, player);
             ACTIVE_SOUNDS.put(immutable, sound);
             mc.getSoundManager().play(sound);
         }
@@ -127,13 +127,17 @@ public class ServerFaasSoundHandler {
         private final ClientLevel level;
         private final BlockPos pos;
 
-        private FaasLoopingSound(ClientLevel level, SoundEvent sound, BlockPos pos) {
+        private FaasLoopingSound(ClientLevel level, SoundEvent sound, BlockPos pos, Player player) {
             super(sound, SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
             this.level = level;
             this.pos = pos;
             this.looping = true;
             this.delay = 0;
-            this.volume = BASE_VOLUME;
+            // 初始音量 = 创建时玩家与方块的实际衰减音量（修复：原固定 BASE_VOLUME=1.0，
+            // 玩家在 16 格边缘进入范围也满音量开播 → 每次进入/重建都“炸响”一声；
+            // 现在 edge 处接近 0，开播即小声，随后由 updateVolume() 平滑收敛）
+            double dist = Math.sqrt(player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
+            this.volume = (float) Mth.clamp(1.0 - dist / FADE_RANGE, 0.0, 1.0) * BASE_VOLUME;
             this.pitch = 1.0F;
             // 关键：标记为相对播放 + 关闭引擎衰减，让 SoundEngine 不再按距离改音量，
             // 音量完全由 updateVolume() 手动控制，保证玩家移动时衰减必然生效。
@@ -145,14 +149,14 @@ public class ServerFaasSoundHandler {
         }
 
         /**
-         * 按玩家与音源的距离手动设置音量：dist >= FADE_RANGE 时归零，线性过渡，带平滑。
-         * 由管理器在每 tick 客户端事件中调用。
+         * 按玩家与音源的距离直接设置音量（绝对设置，无 lerp 平滑）：
+         * SoundEngine 每 tick 读取实例的 volume 字段并应用（反编译确认 m_120326_ 每 tick
+         * 调用 m_120324_ 计算音量），故静止时音量严格恒定、移动时严格跟随距离，
+         * 杜绝任何缓升缓降/周期性起伏。由管理器在每 tick 客户端事件中调用。
          */
         void updateVolume(Player player) {
             double dist = Math.sqrt(player.distanceToSqr(x, y, z));
-            float target = (float) Mth.clamp(1.0 - dist / FADE_RANGE, 0.0, 1.0);
-            // lerp 平滑过渡，避免音量跳变产生顿挫感
-            this.volume = Mth.lerp(0.2F, this.volume, target * BASE_VOLUME);
+            this.volume = (float) Mth.clamp(1.0 - dist / FADE_RANGE, 0.0, 1.0) * BASE_VOLUME;
         }
 
         @Override

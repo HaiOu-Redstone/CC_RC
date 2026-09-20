@@ -60,6 +60,10 @@ public class NukeButtonBlock extends ConsolePanelBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        // 手持染料右键 → 优先染色面板文字（不影响核弹按钮状态机功能）
+        if (ConsolePanelBlock.handleDyeInteraction(level, pos, player, hand)) {
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (level.isClientSide) return InteractionResult.SUCCESS;
 
         int st = state.getValue(STATE);

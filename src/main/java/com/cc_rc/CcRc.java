@@ -8,6 +8,10 @@ import com.cc_rc.block.digital_display.DigitalDisplayBER;
 import com.cc_rc.block.digital_knob.DigitalKnobBER;
 import com.cc_rc.network.ModNetwork;
 import com.cc_rc.block.digital_display.DigitalDisplayBlockEntity;
+import com.cc_rc.block.block_detector.BlockDetectorBlockEntity;
+import com.cc_rc.block.block_detector.BlockDetectorPeripheral;
+import com.cc_rc.block.data_unit.DataUnitBlockEntity;
+import com.cc_rc.block.data_unit.DataUnitPeripheral;
 import com.cc_rc.block.digital_display.DigitalDisplayPeripheral;
 import com.cc_rc.block.digital_knob.DigitalKnobBlockEntity;
 import com.cc_rc.block.digital_knob.DigitalKnobPeripheral;
@@ -121,6 +125,14 @@ public class CcRc
                 // 扩展红石继电器总线：沿朝向搜索继电器读写的 CC 外设
                 if (world.getBlockEntity(pos) instanceof ExtendedRelayBusBlockEntity relayBusBE) {
                     return LazyOptional.of(() -> new ExtendedRelayBusPeripheral(relayBusBE));
+                }
+                // 数据单元：读写名称 / 整个列表 / 列表某一位的 CC 外设
+                if (world.getBlockEntity(pos) instanceof DataUnitBlockEntity unitBE) {
+                    return LazyOptional.of(() -> new DataUnitPeripheral(unitBE));
+                }
+                // 方块探测器：只读探测面向方块信息（坐标/注册名/模组来源/方块实体数据）
+                if (world.getBlockEntity(pos) instanceof BlockDetectorBlockEntity detectorBE) {
+                    return LazyOptional.of(() -> new BlockDetectorPeripheral(detectorBE));
                 }
                 return LazyOptional.empty();
             }

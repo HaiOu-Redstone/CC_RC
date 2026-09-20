@@ -29,8 +29,9 @@ import org.jetbrains.annotations.Nullable;
  *  - canConnectRedstone=false：红石线不连接本方块、不将其作为导体；
  *  - isRedstoneConductor=false（Properties StatePredicate 设置，1.20.1 无 Block 层
  *    可覆写方法）：本方块视为透明非实心（同玻璃），红石线不从其上/旁穿透传导；
- *  - getSignal/getDirectSignal 返回真实定向输出（direction 反向语义，用
- *    direction.getOpposite() 换算本地方向），保证 setOutput 能向目标方向输出红石。
+ *  - getSignal/getDirectSignal 返回真实定向输出（用户实测：查询方传入的 direction
+ *    与本方块实际输出方向相反，getRedstoneOutput 内部取反换算本地方向），
+ *    保证 setOutput 能向目标方向输出红石（输出方向与输入查询对称）。
  */
 public class ExtendedRelayBlock extends HorizontalDirectionalBlock implements EntityBlock {
 

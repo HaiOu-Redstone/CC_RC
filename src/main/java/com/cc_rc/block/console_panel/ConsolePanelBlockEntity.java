@@ -6,9 +6,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -43,6 +46,15 @@ public class ConsolePanelBlockEntity extends BlockEntity implements ITextDisplay
 
     public Component getText() {
         return text;
+    }
+
+    /**
+     * 应用染料颜色到显示文字：仅覆写文字颜色（保留原文内容与粗体/斜体等其他格式）。
+     * 面板文字允许为空（先染色后写入文字），样式随空文字一并持久化。
+     */
+    public void applyDyeColor(DyeColor dyeColor) {
+        Style style = text.getStyle().withColor(TextColor.fromRgb(dyeColor.getTextColor()));
+        setText(Component.literal(text.getString()).withStyle(style));
     }
 
     public int getTicksRemaining() {

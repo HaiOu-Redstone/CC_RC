@@ -3,8 +3,8 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"textures": {
-		"0": "cc_rc:block/digital_display",
-		"particle": "cc_rc:block/digital_display"
+		"0": "cc_rc:block/digital_display/digital_display",
+		"particle": "cc_rc:block/digital_display/digital_display"
 	},
 	"elements": [
 		{

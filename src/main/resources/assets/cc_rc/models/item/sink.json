@@ -1,3 +1,3 @@
 {
-    "parent": "cc_rc:block/sink"
+    "parent": "cc_rc:block/sink/sink"
 }

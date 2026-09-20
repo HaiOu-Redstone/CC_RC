@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "cc_rc:block/potato_crate" }
+    "": { "model": "cc_rc:block/potato_crate/potato_crate" }
   }
 }

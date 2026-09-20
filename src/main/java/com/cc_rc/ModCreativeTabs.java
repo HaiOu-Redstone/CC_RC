@@ -45,6 +45,8 @@ public class ModCreativeTabs {
                         output.accept(ModItems.DIGITAL_DISPLAY_ITEM.get());
                         output.accept(ModItems.DIGITAL_KNOB_ITEM.get());
                         output.accept(ModItems.DIGITAL_PLOTTER_ITEM.get());
+                        output.accept(ModItems.DATA_UNIT_ITEM.get());
+                        output.accept(ModItems.BLOCK_DETECTOR_ITEM.get());
                         output.accept(ModItems.NAI_LONG_TOY_ITEM.get());
                         output.accept(ModItems.REDSTONE_SENDER_ITEM.get());
                         output.accept(ModItems.REDSTONE_RECEIVER_ITEM.get());

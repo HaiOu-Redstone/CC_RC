@@ -158,6 +158,14 @@ public class ModItems {
     public static final RegistryObject<Item> DIGITAL_PLOTTER_ITEM = ITEMS.register("digital_plotter",
             () -> new BlockItem(ModBlocks.DIGITAL_PLOTTER.get(), new Item.Properties()));
 
+    // 数据单元物品（外观暂用原版书架模型/贴图占位）
+    public static final RegistryObject<Item> DATA_UNIT_ITEM = ITEMS.register("data_unit",
+            () -> new BlockItem(ModBlocks.DATA_UNIT.get(), new Item.Properties()));
+
+    // 方块探测器物品（外观暂用原版观察者模型/贴图占位）
+    public static final RegistryObject<Item> BLOCK_DETECTOR_ITEM = ITEMS.register("block_detector",
+            () -> new BlockItem(ModBlocks.BLOCK_DETECTOR.get(), new Item.Properties()));
+
     // 奶龙玩偶物品
     public static final RegistryObject<Item> NAI_LONG_TOY_ITEM = ITEMS.register("nai_long_toy",
             () -> new BlockItem(ModBlocks.NAI_LONG_TOY.get(), new Item.Properties()));

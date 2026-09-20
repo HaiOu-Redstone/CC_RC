@@ -61,6 +61,10 @@
 | 49 | 物品/音乐 | 唱片音乐 6 张（GitHub issue #1：bit / broken_boy / panic_track / resonance / roller_mobster / sabotage，VLC mono OGG + RecordItem 注册 + 双语 lang） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
 | 50 | CC 外设 | CC 外设无延迟改造（风险最小方案）：knob/display/plotter volatile+dirty+tick 节流广播，relay_bus RelayState 双缓存 + 总线缓存 + Lua 零 Level 访问，修复 Inputs 落盘 | [二、32 CC 外设无延迟改造](#32-cc-外设无延迟改造风险最小方案实施) |
 | 51 | 物品/音乐 | 唱片音乐 2 张（friends_wine 朋友的酒 / air 鸟之诗，mp4 源文件经 ffmpeg 提取音频转 mono OGG + RecordItem 注册 + 双语 lang） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
+| 52 | 方块/CC外设 | 数据单元 data_unit（无方向完整方块，专属贴图 top/side；方块实体存名称+空数据列表，编辑工具可改名称，CC 外设读写名称/整个列表/某一位） | [二、33 数据单元](#33-数据单元dataunit) |
+| 53 | 方块/CC外设 | 方块探测器 block_detector（六方向放置，专属贴图 top/side/front/back；CC 外设只读探测面向方块的坐标/注册名/模组来源/方块实体数据） | [二、34 方块探测器](#34-方块探测器blockdetector) |
+| 54 | 资源整理 | 贴图/模型目录整理：textures/block 与 models/block 顶层散装文件全部归入各方块同名文件夹（含 redstone_receiver/sender、relay_bus、extended_relay 等多贴图方块），所有 JSON 引用同步更新（99 文件） | [二、35 贴图/模型资源目录整理](#35-贴图模型资源目录整理) |
+| 55 | 方块/GUI | 控制面板文字样式：染料右键面板染字（16 色，不消耗染料）+ 编辑工具 GUI 新增 B/I/U/S 格式按钮与 16 色块（打开时读取当前样式），EditTextPacket 携带完整样式（颜色/粗体/斜体/下划线/删除线） | [二、36 控制面板文字样式](#36-控制面板文字样式染料染色--编辑工具格式按钮) |
 
 ---
 
@@ -792,6 +796,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
   - > **修复记录（模型替换）**：FAAS 模型由"模型/FAAS"旧版替换为"模型/FAAS/FAAS新"（faas_1/2/3 三组 Blockbench 导出），重新转换生成 `models/block/server_faas/faas_1~3.json`（55/52/49 元素）并更新贴图，blockstate 与 item 模型引用不变。
   - > **修复记录（UV 坐标误缩放）**：FAAS 新模型与按钮 4/5、密码输入器源 JSON 虽标注 Bedrock 格式，但 UV 实为 Java 0-16 归一化坐标（与贴图内容区域验算吻合，如 faas 贴图 512×512 内容 0~378px ↔ UV 11.875×512/16≈380px）；曾误按 `texture_size` 像素缩放导致贴图错位残缺，已统一改为"UV 直接沿用 + 顶/底面方向翻转"并重建全部 9 个模型（faas_1~3、console_button_4/5 × off/on、password_inputer × off/on）。
 - **性质**：完整方块（模型元素可超出方块边界渲染），金属音效 `SoundType.METAL`、强度 3.0/6.0、`requiresCorrectToolForDrops`；为三种变体各补一张 `loot_tables/blocks/server_faas_N.json` 使方块可掉落。
+  - > **修复记录（循环音效炸响）**：玩家靠近开播时"炸响"、远离一定距离后"连续不断炸响"。两级根因：① 运行时 `server_noise.ogg` 是 **20 秒**文件而素材源 `模型/FAAS/server_noise.ogg` 只有 **8 秒**（历史处理把 8s 素材拼接/拉长成 20s）——循环播放时每到内部拼接点（8s/16s 处）与循环点波形跳变 → 一阵阵爆音；已用素材源重新转码为 **8 秒单声道 44.1k 160kbps**（`-ac 1 -ar 44100 -c:a libvorbis -b:a 160k`），循环点即素材原子状态；② `ServerFaasSoundHandler.FaasLoopingSound` 构造器 `volume` **固定 = BASE_VOLUME(1.0)**，玩家在 16 格扫描边缘进入范围也满音量开播、且 16~20 格边界反复进出会反复重建音效 → 每次进入/重建"炸响"；已改为**构造时按玩家与方块实际距离初始化音量**（`clamp(1 - dist/16)`，边缘≈0，开播即正确响度，updateVolume 再平滑收敛）。gradlew build BUILD SUCCESSFUL（38s）。
+  - > **修复记录（循环点音量起伏）**：炸响消除后长时间听仍有"衔接处降低又升高"。**最终根因**：素材源 `模型/FAAS/server_noise.ogg` **开头 0~0.4s 有 fade-in**（100ms RMS -26→-13dB）**、结尾 7.8~8.0s 有 fade-out**（-14→-26dB）——循环从"尾 -11.5dB"跳到"头 -18dB 再爬升"，每 8 秒一次"降低又升高"。**最终修复**：ffmpeg 裁剪**纯净中段 `-ss 0.5 -t 7.2`**（避开 fade-in 0.5s 与 fade-out 0.3s，7.2s），`volume=-1.5dB` 留削波余量、mono 160kbps——首尾 100ms RMS **-12.79 vs -12.43dB（差 0.36dB）**，循环点能量无缝；0.5s 段波动 -11.9~-13.7dB（噪声自然起伏，无 fade 低谷/高峰）；峰值 -0.27dB 无削波。**代码层**：反编译 SoundEngine `m_120326_`(tick) 确认**每 tick 调用 `m_120324_` 重算音量**（读取实例 volume 字段）——`updateVolume` 由 `Mth.lerp(0.2F,...)` 平滑改为**绝对设置**（`volume = clamp(1-dist/16)*BASE_VOLUME`），静止时音量字节级恒定、移动严格跟随距离，杜绝缓变残留。**弃用**：dynaudnorm 帧增益（噪声上产生泵动、首尾补偿不足）、acrossfade 交叉淡化（FFmpeg 4.2 崩溃）、PCM 交叉混合（fade 区能量凹）。gradlew build BUILD SUCCESSFUL（28s）。
 
 ### 20. 说明书1（instruction_book_1）
 
@@ -809,11 +815,12 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 [InstructionBook2Item.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/InstructionBook2Item.java) 与说明书1同机制（继承 `WrittenBookItem`、覆写 `use()` 客户端打开 `BookViewScreen`），记录 **CC: Tweaked 配件外设的使用方法**：
 
-- **页面结构**（共 12 页）：封面 → 目录 → 数码显示器（2 页）→ 数字调节器（2 页）→ 数字圆盘记录仪（3 页）→ 扩展红石继电器/总线（3 页）。内容与四个外设类 [DigitalDisplayPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_display/DigitalDisplayPeripheral.java)、[DigitalKnobPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_knob/DigitalKnobPeripheral.java)、[DigitalPlotterPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_plotter/DigitalPlotterPeripheral.java)、[ExtendedRelayBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBusPeripheral.java) 中的 `@LuaFunction` 一一对应，精确记录每个函数名、参数类型与返回值：
+- **页面结构**（共 15 页）：封面 → 目录 → 数码显示器（2 页）→ 数字调节器（2 页）→ 数字圆盘记录仪（3 页）→ 扩展红石继电器/总线（3 页）→ 方块探测器（3 页）。内容与五个外设类 [DigitalDisplayPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_display/DigitalDisplayPeripheral.java)、[DigitalKnobPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_knob/DigitalKnobPeripheral.java)、[DigitalPlotterPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/digital_plotter/DigitalPlotterPeripheral.java)、[ExtendedRelayBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/extended_relay/ExtendedRelayBusPeripheral.java)、[BlockDetectorPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/block_detector/BlockDetectorPeripheral.java) 中的 `@LuaFunction` 一一对应，精确记录每个函数名、参数类型与返回值：
   - **数码显示器** `digital_display`：`setStatus(text: string) -> string`（设置橙色状态文字）、`getStatus() -> string`（读取当前文字）。
   - **数字调节器** `digital_knob`：`setValue(value: int) -> int`（设置整数 0~1000，越界钳制，返回钳制后值）、`getValue() -> int`（读取当前值）。
   - **数字圆盘记录仪** `digital_plotter`：`push(value: int) -> int`（写入新值并移位，0~100 钳制）、`setValue(index: int, value: int) -> boolean`（设置第 index 位，索引越界返回 false）、`getValue(index: int) -> int | nil`（读取第 index 位，越界返回 nil）、`getList() -> table`（读取整表 50 元素）。索引采用 Lua 惯例 1~50。
   - **扩展红石继电器/总线** `redstone_relay_bus`：`isRelay(distance) -> boolean`（判断该处是否为继电器）、`setOutput(distance, side, on)`（布尔输出 15/0）、`getOutput(distance, side) -> boolean`、`setAnalogOutput(distance, side, value)`（模拟输出 0~15 越界报错）、`getAnalogOutput(distance, side) -> int`、`getInput(distance, side) -> boolean`、`getAnalogInput(distance, side) -> int`。distance 紧贴=1，最大 `relay_bus.max_distance`（默认 16，范围 1~64）；side 以**继电器自身朝向**为基准（top/bottom/left/right/front/back）。
+  - **方块探测器** `block_detector`（2026-09-15 新增）：`getFacing() -> string`（探测方向 north/south/west/east/up/down）、`getBlockInfo() -> table | nil`（面向方块信息表 `{x,y,z,id,name,mod,isBlockEntity}`，目标区块未加载返回 nil）、`getBlockEntityData() -> table | nil`（目标为方块实体时返回完整 NBT 数据，类似 `/data get block`，只读；无方块实体/未加载返回 nil）。页面注明探测需访问主线程世界数据，**每次调用有 1 tick 延迟**。
 - **内容注入**：`createBook()` 写入 `title="说明书2"`、`author="海鸥的红石"`、`resolved=true`、`generation=0`、`pages`。
 - **注册**：`ModItems.INSTRUCTION_BOOK_2`（`instruction_book_2`，堆叠 1）；贴图 `textures/item/instruction_book_2.png`（来源"模型/其他物品/instruction_book_2.png"），模型 `models/item/instruction_book_2.json`；lang 中英"说明书2 / Instruction Book 2"；创造标签发放 `createBook()`。
 
@@ -959,6 +966,13 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 > - **外设调用约 1 tick 延迟**：这是 CC: Tweaked `@LuaFunction(mainThread = true)` 的**固有机制**——CC 电脑在独立线程运行 Lua，标 `mainThread` 的方法会投递到主线程**下一 tick** 执行（保证世界/方块实体访问线程安全）。因此 `isRelay`/`setOutput`/`getInput` 等每次调用天然有 ≤1 tick 延迟，非 bug；数码显示器等既有外设同样如此。
 >
 > **修复记录（v0.0.8）玻璃式不传导（isRedstoneConductor）**：用户反馈继电器/总线仍会传导红石。根因：**1.20.1 中 `isRedstoneConductor` 是 `BlockBehaviour.Properties` 的 `StatePredicate` 设置方法**（构造时以 `properties.isRedstoneConductor((state, level, pos) -> bool)` 链式传入），**Block 层已没有可覆写的实例方法**——曾尝试以 `@Override public boolean isRedstoneConductor(BlockState, BlockGetter, BlockPos)` 覆写导致编译失败（"method does not override"），构建中断、jar 未更新，测试 jar 中继电器仍是完整方块默认导体（isRedstoneConductor=true）。修复：两个方块（ExtendedRelayBlock / ExtendedRelayBusBlock）构造器改为 `super(properties.isRedstoneConductor((state, level, pos) -> false))`，配合 `canConnectRedstone=false` 真正实现"红石线不连接、信号不穿透"（同玻璃）；同步修正总线 Javadoc 中过时的 `canConnectRedstone=true` 描述。
+>
+> **修复记录（v0.0.9）继电器识别不到红石中继器输入**（方向语义更正，**覆盖**上方 v0.0.8 记录中"direction 反向语义"的过时结论）：
+> - **现象**：红石中继器对准继电器输出，`getInput`/`getAnalogInput` 读不到信号；红石粉/按钮/拉杆等**方向无关**信号源正常（掩盖了方向错误，仅中继器/比较器等**方向相关**信号源暴露）。
+> - **根因（两级取证）**：① 反编译原版 `DiodeBlock`（中继器父类）srg 字节码：`getSignal` 判断 **`direction == FACING`** 才输出——即 `Level.getSignal(pos, direction)` 的 direction 是**查询方指向信号源的方向**（不是"反向语义"）；② 反编译 **CC-Tweaked 1.120.2** 字节码：`RedstoneUtil.getRedstoneInput(level, pos.relative(dir), dir)` 与 `RedstoneRelayBlockEntity.getRedstoneOutput(direction) = state.getExternalOutput(mapSide(direction))` **均不取反**。本实现两处 `getOpposite()` 皆源于 v0.0.8 修复记录的误导性结论。
+> - **修复（v0.0.9-1，输入）**：`refreshInputs` 去掉 `getOpposite()` → `level.getSignal(getBlockPos().relative(dir), dir)`（用户实测：中继器输入可正常识别 ✓）；同步更正两个类的 Javadoc。
+> - **补充修正（v0.0.9-2，输出）**：首轮修复曾把 `getRedstoneOutput` 也改为不取反，用户实测 **输出前后左右上下全反**，遂恢复为 `toLocalSide(getBlockState(), direction.getOpposite())`——**输出与输入的查询方向语义恰好对称**：输入（本方块查邻居）传"本方块→信号源"方向 `dir`；输出（红石线等查本方块）传入的 `direction` 是"查询方→本方块"方向，与本方块实际输出方向相反，必须取反。最终形态 = 仅改 `refreshInputs` 一处。
+> - **验证**：gradlew build BUILD SUCCESSFUL（32s）；需游戏内实测中继器→继电器输入（推荐拓扑：中继器输出端紧贴继电器任意面，Lua `getAnalogInput(distance, side)` 可读 15）与 `setOutput("front")` 打到继电器正面红石线。
 
 ### 30. 盖金蜗牛与金鹰（GajinSnail / GoldenEagle）
 
@@ -1017,13 +1031,75 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 - **修复（总线无法识别继电器）**：总线 BE 的继电器缓存刷新依赖主线程 tick，但 ExtendedRelayBusBlock 漏覆写 `getTicker`（改造前外设是 mainThread 实时 `findRelay` 查 Level，不依赖缓存；改造后读缓存但缓存从不重建 → `relayCache` 恒空、`isRelay` 恒 false、其余方法抛 "No extension relay"）。已补 `getTicker`（手写 lambda，与 knob/display/plotter 同款风格）驱动 `ExtendedRelayBusBlockEntity.tick` 每 tick 重建缓存，并加 `level.isClientSide` 过滤；继电器侧无此问题（ExtendedRelayBlock.tick 方块自调度持续运行，驱动 applyOutputsToWorld/refreshInputs）。gradlew build BUILD SUCCESSFUL（34s）。
 - **红石线主动连接继电器**（用户反馈）：ExtendedRelayBlock.canConnectRedstone 由 false 改为 **true**——红石线可主动连接相邻继电器读取定向输出（isSignalSource 原本即 true）；配合 Properties 的 isRedstoneConductor=false 仍保持"非导体"语义（红石线不从继电器穿透传导）。
 
+### 33. 数据单元（DataUnit）
+
+数据单元（`data_unit`）是无方向完整方块，外观模型为**原版书架结构**（`minecraft:block/cube_column` 柱形），贴图已换成**专属贴图**（顶部 `data_unit_top`、四周侧面 `data_unit_side`，模型文件 [data_unit.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/block/data_unit/data_unit.json)，blockstates 与 item model 引用 `cc_rc:block/data_unit/data_unit`）：
+
+- **方块**（[DataUnitBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/data_unit/DataUnitBlock.java)）：无方向完整方块（16×16×16 碰撞箱，木质音效，强度 2.0，`MapColor.WOOD`）；`setPlacedBy` 从物品自定义名称写入名称数据；`getTicker` 注册方块实体 tick。
+- **方块实体**（[DataUnitBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/data_unit/DataUnitBlockEntity.java)）实现 `ITextDisplay`（编辑工具右键可改名称）：
+  - 存储**名称**（字符串，默认空）与**数据**（整数列表，初始为空，上限 1024）；
+  - 线程模型沿用 CC 外设无延迟改造：`name`/`data` 均为 volatile，列表**写时复制**（只替换引用不改共享数组）；写后置 `dirty`，主线程 tick 节流合并「存档 + 客户端同步」（每 tick 至多一次）；
+  - `setValue(index, value)`：索引在范围内覆盖、等于长度时追加、越界/超上限返回 false（中间空缺补 0）；`getValue` 越界返回 null；NBT 存 `Name`/`Data`（`IntArrayTag`）。
+- **CC 外设**（[DataUnitPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/data_unit/DataUnitPeripheral.java)，type=`data_unit`）：
+  - `getName()` / `setName(str)`——读写名称；
+  - `getList()` / `setList(tbl)`——读写整个列表（Lua 表索引 1 起，超长返回 false）；
+  - `getValue(idx)` / `setValue(idx, v)`——读写列表某一位（Lua 索引 1 起，越界 getValue 返回 nil、setValue 返回 false）；
+  - 全部无 `mainThread`（0 tick），与数字调节器/圆盘记录仪一致。
+- **资源**：`blockstates/data_unit.json` 与 `models/item/data_unit.json` 引用 `cc_rc:block/data_unit/data_unit`（原版书架 cube_column 结构 + 专属 top/side 贴图）；lang 中英「数据单元 / Data Unit」。
+- **构建**：gradlew build BUILD SUCCESSFUL（28s）。
+
+### 34. 方块探测器（BlockDetector）
+
+方块探测器（`block_detector`）是**只读探测设备**，完整方块，可向 x±/y±/z± 六个方向放置，外观模型为**原版观察者结构**（16³ 单元素六面模型），贴图已换成**专属贴图**（front 正面 / back 背面 / side 侧面 / top 顶面，模型文件 [block_detector.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/block/block_detector/block_detector.json)，blockstates 六方向映射 `cc_rc:block/block_detector/block_detector` 加对应旋转）：
+
+- **方块**（[BlockDetectorBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/block_detector/BlockDetectorBlock.java)）：`FACING = BlockStateProperties.FACING`（六方向），放置时面向玩家视线（`getNearestLookingDirection().getOpposite()`，同原版观察者）；完整方块碰撞箱，石质音效强度 2.0。
+- **方块实体**（[BlockDetectorBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/block_detector/BlockDetectorBlockEntity.java)）：空实体，仅作 CC 外设承载，不存储数据（探测结果实时读取世界）。
+- **CC 外设**（[BlockDetectorPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/block_detector/BlockDetectorPeripheral.java)，type=`block_detector`）**只读**探测 FACING 前方一格的方块：
+  - `getFacing()`——方向字符串（north/south/west/east/up/down）；
+  - `getBlockInfo()`——表 `{ x, y, z, id="minecraft:stone", name="stone", mod="minecraft", isBlockEntity=布尔 }`（目标区块未加载返回 nil）；
+  - `getBlockEntityData()`——目标为方块实体时返回其完整 NBT（`saveWithId()` 递归转换为 Lua 表，含 id/坐标/全部字段，类似 `/data get block`，**不可修改**）；无方块实体/未加载返回 nil；
+  - 全部方法标注 `mainThread=true`：探测需实时读取服务端 Level/方块状态/方块实体/区块加载状态，而 Level 非线程安全只能主线程访问（与无延迟改造「Lua 线程严禁访问 Level」约定一致），每次调用消耗 1 tick 属必然代价（参考未改造前的继电器总线）。
+- **NBT 转换**：`nbtToObject(Tag)` 静态递归转换——Compound→Map、List→List、数组（byte/int/long）→数值 List、数值→double、字符串→String，供 Lua 直接消费。
+- **构建**：首次编译因方法名 `getTarget` 与 `IPeripheral.getTarget()` 接口冲突 + NBT 强转缺失失败；改名 `getBlockInfo` + 强转后 gradlew build BUILD SUCCESSFUL（26s）。
+
+### 35. 贴图/模型资源目录整理
+
+将 `textures/block` 与 `models/block` 顶层**散装**资源全部归入各方块同名文件夹（此前仅部分方块已入夹），达到彻底无散装：
+
+- **多贴图红石类**（本次核心）：
+  - `redstone_receiver`：贴图 2 张（`redstone_reciver_off/on.png` → 入夹并**修正拼写 reciver→receiver**，同时模型内 texture 引用、blockstates、item model 同步更新）；模型 `redstone_receiver_off/on.json` 入夹。
+  - `redstone_sender`：贴图 6 张（bottom/side/top × off/on）与模型 2 个入夹。
+  - `relay_bus`：贴图 3 张（`redstone_relay_bus*.png`）与模型 `relay_bus.json` 入夹。
+  - `extended_relay`：贴图 2 张（`redstone_relay_expansion*.png`）与模型 `extended_relay.json` 入夹。
+- **贴图已入夹、模型散装**：`fridge`、`potato_crate` 模型入夹。
+- **单贴图/单模型一并入夹**：`digital_display`、`digital_knob`、`digital_plotter`、`plotter_clock`、`ccrc_block`、`sink`、`canvas_sign`（32 个 canvas 标志 blockstates 共享该模型引用，全部同步更新）。
+- **改路径**：所有 JSON 引用成对更新——blockstates 的 `"model"` 引用、模型内 `"textures"` 引用、item model 的 `"parent"` 引用，批量精确字符串替换共更新 **99 个文件**（UTF-8 无 BOM 写入，保护 lang 中文不乱码）。
+- **校验**：临时校验脚本确认全部 blockstates/模型/贴图引用均指向存在的文件（贴图或模型至少其一），且无任何无斜杠旧引用残留。
+- **构建**：gradlew build BUILD SUCCESSFUL（31s）。
+
+### 36. 控制面板文字样式（染料染色 + 编辑工具格式按钮）
+
+控制面板类方块（`ConsolePanelBlockEntity` 家族：面板/大号面板/仪表/指示灯/按钮/安全按钮/核弹按钮/密码输入器/拉杆/圆盘记录仪）表面文字此前只能修改纯文本。事实上文字本身一直是 `Component`（含 Style）：NBT 走 `Component.Serializer.toJson` JSON 持久化、渲染层 `font.drawInBatch(text,...)` 会用 style 的颜色/粗体/斜体 —— 用户已实测"指令染色命名面板、放置后颜色保留"（即链路本通），本次补齐的是**修改样式的手段**与**提交保留样式**：
+
+- **染料染色（右键面板染字）**：
+  - [ConsolePanelBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console_panel/ConsolePanelBlockEntity.java) 新增 `applyDyeColor(DyeColor)`：`Style.withColor(TextColor.fromRgb(dye.getTextColor()))` 仅覆写颜色，保留原文与粗体/斜体等格式；文字允许为空（先染色后写字），样式随空文字一并持久化；
+  - [ConsolePanelBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console_panel/ConsolePanelBlock.java) 新增静态三件套：`isDyeTarget`（手持 DyeItem 且目标 BE 是 ConsolePanelBlockEntity，两端判断一致）/ `applyDye`（服务端：染字 + `SoundEvents.DYE_USE` 音效，**不消耗染料**——编辑工具 GUI 已能直接改颜色，染料仅作快捷手段）/ `handleDyeInteraction`（统一入口：客户端仅预测返回成功、服务端实际执行）；
+  - **接入点**：基类覆写 `use`（非染料时 `super.use` 保持默认 PASS）覆盖无交互子类（panel/large/meter/point_lamp/plotter）；按钮类 `console_button`/`safe_button`/`nuke_button`/`password_inputer` 与拉杆类 `console_lever`/`console_lever_6/7` 各自 `use()` **开头**调用 `handleDyeInteraction`（染料优先、不影响原交互），`ConsoleLeverBlock` 覆写 use 调 super 保留拉杆切换。
+- **编辑工具 GUI 增加样式控件**（[EditTextScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/EditTextScreen.java)，布局仍在 176x166 内，仅向下扩展）：
+  - 完成按钮（y=68）下方新增一行格式按钮 y=96：**B(粗体)/I(斜体)/U(下划线)/S(删除线)** 四个 34x16 切换按钮，激活=白色粗体字、未激活=白色（仅以粗细区分，保证暗背景下可读），悬停 tooltip 显示格式名；
+  - 再下方 y=118 起 **16 个染料色块按钮**（8 列 x 2 行，16x10，`DyeColor.values()` 顺序取 `getTextColor()`），选中白色边框；GUI 内可直接选色，与染料染色互通；
+  - 打开时从 `menu.currentText.getStyle()` 读取当前样式作为按钮/色块初值（含"空文字仅存样式"的场景）；提交时把**完整样式**（颜色 RGB + 四格式布尔）随包写回；`color=-1` = 不设置颜色（恢复默认白）。
+- **网络**（[EditTextPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/EditTextPacket.java)，C2S 通道 index 2）：字段扩展为 `text + color(int,-1=无) + bold/italic/underline/strikethrough(boolean)`，encode/decode 同步调整；服务端以 `Component.literal(text).withStyle(style)` 重建写入（空文本仍 = 清除显示）。
+- **微调**（用户反馈后）：①染料染色**不再消耗染料**（编辑工具 GUI 已能直接改颜色，染料仅作快捷手段）；②格式按钮未激活态由灰色改**白色**（仅以粗细区分，暗背景下可读性更好）。
+- **构建**：gradlew build BUILD SUCCESSFUL（28s/26s，微调后 29s）。
+
 ---
 
 ## 三、注册物品
 
 > 约定：方块与物品 ID 一一对应；`BlockItem` 为普通方块物品，特殊物品使用专属类。以下按方块类归组。
 
-### 1. 方块（Blocks）——共 107 个
+### 1. 方块（Blocks）——共 109 个
 
 | 方块 ID | 方块类 | 说明 |
 | --- | --- | --- |
@@ -1059,6 +1135,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `digital_display` | `DigitalDisplayBlock` | 数码显示器（完整方块，双行文字 + CC 外设） |
 | `digital_knob` | `DigitalKnobBlock` | 数字调节器（完整方块，四按钮 + CC 外设） |
 | `digital_plotter` | `DigitalPlotterBlock` | 数字圆盘记录仪（完整方块，50点0~100线图 + CC 外设，无状态） |
+| `data_unit` | `DataUnitBlock` | 数据单元（无方向完整方块，原版书架结构模型 + 专属 top/side 贴图；方块实体存名称+空数据列表，CC 外设读写） |
+| `block_detector` | `BlockDetectorBlock` | 方块探测器（完整方块，六方向放置，原版观察者结构模型 + 专属 top/side/front/back 贴图；CC 外设只读探测面向方块信息） |
 | `nai_long_toy` | `NaiLongToyBlock` | 奶龙玩偶（半高装饰，水平四方向放置，底面8x8居中高14像素，右键播放声音 nai_long，放置/破坏音效同羊毛） |
 | `potato_crate` | `Block` | 箱装土豆（搬运自农夫乐事，无方向完整方块，木板材质 `MapColor.WOOD` + `SoundType.WOOD`，强度 2.0，仅装饰展示） |
 | `fridge` | `FridgeBlock` | 冰箱（搬运自 Cooking for Blockheads，水平四方向完整方块，27 格容器 + 原版箱子 GUI，金属音效强度 5.0/10） |
@@ -1075,9 +1153,9 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 说明：16 色 × 4 类 = 64 个告示牌方块（沿用原版 SignBlock 系列，方块实体复用原版 `BlockEntityType.SIGN` / `HANGING_SIGN`，无需新增方块实体）；`console_lever_1/2` 共用 `ConsoleLeverBlock` 类，`console_lever_6/7` 共用 `ConsoleLever3StageBlock` 类，`point_lamp_1/2/3` 共用 `PointLampBlock` 类，`console_button_1~5` 共用 `ConsoleButtonBlock` 类，`card_reader_a~e` 共用 `CardReaderBlock`（构造参数 grade 'A'~'E'），`server_faas_1/2/3` 共用 `ServerFaasBlock`（仅模型/贴图不同）。
 
-### 2. 物品（Items）——共 134 个
+### 2. 物品（Items）——共 136 个
 
-**方块物品（73 个，`BlockItem` / `SignItem`）：**
+**方块物品（75 个，`BlockItem` / `SignItem`）：**
 
 | 物品 ID | 物品类 | 对应方块 |
 | --- | --- | --- |
@@ -1097,6 +1175,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `digital_display` | `BlockItem` | 数码显示器 |
 | `digital_knob` | `DescriptionBlockItem` | 数字调节器（悬停显示切换显示模式说明） |
 | `digital_plotter` | `BlockItem` | 数字圆盘记录仪 |
+| `data_unit` | `BlockItem` | 数据单元（原版书架结构模型 + 专属贴图） |
+| `block_detector` | `BlockItem` | 方块探测器（原版观察者结构模型 + 专属贴图） |
 | `nai_long_toy` | `BlockItem` | 奶龙玩偶 |
 | `redstone_sender` | `BlockItem` | 红石信号发射器 |
 | `redstone_receiver` | `BlockItem` | 红石信号接收器 |
@@ -1179,7 +1259,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 唱片同时注册进原版 `minecraft:tags/items/music_discs` 标签，可被唱片机播放；比较器输出值在 1~15 之间，其中 1~12 被多张唱片复用（1 = railugun、conrnfield_chase、the_imitation_game；2 = assumptions、move、rain、end；3 = cutie_mew_mew_magic、bit；4 = denise、broken_boy；5 = level5、more_one_night、bloom；6 = underground_river、hanezeve_caradhina、jigoku_shoujo；7 = gwangju、panic_track；8 = higher、resonance；9 = king、roller_mobster；10 = marisa、sabotage；11 = mixue、friends_wine；12 = raw_tell、air），其余 13~15 各一张。
 
-### 3. 方块实体（Block Entity Types）——共 14 个
+### 3. 方块实体（Block Entity Types）——共 16 个
 
 | 方块实体 ID | 实体类 | 支持的方块 |
 | --- | --- | --- |
@@ -1191,6 +1271,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `digital_display_be` | `DigitalDisplayBlockEntity` | digital_display |
 | `digital_knob_be` | `DigitalKnobBlockEntity` | digital_knob |
 | `digital_plotter_be` | `DigitalPlotterBlockEntity` | digital_plotter |
+| `data_unit_be` | `DataUnitBlockEntity` | data_unit |
+| `block_detector_be` | `BlockDetectorBlockEntity` | block_detector |
 | `canvas_sign_be` | `CanvasSignBlockEntity` | 16 色 × `_canvas_sign`、`_canvas_wall_sign`（立式/壁挂粗布告示牌） |
 | `canvas_hanging_sign_be` | `CanvasHangingSignBlockEntity` | 16 色 × `_hanging_canvas_sign`、`_canvas_wall_hanging_sign`（悬挂式粗布告示牌） |
 | `fridge_be` | `FridgeBlockEntity` | fridge（冰箱，27 格容器） |
@@ -1200,9 +1282,9 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 >
 > **告示牌为何需要自定义方块实体类型**：原版 `BlockEntityType.SIGN` / `HANGING_SIGN` 的 `validBlocks` 只包含原版告示牌方块。`BlockEntityRenderDispatcher` 渲染时会先做 `blockEntity.getType().isValid(blockState)` 校验，若方块不在该方块实体类型的有效方块集合内则直接跳过渲染，导致告示牌完全透明（无模型、无文字、亦非紫黑块）。因此为粗布告示牌注册了专用方块实体类型（工厂复用 `CanvasSignBlockEntity`/`CanvasHangingSignBlockEntity`，`getType()` 返回自定义类型），并在客户端为这两个类型注册原版 `SignRenderer`/`HangingSignRenderer`。模型层与材质仍由原版机制按 `WoodType "cc_rc:canvas"` 自动生成。
 
-### 4. 声音（Sound Events）——共 36 个
+### 4. 声音（Sound Events）——共 38 个
 
-32 个音乐声音与 32 张唱片一一对应：`music_level5`、`railugun`、`never`、`assumptions`、`conrnfield_chase`、`move`、`night`（more_one_night）、`rain`、`end`、`underground_river`、`hanezeve_caradhina`、`cutie_mew_mew_magic`、`denise`、`gwangju`、`higher`、`king`、`marisa`、`mixue`、`raw_tell`、`reimu`、`you_will_be_perfect`、`bloom`、`jigoku_shoujo`、`the_imitation_game`、`bit`、`broken_boy`、`panic_track`、`resonance`、`roller_mobster`、`sabotage`（GitHub issue #1 新增 6 首）、`friends_wine`、`air`（2026-09-14 新增 2 首）；另有 4 个非唱片声音：`nai_long`（奶龙玩偶语音，右键奶龙玩偶 `nai_long_toy` 时播放）、`server_noise`（F.A.A.S服务器 `server_faas_1/2/3` 的环境音效，玩家靠近时持续播放，注册于 [sounds.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/sounds.json)）、`password_crack`（破解器破解音效，破解密码输入器期间在方块位置循环播放，中断/成功/方块破坏时由网络包通知客户端停止）、`gajin`（盖金蜗牛右键音效，玩家右键 `gajin` 时播放，平常无 ambient 叫声）。
+32 个音乐声音与 32 张唱片一一对应：`music_level5`、`railugun`、`never`、`assumptions`、`conrnfield_chase`、`move`、`night`（more_one_night）、`rain`、`end`、`underground_river`、`hanezeve_caradhina`、`cutie_mew_mew_magic`、`denise`、`gwangju`、`higher`、`king`、`marisa`、`mixue`、`raw_tell`、`reimu`、`you_will_be_perfect`、`bloom`、`jigoku_shoujo`、`the_imitation_game`、`bit`、`broken_boy`、`panic_track`、`resonance`、`roller_mobster`、`sabotage`（GitHub issue #1 新增 6 首）、`friends_wine`、`air`（2026-09-14 新增 2 首）；另有 6 个非唱片声音：`nai_long`（奶龙玩偶语音，右键奶龙玩偶 `nai_long_toy` 时播放）、`server_noise`（F.A.A.S服务器 `server_faas_1/2/3` 的环境音效，玩家靠近时持续播放，注册于 [sounds.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/sounds.json)）、`password_crack`（破解器破解音效，破解密码输入器期间在方块位置循环播放，中断/成功/方块破坏时由网络包通知客户端停止）、`gajin`（盖金蜗牛右键音效，玩家右键 `gajin` 时播放，平常无 ambient 叫声）、`reactor_start` / `reactor_start_full`（反应堆启动音乐，素材 `模型/音频素材/反应堆正常启动音乐.ogg` 3:51 转 mono 160kbps；`reactor_start` 截取前 56s 且末尾 4s 淡出（52~56s，淡出算在 56s 内，尾部 RMS -28dB），`reactor_start_full` 完整全曲；两者均 `stream: true`、**仅指令播放无唱片**，如 `/playsound cc_rc:reactor_start @p`）。
 
 ### 5. 创造标签
 

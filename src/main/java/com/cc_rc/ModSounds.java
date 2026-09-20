@@ -54,6 +54,11 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> PASSWORD_CRACK = register("password_crack");
     // 盖金蜗牛音效（玩家右键蜗牛播放；平常无 ambient 叫声）
     public static final RegistryObject<SoundEvent> GAJIN = register("gajin");
+    // 反应堆启动音乐（非唱片，仅指令播放）：
+    //  - reactor_start：仅前 56s 且末尾 4s 淡出（反应堆启动场景，淡出算在 56s 内）
+    //  - reactor_start_full：完整全曲（仅指令播放）
+    public static final RegistryObject<SoundEvent> REACTOR_START = register("reactor_start");
+    public static final RegistryObject<SoundEvent> REACTOR_START_FULL = register("reactor_start_full");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUND_EVENTS.register(name,
