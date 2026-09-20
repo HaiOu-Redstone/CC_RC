@@ -65,6 +65,12 @@
 | 53 | 方块/CC外设 | 方块探测器 block_detector（六方向放置，专属贴图 top/side/front/back；CC 外设只读探测面向方块的坐标/注册名/模组来源/方块实体数据） | [二、34 方块探测器](#34-方块探测器blockdetector) |
 | 54 | 资源整理 | 贴图/模型目录整理：textures/block 与 models/block 顶层散装文件全部归入各方块同名文件夹（含 redstone_receiver/sender、relay_bus、extended_relay 等多贴图方块），所有 JSON 引用同步更新（99 文件） | [二、35 贴图/模型资源目录整理](#35-贴图模型资源目录整理) |
 | 55 | 方块/GUI | 控制面板文字样式：染料右键面板染字（16 色，不消耗染料）+ 编辑工具 GUI 新增 B/I/U/S 格式按钮与 16 色块（打开时读取当前样式），EditTextPacket 携带完整样式（颜色/粗体/斜体/下划线/删除线） | [二、36 控制面板文字样式](#36-控制面板文字样式染料染色--编辑工具格式按钮) |
+| 56 | 方块 | 海报1 poster_1（贴墙装饰，水平四向放置，碰撞箱 16x16x1，素材 `模型\其他物品\海报` 缩放 256x256 贴墙渲染） | [二、37 海报](#37-海报posterblock) |
+| 57 | 方块 | 海报 2~16 poster_2~16（同逻辑批量注册：方形 8 张 poster_2~9 + 竖版 7 张 poster_10~16——竖版宽 1 格、底边贴格子底部、模型按图片比例向上超出，碰撞箱 16x16x1 不变，全部保留透明 + cutout） | [二、37 海报](#37-海报posterblock) |
+| 58 | 生物/物品 | 邪恶盖金 evil_gajin（敌对生物，僵尸 AI 不燃烧/不捡装备，100 血 20 攻，距离变速追击，锁定/攻击/击杀/受击全套语音 + RWR 追击循环音，模型暂用盖金蜗牛）+ 刷怪蛋 evil_gajin_spawn_egg | [二、38 邪恶盖金](#38-邪恶盖金evilgajin--evil_gajin) |
+| 59 | 生物 | 错误生物新模型（ERROR/NULL/WARN 像素字牌，来源模型/生物/错误生物/新模型三个 Blockbench zip：纯红占位贴图 + 每面独立 UV json）——离线转换脚本把 elements 转 Java addBox 几何（居中偏移 + 旋转斜腿独立 part 绕 origin），贴图复制为实体贴图 32/16px | [二、39 错误生物新模型](#39-错误生物新模型errornullwarn-像素字牌) |
+| 60 | 生物/渲染 | 邪恶盖金换 Blockbench JSON 直渲模型（gaijin_t58.zip：17 元素 5 旋转，texture_size 32x32）——不再转 Java ModelPart，新增运行时加载器 BlockbenchJsonModel 逐元素逐面绘制（每面独立 UV + 旋转元素绕 origin 旋转），渲染器改为 EntityRenderer 直渲 | [二、40 邪恶盖金 JSON 直渲模型](#40-邪恶盖金-json-直渲模型blockbenchjsonmodel) |
+| 61 | 物品/音乐 | 唱片「LEVEL !」music_disc_level（感叹号不入注册名，VLC mono OGG 160k ≈1:59，比较器输出 13 复用 reimu，music_discs 标签兼容唱片机） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
 
 ---
 
@@ -925,6 +931,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 - **物品**（[EditToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/EditToolItem.java)，`stacksTo(1)`）：
   - **主手右键** ITextDisplay 方块 → `NetworkHooks.openScreen` 打开编辑菜单（MenuProvider 携带方块坐标 + 当前文字，经 IForgeMenuType 同步给客户端）；
   - **副手放置**可显示名称方块时 → `BlockEvent.EntityPlaceEvent` 检测放置者是玩家且副手持编辑工具、新方块是 ITextDisplay → 延迟 1 tick（`TickTask`）自动打开编辑界面（确保 setPlacedBy 已把名称写入 BE）。
+  - **防御加固**（2026-09-20）：`openEditMenu` 内捕获 `Throwable`——dev 环境若在游戏运行时并发执行 `gradlew build`，被重写的 `build/classes` 可能使匿名类 `EditToolItem$1` 懒加载失败（`NoClassDefFoundError`）导致整服崩溃（crash-2026-09-20_22.32.17：`Exception in server tick loop`）。捕获后记 error 日志 + 向玩家发中文提示"请重启游戏"，服务端不再崩溃（类加载失败后该菜单在本次会话内仍不可用，属正常）。
 - **GUI**：
   - 菜单 [EditTextMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/EditTextMenu.java)：无物品槽位的纯文本菜单（携带方块坐标 + 当前文字；`quickMoveStack` 返回空栈），注册于 `ModMenuTypes.EDIT_TEXT`（`IForgeMenuType` 构造从同步数据读坐标与文字）；
   - 屏幕 [EditTextScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/EditTextScreen.java)：**自定义 GUI 背景** `textures/gui/edit_tool_gui.png`（256x256 画布，来源「模型/其他物品/edit_tool_gui.png」），**布局保持原版铁砧原位规格**（imageWidth=176 / imageHeight=166，背景取画布左上 176x166 区域，控件坐标不移动：输入框 12,34 宽 152、完成按钮 12,68）。
@@ -1014,6 +1021,11 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 - **构建**：gradlew build BUILD SUCCESSFUL。
 - 注：ffmpeg 转码 mp4 必须加 `-vn` 忽略视频轨，否则便携版 ffmpeg 会把 1080p 视频流转成 theora 拖慢转码（初次转码即因此被中断，产生残缺 2:56 文件，已重新转码为完整 4:17）。
 
+**补充（2026-09-20）：新增唱片「LEVEL !」（key=level，感叹号不入注册名）**：
+- **素材**：`模型/唱片/level !.mp3` + `level!.png`，VLC 转 **mono 44.1k vorbis 160kbps**（`sounds/music/level.ogg`，1.85MB），校验 ch=1 rate=44100、**ticks=2383**（≈1:59）；贴图复制为 `textures/item/music_disc_level.png`；
+- **注册**：ModSounds（`music_level`）、ModItems（RecordItem，**比较器输出 13**——1~15 已被全部占用故复用级别 13，同 reimu；Rarity.RARE stacksTo(1)，ticks 2383）、sounds.json（stream:true + subtitle）、models/item、lang 中英「音乐唱片 / Music Disc」「LEVEL !」、subtitle、`minecraft:tags/items/music_discs` 标签、ModCreativeTabs；
+- **构建**：gradlew build BUILD SUCCESSFUL（36s）；三、2 物品 152→**153**、三、4 声音 38→**39**（唱片 33 + 非唱片 6）已同步。
+
 ### 32. CC 外设无延迟改造（风险最小方案实施）
 
 背景：实测证实 CC 的 `mainThread=true` 外设调用**每个调用单独消耗 1 个主线程 tick**（任务执行后 resume Lua 需经 ComputerThread 异步排队，下一个任务只能下一 tick 才执行），连续 N 次调用 ≈ N tick 延迟。按此前定案的风险最小方案改造全部 4 个 CC 外设：
@@ -1093,13 +1105,107 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 - **微调**（用户反馈后）：①染料染色**不再消耗染料**（编辑工具 GUI 已能直接改颜色，染料仅作快捷手段）；②格式按钮未激活态由灰色改**白色**（仅以粗细区分，暗背景下可读性更好）。
 - **构建**：gradlew build BUILD SUCCESSFUL（28s/26s，微调后 29s）。
 
+### 37. 海报（PosterBlock）
+贴墙装饰方块 `poster_1`，素材取自 `模型\其他物品\海报\D54EAA...png`（2667x2667 正方图，双三次缩放为 **256x256** 时**保留 alpha 透明通道**——初版按"透明是 bug"误填白底去 alpha，用户澄清要求保持透明异形贴图后改回），存入 `textures/block/poster/poster_1.png`，贴图 UV 全图 0~16：
+
+- **方块**（[PosterBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterBlock.java)）extends `HorizontalDirectionalBlock`：
+  - **水平四向放置**：`getStateForPlacement` 仅点击水平墙面时 `FACING = getClickedFace()`（X±/Z± 四向），点击顶/底面返回 null（只能贴墙，不落地/不悬挂）；
+  - **碰撞箱 16(宽)x16(高)x1(厚)**：`SHAPE_NORTH=box(0,0,15,16,16,16)` 板子在方块空间紧贴墙侧，其余朝向按 FACING 旋转（SOUTH=z0~1 / EAST=x0~1 / WEST=x15~16）；
+  - `canSurvive` 校验支撑墙 `pos.relative(FACING.getOpposite()).isSolid()`（FACING 反方向 = 被点击的墙面所在方块；初版误写 `pos.relative(FACING)` 导致点击墙时需要墙对侧两格处也有方块才能放置，已修正）；`updateShape` 照抄原版 WallSignBlock（`facing.getOpposite()==FACING && !canSurvive` → 转 AIR 掉落）；
+  - 属性 `noCollission`（不挡实体，仅用于射线/交互检测）+ `strength(0.5F)` + 木质音效。
+  - **渲染**：`CcRc.onClientSetup` 注册 `RenderType.cutout()`（贴图透明部分真正透明而非 solid 模式下变黑；与核弹按钮/钥匙柜同款处理）。
+- **模型**：1px 板单元素（`from[0,0,15] to[16,16,16]`），正面 north 面显示图片、背面与侧边不渲染（仅 `#front` + particle）；blockstates 按 FACING 旋转 `y=0/90/180/270`（模型以 north 为基准，方向语义与原版 WallSign 一致）；**item 形态不用方块模型**——`models/item/poster_1.json` 为 `minecraft:item/generated` 平面模型，直接显示 `textures/item/poster_1.png`（与方块贴图同图，透明保留，手上/物品栏为经典 2D 物品图标）。
+- **注册**：ModBlocks.POSTER_1 / ModItems.POSTER_1_ITEM / 创造栏 cc_rc_tab；lang 中英「海报1 / Poster 1」。
+- **构建**：gradlew build BUILD SUCCESSFUL（43s）；开发日志目录 56、三、1 方块 110、三、2 物品 137（方块物品 76）已同步。
+
+#### 海报 2~16（批量注册）
+
+素材 `模型\其他物品\海报\1~8.png + ask_yourself/energy/forgetting/parking_lot/see_more/than_just_you/we_need_you.png` 共 **15 张**（已确认 `1.png` 与海报1 原图不同）：
+
+- **命名**：按文件名排序 `poster_2` ~ `poster_16`（poster_2~9 方形、poster_10~16 竖版）。
+- **贴图**（保留 alpha，与海报1 相同的双三次缩放 + 透明处理）：
+  - 方形 8 张 → `textures/block/poster/*.png` 256x256 全图；
+  - 竖版（787x1024 六张；1654x2339 的 parking_lot 一张）→ **256x512 画布、内容按比例 256x333 / 256x362 底对齐**（`256*1024/787=333`；`256*2339/1654=362`），保证"底边贴格子底部、顶边超出"且**图片比例不变**；
+  - item 贴图：方形直接复制；竖版单独生成 **256x256 方形画布内容居中**（避免 item/generated 16x16 图标压扁）。
+- **模型**（`models/block/poster/poster_N.json`）：方形同海报1（高 16，UV 0~16）；竖版元素 `to.y = 16*内容高/256`（787x1024 → **20.8125**、1654x2339 → **22.625**），UV `v` 起点 = 内容顶部在画布中的位置（`(512-333)/32 = 5.59375`、`(512-362)/32 = 4.6875`），顶边超出碰撞箱但**碰撞箱保持 16x16x1 不变**（用户明确要求不改变碰撞箱，仅渲染超出）。
+- **注册**：ModBlocks 用循环 `POSTERS` 列表（15 个注册名 poster_2~16，属性同海报1）、ModItems 用 `POSTER_ITEMS` 循环（注册名取方块名）、创造栏 `forEach` 批量加入；CcRc client setup 用 `ModBlocks.POSTERS.forEach` 批量 `setRenderLayer(cutout())`（全部保留透明）。
+- **lang**：zh_cn「海报2~16」、en_us「Poster 2~16」。
+- **构建**：gradlew build BUILD SUCCESSFUL（30s）；开发日志目录 57、三、1 方块 110→**125**、三、2 物品 137→**152**（方块物品 76→**91**）已同步。
+
 ---
+
+### 38. 邪恶盖金（EvilGajin / evil_gajin）
+
+敌对生物，素材 `模型\生物\邪恶盖金`（`evil_gaijin.png` 16x16 刷怪蛋贴图 + 6 个中文语音 mp3）。
+
+- **实体类** [EvilGajin.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/EvilGajin.java)：**继承原版僵尸 Zombie**（复用僵尸完整 AI：寻路/锁定并攻击玩家/近战），三个例外：
+  - **不会燃烧**：覆盖 `isSunBurnTick()` 返回 false（白天暴晒不着火）；
+  - **不会捡装备**：覆盖 `canPickUpLoot()` 返回 false；
+  - **静音原版僵尸音效**：覆盖 `getAmbientSound` / `getHurtSound` / `getDeathSound` 返回 null（不播放僵尸呻吟/受伤/死亡音，全部用自定义语音替代）；
+  - **属性**（createAttributes）：生命 **100**、攻击伤害 **20**、基础速度 0.35；
+  - **距离变速**（customServerAiStep 每 tick 按目标距离设置 MOVEMENT_SPEED，**仅两档**）：
+    目标 **>10 格** → 0.35（约 15.1 m/s，远快于玩家疾跑 ≈5.6 m/s）；**≤10 格** → 0.28（约 12.1 m/s，中等速度——用户实测近身 0.12 过慢，改回原三档方案的中等档）。
+- **语音音效**（服务端播放，均 VLC 转 mono 44.1k vorbis 160k 存 `sounds/evil_gajin/*.ogg`）：
+  - 锁定目标瞬间：**「进攻D点」**（evil_gajin_lock）播放一次（目标从无到有/切换时触发）——**目标为玩家时通过 S2C 包 [EvilGajinLockPacket](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/EvilGajinLockPacket.java)（id 4）通知客户端用 [LockCalloutSound](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/LockCalloutSound.java) 无距离衰减播放**（服务端 playSound 受 SoundEngine 默认 16 格衰减限制，锁定时常相隔 16 格以上完全听不见——用户反馈"进攻D点音量衰减太大"；Attenuation.NONE + 音量 1.0 + 一次性 0.9s，tick 跟随实体位置），**其它目标保持服务端广播**；
+  - 攻击造成伤害：**「干得好」/「命中」**随机（evil_gajin_good / evil_gajin_hit，在 doHurtTarget 内播放——1.20.1 Zombie 无 getAttackSound hook）；
+  - 击杀目标（伤害致死）：**「摧毁目标」**（evil_gajin_destroy）；
+  - 受到攻击：**「局势不太妙」**（evil_gajin_bad），10 秒冷却防持续伤害刷屏。
+  - **响度处理**（2026-09-20 微调）：素材响度偏低（lock 峰值约 -8.7dB、good 约 -10.2dB、hit 约 -4.9dB、destroy 约 -6.9dB、bad 约 -7.8dB），播放时明显小于满音量的 RWR 追击音；VLC 的 `scales` 参数实测无效，改用 **VLC 转 wav → PowerShell 采样线性放大（目标峰值 -1dBFS≈29000，上限 4×，逐文件计算）→ 再转 ogg**，5 个语音统一归一化到约 -1dBFS（增益 +3.8dB ~ +9dB）；**播放音量同步 1.0→1.2**（用户要求除 rwr 外其它语音再稍微增大：攻击/击杀/受击/锁定（非玩家目标）服务端 playSound 音量 1.2，客户端 LockCalloutSound 音量 1.2）。
+- **RWR 追击循环音**（rwr.mp3 约 3 分钟长音，`stream:true`）：
+  - 服务端 **RWR 状态机**（customServerAiStep 内，仅玩家目标）：**刚锁定玩家先播「进攻D点」，等音频播完再加 1 秒（LOCK_GAP_TICKS=18+20=38 tick）才发 RWR 开始包**；追击中**每 RWR_INTERVAL_TICKS=200 tick（10 秒）周期性打断**：发 RWR 停止包 → 播「进攻D点」→ 等待 → 再启动 RWR；目标失去/切换时补发停止包；状态机严格"先停再播、先播完再起"，**保证 RWR 与「进攻D点」不重叠**；
+  - 客户端 [EvilGajinRwrSound](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/EvilGajinRwrSound.java) 继承 **AbstractTickableSoundInstance**（模式参考原版蜜蜂音效）：`looping=true` 循环播放，tick() 每帧从客户端世界取实体同步 x/y/z 实现音源跟随，实体死亡/卸载自动 `stop()` 兜底；**衰减采用手动控制**：attenuation = NONE（避开 SoundEngine 默认 16 格陡峭衰减，1.20.1 无 getRange API 无法改衰减范围），在 tick() 内按与玩家的距离计算 `volume = 1 - 距离/32`（**32 格平缓衰减 + 基础音量 1.0**：10 格约 0.69、16 格约 0.5、近处不超 1.0 不爆响——用户要求"衰减较小且基础音量也不大"）；管理器 [EvilGajinRwrClientHandler](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/EvilGajinRwrClientHandler.java) 按实体 ID 维护实例（同一实体不重复创建）。
+  - 1.20.1 兼容备注：客户端循环音不能用 `net.minecraft.client.resources.sounds.MovingSound`（不存在），且 `AbstractTickableSoundInstance.stop()` 为 protected，故提供公开 `requestStop()`。
+- **模型/渲染** [EvilGajinModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/EvilGajinModel.java)：**暂时复用盖金蜗牛几何**（`createBodyLayer()` 直接调用 GajinModel 的静态方法）；需独立 Model 类是因为 `MobRenderer<EvilGajin, M>` 要求 `EntityModel<EvilGajin>` 泛型（GajinModel 绑定 GajinSnail 不可直接复用）。渲染器 [EvilGajinRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/EvilGajinRenderer.java) 贴图暂用 `textures/entity/gajin.png`。**（后续已替换为 JSON 直渲模型，见 [二、40](#40-邪恶盖金-json-直渲模型blockbenchjsonmodel)）**
+- **刷怪蛋** `evil_gajin_spawn_egg`：ForgeSpawnEggItem（Supplier 惰性解析），主色暗红 0x8B0000 / 次色纯黑 0x000000，贴图 `evil_gaijin.png` 16x16；实体**不自然生成**（不注册 SpawnPlacements），只能刷怪蛋/刷怪笼。
+- **构建**：gradlew build BUILD SUCCESSFUL（35s）；开发日志目录 58、三、2 物品 153→**154**、三、4 声音 39→**45**（唱片 33 + 非唱片 12）、三、6 实体 5→**6**（Mob 4→5）已同步。
+
+### 39. 错误生物新模型（ERROR/NULL/WARN 像素字牌）
+
+素材 `模型\生物\错误生物\新模型`（三个 Blockbench zip：`error (1).zip` / `null.zip` / `WARN.zip`，各含 `*.json` + `texture.png`）。
+
+- **json 分析**：Blockbench "每面独立 UV" 布局（`faces.uv` 每面自由摆放），vanilla 展开盒 UV 无法直接表达；贴图为**纯红占位**（error/warn 32x32、null 16x16，uniqueColors=1，透明像素=镂空区，无 `texture_size`）→ 不做 UV 重拼，**几何精确转换 + 贴图直接复制为实体贴图**（`textures/entity/error_mob.png` 等，LayerDefinition tex 尺寸同步 32x32 / 16x16）。
+- **转换脚本**（PowerShell ConvertFrom-Json，留存 `run/package/newmodels/`，生成段 `*_java.txt`）：
+  - **坐标居中**：Blockbench 原点未居中（error x∈[-14,32] 中心 9、null 中心 8、warn 中心 7；z 均 [7,9] 中心 8）→ x/z 统一减中心偏移，模型以脚底/中心为原点；
+  - **旋转元素**：error 3 个、null 1 个、warn 2 个斜腿（z 轴 -22.5°），其中 error 三个 origin=(x,6.5,8) ≠ 元素中心 → **绕 origin 的独立 part**：box 局部坐标 = from-origin..to-origin，PartPose.offsetAndRotation(origin 居中坐标, 0, 0, toRadians(-22.5))，旋转轴点精确；
+  - 无旋转直板全部合并进一个 `CubeListBuilder`（`letters` part），旋转件为 `rot0..N` part。
+- 三个模型类（ErrorMobModel/ErrorMobNullModel/ErrorMobWarnModel）**仅替换 createBodyLayer 几何与 tex 尺寸**，类名/LAYER_LOCATION/渲染器注册均不变；像素字形：ERROR 23 元素（宽 46px）、NULL 10 元素（宽 42px）、WARN 17 元素（宽 46px），2px 薄板拼字、z 厚 2px。
+- **上下颠倒修复**（2026-09-20）：原版 `LivingEntityRenderer` 渲染前执行 `pose.scale(-1,-1,1)`（绕 Z 180°）+ `translate(0,-1.501,0)`，模型必须按"实体语义 y 越大越靠下（脚底 y_px=24）"绘制（见 GajinModel 类注释，蜗牛转换时即做过此翻转）；本次转换脚本**遗漏 y 翻转**，几何仍为 Blockbench 的 Y 向上 → 显示上下颠倒。修复：**不改几何**，在 [ErrorMobRenderer.scale()](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/ErrorMobRenderer.java) 内再乘 `scale(-s,-s,s)` 抵消原版绕 Z 180°、并 `translate(0,1.501,0)` 反向补偿原版位移（最终矩阵=纯缩放，字牌按 Blockbench 方向贴地显示）；三个变种共用该渲染器一次修复。
+- 构建 BUILD SUCCESSFUL（43s）；开发日志目录 59、临时日志已同步。若日后用户提供正式贴图，直接覆盖 `textures/entity/error_mob*.png` 即可（texOffs 均为 (0,0) 展开布局，新贴图需为展开盒布局或同色平铺）。
+
+### 40. 邪恶盖金 JSON 直渲模型（BlockbenchJsonModel）
+
+素材 `模型\生物\邪恶盖金\gaijin_t58.zip`（`gaijin.json` + `gaijin.png`）：Blockbench **format_version 1.9.0**，**17 个元素**（其中 **5 个带非零旋转**：绕 origin 沿 x/y 轴旋转 7°~33°，腿/角/尾），`texture_size` **32x32**，每面独立 UV 布局。
+
+- **方案**（用户要求"生物无动画，模型直接加载 json 不要转化"）：**不再把 Blockbench 几何转成 Java ModelPart**（此前转化过程出现大量问题），改为**运行时直接解析 json 几何并逐元素逐面绘制**：
+  - 新增 [BlockbenchJsonModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/BlockbenchJsonModel.java)：`load(ResourceManager, ResourceLocation)` 从资源包读取 `assets/cc_rc/models/entity/evil_gajin.json`（`InputStreamReader` 解析，`texture_size` 归一化 UV），解析 `elements[].from/to`（AABB 角点）、`rotation`（角度/轴/origin，角度换算弧度）、`faces.<方向>.uv`（像素 → 除以 tex 尺寸得 0..1 纹理坐标）；
+  - **渲染**：每元素取 8 个角点，旋转元素先 `v' = R·(v - origin) + origin`（jOML `Matrix3f.rotation(弧度, 轴向量)`）；每面 4 顶点顺序"外看左上→右上→右下→左下"（对应 uv 四角，up/down 面 v 反转修正贴图上下），法线随旋转矩阵变换后再经 `pose.normal()`；`VertexConsumer.vertex(Matrix4f,…).color(...).uv(...).uv2(packedLight).overlayCoords(packedOverlay).normal(...)` 绘制；
+  - **映射坑记录**（1.20.1 官方映射）：光照/覆盖层方法名是 **`uv2(int)` / `overlayCoords(int)`**（打包值单参版本），**不存在** `light(int,int)` / `setLight(int)` / `overlay(int,int)`（MCP/Yarn 旧名或 1.20.2+ 新名均不可用）；
+  - [EvilGajinRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/EvilGajinRenderer.java) 由 `MobRenderer` 改为 **`EntityRenderer<EvilGajin>`**：构造时加载 json（失败抛 IllegalStateException），render 内 `mulPose(Axis.YP.rotationDegrees(-entity.getYRot()))` 转向实体朝向，`RenderType.entityCutoutNoCull(TEXTURE)` 透明镂空双面可见（无背面剔除），贴图 `textures/entity/evil_gajin/evil_gajin.png`；
+  - 原 [EvilGajinModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/EvilGajinModel.java) 已删除；[CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 移除其 LayerDefinition 注册（JSON 直渲无需 bake 模型层），属性与渲染器注册不变。
+- 模型资源：`assets/cc_rc/models/entity/evil_gajin.json`（zip 解包原样）+ `assets/cc_rc/textures/entity/evil_gajin/evil_gajin.png`（32x32）。
+- **构建**：gradlew build BUILD SUCCESSFUL（44s）；开发日志目录 60 已同步。
+- **透明不显示修复**（2026-09-20）：自绘顶点链两处错误 → 整只实体不可见（仅阴影）：
+  1) **元素顺序**：`uv2(light)` 写的是 UV2，而 `overlayCoords(overlay)` 写 UV1；BufferVertexConsumer 按 VertexFormat 元素游标顺序推进，先写 UV2 时游标尚在 UV1 → 元素不匹配静默跳写 → light 缺失、后续数据错位。修正为 **POSITION→COLOR→UV0→UV1(overlay)→UV2(light)→NORMAL**；
+  2) **缺失 `.endVertex()`**：顶点从未提交（vertexCount 不增长），GPU 无数据可画。链尾补 `.endVertex()`。
+- **大小/UV/位置三连修**（2026-09-20，用户实测：模型高度至少 5 格、UV 错乱、位置不在碰撞箱；模型 json 与贴图确认无问题）：
+  1) **过大 16 倍根因**：`renderElement` 提交顶点时**未做像素→格换算**。反编译 `ModelPart$Cube.compile` 字节码证实原版在 `vertex()` 前执行 `vertex.pos /16.0F`（16px=1 格）——本渲染器漏除 16，7.38px 高被渲染成 7.38 格。修复：顶点坐标 `/16.0F`（旋转先行在像素空间完成，均匀缩放后数学等价）；
+  2) **UV 左右镜像**：`FACE_CORNERS` 中 east/west 的顶点左右顺序颠倒（从面外侧观察：east 左=南 z2、west 左=北 z1），修正为 east={7,6,5,4}、west={2,3,1,0}；
+  3) **位置偏移**：模型包围盒 x∈[5,11] 中心 8px、z∈[-1.75,10] 中心 4.1px，不居中。`load()` 统计 bbox，`render()` 内 `pose.translate(-center/16, -minY/16, -centerZ/16)` 使模型中心落于实体脚底原点并贴地（先平移后旋转，绕原点转不甩动）。
+- **up/down 面 UV 翻转修复 + 整体放大 1.5 倍**（2026-09-20，用户反馈大小正常但 UV 仍不对、希望放大 1.5 倍）：
+  1) **UV 根因**：反编译原版 `ModelPart$Cube` 构造 + `ModelPart$Polygon` 构造的字节码，取得**黄金标准**：Polygon 顶点 UV 映射为 `v[0]→(u1,v0)、v[1]→(u0,v0)、v[2]→(u0,v1)、v[3]→(u1,v1)`，配合 Cube 6 个面的顶点顺序推导出：**原版实体 Cube 的 up/down 面"贴图上方"朝模型 +Z（南）**，与方块模型 up 面（贴图上方=北）恰好相反。之前对 up/down 加的 flipV 把贴图上下翻转 180° → 俯视即看到贴图颠倒。修复：**去掉 flipV，6 个面统一用标准 UV 映射**（侧面 north/south/east/west 经黄金标准逐角点核对全部正确，east/west 镜像问题已在上一轮修复）；
+  2) **整体放大 1.5 倍**：`EvilGajinRenderer.render` 中 `pose.scale(1.5F,1.5F,1.5F)`，作用顺序为 居中平移→1.5 放大→yaw 旋转（以脚下原点为中心缩放，中心不漂移），法线不受 scale 影响。
+- **UV 面角点顺序最终修正**（2026-09-20，用户：大小对但贴图仍不对）：放弃"外看视角"推导，改用 **Blockbench 内部面数据结构**（MOPS 插件 `CUBE_FACES_TRIANGLE_FANS` + `CUBE_UV_INDICES`，Blockbench 导出 cube faces 顶点顺序 + 面 UV 角点索引）逐角点核对，得到权威 6 面角点顺序（左上→右上→右下→左下）：
+  - north `{2,6,4,0}`、south `{7,3,1,5}`（原已正确）
+  - east `{6,7,5,4}`、west `{3,2,0,1}`（上一轮按"外看"推导的镜像修正是**错的**，与 Blockbench 数据相反，已恢复）
+  - up `{6,2,3,7}`、down `{5,1,0,4}`（非简单 flipV：up 贴图上方朝 -Z、down 上方朝 +Z，且 u 小端均朝 +X）
+  - 结论：之前 up/down 的 flipV 与整体 90°/180° 旋转不匹配，east/west 被改反，均已在最终数据下修正。
+- **UV 归一化基准修正（像素颗粒过大）**（2026-09-21，用户：贴图样子有变化但"uv 大小错误、像素点大于正确样子"）：逐面核对 uv 数据与模型几何尺寸发现精确规律——**所有面 uv 区域（x/z 方向）恰好为模型面像素的一半**（element[1] north 面 6px 宽 ↔ uv 宽 3；element[0] up 面 5×7px ↔ uv 2.5×3.5；east 面 7px ↔ uv 3.5）。即 **gaijin.json 的每面 uv 值基于 16 像素网格**（texture_size=32 是其二倍），此前用 `uv/32` 归一化使采样区域减半 → 贴图像素被放大 2 倍（颗粒大，叠加 1.5 倍模型缩放更明显）。修复：UV 归一化统一改为 `/16.0F`（侧面 v 方向作者未严格按比例，与 Blockbench 预览一致）。**待游戏关闭后构建验证。**
 
 ## 三、注册物品
 
 > 约定：方块与物品 ID 一一对应；`BlockItem` 为普通方块物品，特殊物品使用专属类。以下按方块类归组。
 
-### 1. 方块（Blocks）——共 109 个
+### 1. 方块（Blocks）——共 125 个
 
 | 方块 ID | 方块类 | 说明 |
 | --- | --- | --- |
@@ -1137,6 +1243,10 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `digital_plotter` | `DigitalPlotterBlock` | 数字圆盘记录仪（完整方块，50点0~100线图 + CC 外设，无状态） |
 | `data_unit` | `DataUnitBlock` | 数据单元（无方向完整方块，原版书架结构模型 + 专属 top/side 贴图；方块实体存名称+空数据列表，CC 外设读写） |
 | `block_detector` | `BlockDetectorBlock` | 方块探测器（完整方块，六方向放置，原版观察者结构模型 + 专属 top/side/front/back 贴图；CC 外设只读探测面向方块信息） |
+| `poster_1` | `PosterBlock` | 海报1（贴墙装饰，水平四向放置，碰撞箱 16x16x1，1px 板贴墙渲染海报图片，木质音效强度 0.5） |
+| `poster_2`~`poster_9` | `PosterBlock` | 海报 2~9（方形贴图 256x256，模型 16x16x1 同海报1，素材 1~8.png） |
+| `poster_10`~`poster_12`、`poster_14`~`poster_16` | `PosterBlock` | 海报 10~12/14~16（竖版 787x1024，宽 1 格、底边贴格子底部、模型高 20.8125px 向上超出，贴图 256x512 画布内容底对齐，素材 ask_yourself/energy/forgetting/see_more/than_just_you/we_need_you） |
+| `poster_13` | `PosterBlock` | 海报13（竖版 1654x2339 √2 比例，模型高 22.625px 向上超出，素材 parking_lot） |
 | `nai_long_toy` | `NaiLongToyBlock` | 奶龙玩偶（半高装饰，水平四方向放置，底面8x8居中高14像素，右键播放声音 nai_long，放置/破坏音效同羊毛） |
 | `potato_crate` | `Block` | 箱装土豆（搬运自农夫乐事，无方向完整方块，木板材质 `MapColor.WOOD` + `SoundType.WOOD`，强度 2.0，仅装饰展示） |
 | `fridge` | `FridgeBlock` | 冰箱（搬运自 Cooking for Blockheads，水平四方向完整方块，27 格容器 + 原版箱子 GUI，金属音效强度 5.0/10） |
@@ -1153,9 +1263,9 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 说明：16 色 × 4 类 = 64 个告示牌方块（沿用原版 SignBlock 系列，方块实体复用原版 `BlockEntityType.SIGN` / `HANGING_SIGN`，无需新增方块实体）；`console_lever_1/2` 共用 `ConsoleLeverBlock` 类，`console_lever_6/7` 共用 `ConsoleLever3StageBlock` 类，`point_lamp_1/2/3` 共用 `PointLampBlock` 类，`console_button_1~5` 共用 `ConsoleButtonBlock` 类，`card_reader_a~e` 共用 `CardReaderBlock`（构造参数 grade 'A'~'E'），`server_faas_1/2/3` 共用 `ServerFaasBlock`（仅模型/贴图不同）。
 
-### 2. 物品（Items）——共 136 个
+### 2. 物品（Items）——共 154 个
 
-**方块物品（75 个，`BlockItem` / `SignItem`）：**
+**方块物品（91 个，`BlockItem` / `SignItem`）：**
 
 | 物品 ID | 物品类 | 对应方块 |
 | --- | --- | --- |
@@ -1177,6 +1287,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `digital_plotter` | `BlockItem` | 数字圆盘记录仪 |
 | `data_unit` | `BlockItem` | 数据单元（原版书架结构模型 + 专属贴图） |
 | `block_detector` | `BlockItem` | 方块探测器（原版观察者结构模型 + 专属贴图） |
+| `poster_1` | `BlockItem` | 海报1（贴墙装饰，item 形态 item/generated 平面显示 `textures/item/poster_1.png`） |
+| `poster_2`~`poster_16` | `BlockItem` | 海报 2~16（item 形态 item/generated 平面显示对应贴图） |
 | `nai_long_toy` | `BlockItem` | 奶龙玩偶 |
 | `redstone_sender` | `BlockItem` | 红石信号发射器 |
 | `redstone_receiver` | `BlockItem` | 红石信号接收器 |
@@ -1219,8 +1331,9 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `edit_tool` | `EditToolItem` | 编辑工具（不可堆叠；主手右键可显示名称方块打开文字编辑 GUI，副手放置可显示名称方块自动打开编辑界面；悬停青色粗体"用于编辑可显示名称的方块文字"） |
 | `golden_eagle` | `Item` | 金鹰（堆叠 64；盖金蜗牛的食物，手持可吸引（TemptGoal）与繁殖（BreedGoal）；贴图"模型/生物/蜗牛/金鹰.png"） |
 | `gajin_spawn_egg` | `ForgeSpawnEggItem` | 盖金蜗牛刷怪蛋（主色金褐 0xD8B24A / 次色深褐 0x5A3A1E；生成 `gajin` 实体，实体不自然生成只能靠刷怪蛋/刷怪笼） |
+| `evil_gajin_spawn_egg` | `ForgeSpawnEggItem` | 邪恶盖金刷怪蛋（主色暗红 0x8B0000 / 次色纯黑 0x000000；生成 `evil_gajin` 敌对生物，实体不自然生成只能靠刷怪蛋/刷怪笼；贴图 16x16 素材 `模型/生物/邪恶盖金/evil_gaijin.png`） |
 
-**音乐唱片（32 个，`RecordItem`，Rarity.RARE）：**
+**音乐唱片（33 个，`RecordItem`，Rarity.RARE）：**
 
 | 物品 ID | 比较器输出 | 音轨 |
 | --- | --- | --- |
@@ -1256,8 +1369,9 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `music_disc_sabotage` | 10 | sabotage（4540 tick） |
 | `music_disc_friends_wine` | 11 | friends_wine（5145 tick） |
 | `music_disc_air` | 12 | air（7003 tick） |
+| `music_disc_level` | 13 | level（2383 tick）（LEVEL !，注册名不带感叹号） |
 
-> 唱片同时注册进原版 `minecraft:tags/items/music_discs` 标签，可被唱片机播放；比较器输出值在 1~15 之间，其中 1~12 被多张唱片复用（1 = railugun、conrnfield_chase、the_imitation_game；2 = assumptions、move、rain、end；3 = cutie_mew_mew_magic、bit；4 = denise、broken_boy；5 = level5、more_one_night、bloom；6 = underground_river、hanezeve_caradhina、jigoku_shoujo；7 = gwangju、panic_track；8 = higher、resonance；9 = king、roller_mobster；10 = marisa、sabotage；11 = mixue、friends_wine；12 = raw_tell、air），其余 13~15 各一张。
+> 唱片同时注册进原版 `minecraft:tags/items/music_discs` 标签，可被唱片机播放；比较器输出值在 1~15 之间，其中 1~12 被多张唱片复用（1 = railugun、conrnfield_chase、the_imitation_game；2 = assumptions、move、rain、end；3 = cutie_mew_mew_magic、bit；4 = denise、broken_boy；5 = level5、more_one_night、bloom；6 = underground_river、hanezeve_caradhina、jigoku_shoujo；7 = gwangju、panic_track；8 = higher、resonance；9 = king、roller_mobster；10 = marisa、sabotage；11 = mixue、friends_wine；12 = raw_tell、air；13 = reimu、level），其余 14~15 各一张。
 
 ### 3. 方块实体（Block Entity Types）——共 16 个
 
@@ -1298,7 +1412,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | --- | --- | --- |
 | `bao_zi` | `BaoZi` | 包子（继承原版雪球类 `Snowball`，飞行逻辑与雪球一致；命中实体或方块时触发半径 4 的爆炸，仅伤害实体、不破坏方块，粒子/音效为原版爆炸；客户端复用原版 `ThrownItemRenderer` 渲染） |
 
-**生物实体（Mobs）——4 个：**
+**生物实体（Mobs）——5 个：**
 
 | 实体 ID | 实体类 | 说明 |
 | --- | --- | --- |
@@ -1306,5 +1420,6 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `error_mob_null` | `ErrorMob` | 错误生物变种（「模型/错误生物/null.obj」，NULL 字牌，仅模型/贴图不同） |
 | `error_mob_warn` | `ErrorMob` | 错误生物变种（「模型/错误生物/WARN/warn.obj」，WARN 字牌，仅模型/贴图不同） |
 | `gajin` | `GajinSnail` | 盖金蜗牛（被动动物，AI 参考原版猪无乘骑机制，金鹰食物，右键播放 gajin 音效，不自然生成，详见 [二、30 盖金蜗牛与金鹰](#30-盖金蜗牛与金鹰gajinsnail--golden_eagle)） |
+| `evil_gajin` | `EvilGajin` | 邪恶盖金（敌对生物，继承原版僵尸 AI：不会燃烧/不会捡装备，100 血 20 攻，距离变速追击（远快于玩家疾跑、近身减速），锁定/攻击/击杀/受击全套语音 + RWR 追击循环音，不自然生成，详见 [二、38 邪恶盖金](#38-邪恶盖金evilgajin--evil_gajin)） |
 
 > 实体类型注册于 [ModEntities.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModEntities.java)（`DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ...)`），在 [CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 构造函数中 `ModEntities.ENTITY_TYPES.register(modEventBus)`。左键投掷由客户端 `InputEvent.InteractionKeyMappingTriggered` 事件 + C2S 数据包实现（见「二、15 包子」）。

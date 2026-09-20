@@ -32,6 +32,7 @@
         "cc_rc:music_disc_roller_mobster",
         "cc_rc:music_disc_sabotage",
         "cc_rc:music_disc_friends_wine",
-        "cc_rc:music_disc_air"
+        "cc_rc:music_disc_air",
+        "cc_rc:music_disc_level"
     ]
 }

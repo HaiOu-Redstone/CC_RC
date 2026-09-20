@@ -166,6 +166,18 @@ public class ModItems {
     public static final RegistryObject<Item> BLOCK_DETECTOR_ITEM = ITEMS.register("block_detector",
             () -> new BlockItem(ModBlocks.BLOCK_DETECTOR.get(), new Item.Properties()));
 
+    // 海报1物品（贴墙装饰方块）
+    public static final RegistryObject<Item> POSTER_1_ITEM = ITEMS.register("poster_1",
+            () -> new BlockItem(ModBlocks.POSTER_1.get(), new Item.Properties()));
+
+    // 海报 2~16 物品（方块物品，注册名取自 ModBlocks.POSTERS 对应方块名）
+    public static final List<RegistryObject<Item>> POSTER_ITEMS = new ArrayList<>();
+
+    static {
+        ModBlocks.POSTERS.forEach(p -> POSTER_ITEMS.add(ITEMS.register(p.getId().getPath(),
+                () -> new BlockItem(p.get(), new Item.Properties()))));
+    }
+
     // 奶龙玩偶物品
     public static final RegistryObject<Item> NAI_LONG_TOY_ITEM = ITEMS.register("nai_long_toy",
             () -> new BlockItem(ModBlocks.NAI_LONG_TOY.get(), new Item.Properties()));
@@ -312,6 +324,11 @@ public class ModItems {
     public static final RegistryObject<RecordItem> MUSIC_DISC_AIR = ITEMS.register("music_disc_air",
             () -> new RecordItem(12, ModSounds.MUSIC_AIR.get(),
                     new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 7003));
+
+    // 新增唱片「LEVEL !」（注册名不带感叹号：music_disc_level；比较器输出复用 13）
+    public static final RegistryObject<RecordItem> MUSIC_DISC_LEVEL = ITEMS.register("music_disc_level",
+            () -> new RecordItem(13, ModSounds.MUSIC_LEVEL.get(),
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 2383));
 
     // 刷卡机物品（A ~ E 共 5 种）
     public static final RegistryObject<Item> CARD_READER_A_ITEM = ITEMS.register("card_reader_a",
@@ -619,6 +636,14 @@ public class ModItems {
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(() -> ModEntities.GAJIN.get(),
                     0xD8B24A,
                     0x5A3A1E,
+                    new Item.Properties()));
+
+    // 邪恶盖金刷怪蛋：主色暗红（邪恶主题），次色纯黑。
+    // 贴图 textures/item/evil_gajin_spawn_egg.png（素材模型/生物/邪恶盖金/evil_gaijin.png）。
+    public static final RegistryObject<Item> EVIL_GAJIN_SPAWN_EGG = ITEMS.register("evil_gajin_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(() -> ModEntities.EVIL_GAJIN.get(),
+                    0x8B0000,
+                    0x000000,
                     new Item.Properties()));
 
     // ==================== 扩展红石继电器 ====================

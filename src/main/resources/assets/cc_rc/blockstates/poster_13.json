@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "cc_rc:block/poster/poster_13" },
+    "facing=east": { "model": "cc_rc:block/poster/poster_13", "y": 90 },
+    "facing=south": { "model": "cc_rc:block/poster/poster_13", "y": 180 },
+    "facing=west": { "model": "cc_rc:block/poster/poster_13", "y": 270 }
+  }
+}

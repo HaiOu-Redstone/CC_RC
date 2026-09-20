@@ -2,6 +2,7 @@ package com.cc_rc;
 
 import com.cc_rc.entity.BaoZi;
 import com.cc_rc.entity.ErrorMob;
+import com.cc_rc.entity.EvilGajin;
 import com.cc_rc.entity.GajinSnail;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -65,4 +66,14 @@ public class ModEntities {
                     .clientTrackingRange(8)
                     .updateInterval(3)
                     .build("cc_rc:gajin"));
+
+    // 邪恶盖金（evil_gajin）：敌对生物（继承原版僵尸 AI，见 EvilGajin 类注释）。
+    // 尺寸 0.6×0.6（暂时复用盖金蜗牛模型，矮宽造型），追踪范围 8，更新间隔 3（怪物标准）。
+    // 不注册 SpawnPlacements —— 不会在世界中自然生成，只能刷怪蛋/刷怪笼召唤。
+    public static final RegistryObject<EntityType<EvilGajin>> EVIL_GAJIN = ENTITY_TYPES.register("evil_gajin",
+            () -> EntityType.Builder.<EvilGajin>of(EvilGajin::new, MobCategory.MONSTER)
+                    .sized(0.6F, 0.6F)
+                    .clientTrackingRange(8)
+                    .updateInterval(3)
+                    .build("cc_rc:evil_gajin"));
 }

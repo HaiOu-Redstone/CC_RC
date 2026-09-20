@@ -46,6 +46,20 @@ public class ModSounds {
     // 新增 2 张唱片音乐
     public static final RegistryObject<SoundEvent> MUSIC_FRIENDS_WINE = register("music_friends_wine");
     public static final RegistryObject<SoundEvent> MUSIC_AIR = register("music_air");
+    // 新增唱片「LEVEL !」：感叹号不进入注册名，key=level
+    public static final RegistryObject<SoundEvent> MUSIC_LEVEL = register("music_level");
+    // 邪恶盖金（evil_gajin）语音音效：
+    //  - evil_gajin_lock：锁定目标瞬间播放一次「进攻D点」
+    //  - evil_gajin_rwr：追击时循环播放的警示音（音效长约 3 分钟，客户端 SoundEngine 循环实例）
+    //  - evil_gajin_good / evil_gajin_hit：攻击时随机二选一（「干得好」/「命中」）
+    //  - evil_gajin_destroy：击杀目标时播放「摧毁目标」
+    //  - evil_gajin_bad：受到攻击时播放「局势不太妙」（带冷却防刷屏）
+    public static final RegistryObject<SoundEvent> EVIL_GAJIN_LOCK = register("evil_gajin_lock");
+    public static final RegistryObject<SoundEvent> EVIL_GAJIN_RWR = register("evil_gajin_rwr");
+    public static final RegistryObject<SoundEvent> EVIL_GAJIN_GOOD = register("evil_gajin_good");
+    public static final RegistryObject<SoundEvent> EVIL_GAJIN_HIT = register("evil_gajin_hit");
+    public static final RegistryObject<SoundEvent> EVIL_GAJIN_DESTROY = register("evil_gajin_destroy");
+    public static final RegistryObject<SoundEvent> EVIL_GAJIN_BAD = register("evil_gajin_bad");
     // 奶龙玩偶声音（非唱片）
     public static final RegistryObject<SoundEvent> NAI_LONG = register("nai_long");
     // F.A.A.S服务器环境音效（非唱片，靠近时持续播放）

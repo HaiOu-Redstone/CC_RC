@@ -12,17 +12,13 @@ import net.minecraft.resources.ResourceLocation;
 import com.cc_rc.CcRc;
 
 /**
- * 错误生物变种模型：WARN 字牌（warn）。
+ * 错误生物变种模型：WARN 像素字牌（warn）。
  *
- * 由「模型/错误生物/WARN/warn.obj」立体化而来：原模型为扁平 "WARN" 字样
- * （4 个字母部件横排），此处 z 厚度加厚为 0.35 方块（5.6 像素）成立体字牌，
- * 以脚底中心为原点，整体宽约 2.0 方块、高约 0.5 方块。
- *
- * 4 部件（x/y/z 单位为像素）：
- *  - object_1：W（宽 6.32）
- *  - object_2：A（宽 5.29）
- *  - object_3：R（宽 7.06）
- *  - object_4：N（宽 10.15）
+ * 新模型来源「模型/生物/错误生物/新模型/WARN.zip」（Blockbench 导出 json，17 个元素），
+ * 由转换脚本离线生成 Java 几何：2px 宽薄板按像素字形拼出 "WARN"，z 厚 2px；
+ * 两个斜腿为独立 part 绕各自 origin 旋转 -22.5°（z 轴）。
+ * 模型以脚底中心为原点并居中（x 居中、z 中心化），整体宽约 46/16 方块、高 20/16 方块。
+ * 贴图 32x32（源 texture.png）。
  */
 public class ErrorMobWarnModel extends ErrorMobModelBase {
 
@@ -37,18 +33,33 @@ public class ErrorMobWarnModel extends ErrorMobModelBase {
     public static LayerDefinition createBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition part = mesh.getRoot();
-        // UV 修复：与主变种同根因——各块共用 texOffs(0,0) 会叠加采样纹理角落同一区域致文字错乱。
-        // 贴图上 "WARN" 四字母左下角 x=8/21/34/47、y=18（字高 y∈12..18），按模型自左至右
-        // （object_1 W → object_2 A → object_3 R → object_4 N）逐块映射：
-        //   u = 字母x − sz − sx − sz；v = 12 − sz − (sy−6)/2（把字母行 [12,18] 置于面内居中，
-        //   使 7px 字母尽量铺满 7.95px 高的正面采样窗，避免整行落在面外）
-        part.addOrReplaceChild("letters", CubeListBuilder.create()
-                .texOffs(-10, 5).addBox(-15.81f, 0.00f, -2.80f, 6.32f, 7.95f, 5.60f, new CubeDeformation(0.0F)) // object_1 W（采样 x≈8）
-                .texOffs(5, 5).addBox(-8.14f, 0.00f, -2.80f, 5.29f, 7.95f, 5.60f, new CubeDeformation(0.0F))   // object_2 A（采样 x≈21）
-                .texOffs(16, 5).addBox(-1.73f, 0.00f, -2.80f, 7.06f, 7.95f, 5.60f, new CubeDeformation(0.0F))  // object_3 R（采样 x≈34）
-                .texOffs(26, 5).addBox(5.66f, 0.00f, -2.80f, 10.15f, 7.95f, 5.60f, new CubeDeformation(0.0F)), // object_4 N（采样 x≈47）
-                PartPose.offset(0.0F, 0.0F, 0.0F));
-        // 贴图 64x32
-        return LayerDefinition.create(mesh, 64, 32);
+
+        CubeListBuilder main = CubeListBuilder.create()
+                .addBox(13f, 2f, -1f, 2f, 18f, 2f, new CubeDeformation(0.0F))
+                .addBox(21f, 2f, -1f, 2f, 18f, 2f, new CubeDeformation(0.0F))
+                .addBox(17f, 2f, -1f, 2f, 17f, 2f, new CubeDeformation(0.0F))
+                .addBox(14f, 0f, -1f, 3f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(19f, 0f, -1f, 3f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(9f, 0f, -1f, 2f, 18f, 2f, new CubeDeformation(0.0F))
+                .addBox(1f, 0f, -1f, 2f, 18f, 2f, new CubeDeformation(0.0F))
+                .addBox(3f, 18f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(3f, 9f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-3f, 0f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F))
+                .addBox(-11f, 11f, -1f, 2f, 7f, 2f, new CubeDeformation(0.0F))
+                .addBox(-9f, 18f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-9f, 9f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-15f, 0f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F))
+                .addBox(-23f, 0f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F))
+        ;
+        part.addOrReplaceChild("letters", main, PartPose.ZERO);
+        part.addOrReplaceChild("rot0", CubeListBuilder.create()
+                .addBox(-1f, -6.5f, -1f, 2f, 10f, 2f, new CubeDeformation(0.0F)),
+                PartPose.offsetAndRotation(-9f, 6.5f, 0f, 0.0F, 0.0F, -0.39270f)); // 绕(-2,6.5,8) 轴 z 旋转 -22.5°
+        part.addOrReplaceChild("rot1", CubeListBuilder.create()
+                .addBox(-1f, -10f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F)),
+                PartPose.offsetAndRotation(-18f, 10f, 0f, 0.0F, 0.0F, -0.39270f)); // 绕(-11,10,8) 轴 z 旋转 -22.5°
+
+        // 贴图 32x32
+        return LayerDefinition.create(mesh, 32, 32);
     }
 }

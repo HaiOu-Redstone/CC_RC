@@ -47,6 +47,10 @@ public class ModCreativeTabs {
                         output.accept(ModItems.DIGITAL_PLOTTER_ITEM.get());
                         output.accept(ModItems.DATA_UNIT_ITEM.get());
                         output.accept(ModItems.BLOCK_DETECTOR_ITEM.get());
+                        // 海报1（贴墙装饰）
+                        output.accept(ModItems.POSTER_1_ITEM.get());
+                        // 海报 2~16（贴墙装饰，含竖版异形海报）
+                        ModItems.POSTER_ITEMS.forEach(i -> output.accept(i.get()));
                         output.accept(ModItems.NAI_LONG_TOY_ITEM.get());
                         output.accept(ModItems.REDSTONE_SENDER_ITEM.get());
                         output.accept(ModItems.REDSTONE_RECEIVER_ITEM.get());
@@ -88,6 +92,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.MUSIC_DISC_SABOTAGE.get());
                         output.accept(ModItems.MUSIC_DISC_FRIENDS_WINE.get());
                         output.accept(ModItems.MUSIC_DISC_AIR.get());
+                        output.accept(ModItems.MUSIC_DISC_LEVEL.get());
                         output.accept(ModItems.CARD_READER_A_ITEM.get());
                         output.accept(ModItems.CARD_READER_B_ITEM.get());
                         output.accept(ModItems.CARD_READER_C_ITEM.get());
@@ -118,6 +123,7 @@ public class ModCreativeTabs {
                         // 金鹰（吸引/繁殖盖金蜗牛）+ 盖金蜗牛刷怪蛋
                         output.accept(ModItems.GOLDEN_EAGLE.get());
                         output.accept(ModItems.GAJIN_SPAWN_EGG.get());
+                        output.accept(ModItems.EVIL_GAJIN_SPAWN_EGG.get());
                         output.accept(ModItems.SERVER_FAAS_1_ITEM.get());
                         output.accept(ModItems.SERVER_FAAS_2_ITEM.get());
                         output.accept(ModItems.SERVER_FAAS_3_ITEM.get());

@@ -287,6 +287,64 @@
     ],
     "subtitle": "cc_rc.subtitle.music_air"
   },
+  "music_level": {
+    "sounds": [
+      {
+        "name": "cc_rc:music/level",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.music_level"
+  },
+  "evil_gajin_lock": {
+    "sounds": [
+      {
+        "name": "cc_rc:evil_gajin/lock"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.evil_gajin_lock"
+  },
+  "evil_gajin_rwr": {
+    "sounds": [
+      {
+        "name": "cc_rc:evil_gajin/rwr",
+        "stream": true
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.evil_gajin_rwr"
+  },
+  "evil_gajin_good": {
+    "sounds": [
+      {
+        "name": "cc_rc:evil_gajin/good"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.evil_gajin_good"
+  },
+  "evil_gajin_hit": {
+    "sounds": [
+      {
+        "name": "cc_rc:evil_gajin/hit"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.evil_gajin_hit"
+  },
+  "evil_gajin_destroy": {
+    "sounds": [
+      {
+        "name": "cc_rc:evil_gajin/destroy"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.evil_gajin_destroy"
+  },
+  "evil_gajin_bad": {
+    "sounds": [
+      {
+        "name": "cc_rc:evil_gajin/bad"
+      }
+    ],
+    "subtitle": "cc_rc.subtitle.evil_gajin_bad"
+  },
   "nai_long": {
     "sounds": [
       {

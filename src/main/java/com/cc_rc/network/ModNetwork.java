@@ -33,5 +33,15 @@ public class ModNetwork {
                 EditTextPacket::encode,
                 EditTextPacket::decode,
                 EditTextPacket::handle);
+        // 邪恶盖金追击循环音开始/停止（S2C，服务端在锁定的玩家目标改变时通知客户端播放/停止循环音）
+        CHANNEL.registerMessage(3, EvilGajinRwrPacket.class,
+                EvilGajinRwrPacket::encode,
+                EvilGajinRwrPacket::decode,
+                EvilGajinRwrPacket::handle);
+        // 「进攻D点」语音客户端播放（S2C，服务端在锁定玩家/周期打断时通知客户端无衰减播放一次）
+        CHANNEL.registerMessage(4, EvilGajinLockPacket.class,
+                EvilGajinLockPacket::encode,
+                EvilGajinLockPacket::decode,
+                EvilGajinLockPacket::handle);
     }
 }

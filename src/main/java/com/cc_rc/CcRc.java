@@ -25,6 +25,8 @@ import com.cc_rc.entity.ErrorMobModel;
 import com.cc_rc.entity.ErrorMobNullModel;
 import com.cc_rc.entity.ErrorMobRenderer;
 import com.cc_rc.entity.ErrorMobWarnModel;
+import com.cc_rc.entity.EvilGajin;
+import com.cc_rc.entity.EvilGajinRenderer;
 import com.cc_rc.entity.GajinModel;
 import com.cc_rc.entity.GajinRenderer;
 import com.cc_rc.entity.GajinSnail;
@@ -105,6 +107,8 @@ public class CcRc
         event.put(ModEntities.ERROR_MOB_WARN.get(), ErrorMob.createAttributes().build());
         // 盖金蜗牛（gajin）：被动动物，仿原版猪属性（无乘骑）
         event.put(ModEntities.GAJIN.get(), GajinSnail.createAttributes().build());
+        // 邪恶盖金（evil_gajin）：敌对生物，僵尸 AI + 生命 100 / 攻击 20 / 速度 0.35
+        event.put(ModEntities.EVIL_GAJIN.get(), EvilGajin.createAttributes().build());
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)
@@ -160,6 +164,10 @@ public class CcRc
             // 钥匙柜/钥匙分发控制器贴图同样含透明区域
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.KEY_CABINET.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.KEY_DISTRIBUTOR.get(), RenderType.cutout());
+            // 海报1：贴图保持透明（异形海报），cutout 渲染让透明部分真正透明而不是变黑
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.POSTER_1.get(), RenderType.cutout());
+            // 海报 2~16：贴图同样保持透明（方形/竖版异形海报）
+            ModBlocks.POSTERS.forEach(b -> ItemBlockRenderTypes.setRenderLayer(b.get(), RenderType.cutout()));
             // 注册编辑工具文字编辑屏幕（关联菜单类型 edit_text）
             net.minecraft.client.gui.screens.MenuScreens.register(
                     ModMenuTypes.EDIT_TEXT.get(), com.cc_rc.gui.EditTextScreen::new);
@@ -195,6 +203,8 @@ public class CcRc
                     0.45F));
             // 盖金蜗牛：被动动物渲染器（GajinModel）
             event.registerEntityRenderer(ModEntities.GAJIN.get(), GajinRenderer::new);
+            // 邪恶盖金：Blockbench json 直渲渲染器（EvilGajinRenderer，模型+贴图见 assets/cc_rc/models/entity）
+            event.registerEntityRenderer(ModEntities.EVIL_GAJIN.get(), EvilGajinRenderer::new);
         }
 
         @SubscribeEvent
@@ -206,6 +216,7 @@ public class CcRc
             event.registerLayerDefinition(ErrorMobWarnModel.LAYER_LOCATION, ErrorMobWarnModel::createBodyLayer);
             // 盖金蜗牛模型层定义
             event.registerLayerDefinition(GajinModel.LAYER_LOCATION, GajinModel::createBodyLayer);
+            // 邪恶盖金不注册模型层：改用 Blockbench json 直渲（EvilGajinRenderer），无需 bake LayerDefinition
         }
     }
 }

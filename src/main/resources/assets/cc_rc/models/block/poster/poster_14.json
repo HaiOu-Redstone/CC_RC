@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": { "front": "cc_rc:block/poster/poster_14", "particle": "cc_rc:block/poster/poster_14" },
+  "elements": [
+    { "from": [0, 0, 15], "to": [16, 20.8125, 16], "faces": { "north": { "uv": [0, 5.59375, 16, 16], "texture": "#front" } } }
+  ]
+}

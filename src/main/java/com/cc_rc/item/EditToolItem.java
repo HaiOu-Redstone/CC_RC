@@ -1,6 +1,7 @@
 package com.cc_rc.item;
 
 import com.cc_rc.block.ITextDisplay;
+import com.mojang.logging.LogUtils;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -21,6 +22,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 /**
  * 编辑工具（edit_tool）——用于编辑「可显示名称的方块」表面文字的物品。
@@ -38,6 +40,9 @@ import org.jetbrains.annotations.Nullable;
  * 则延迟 1 tick 打开编辑界面（确保名称已从物品写入 BE）。
  */
 public class EditToolItem extends Item {
+
+    // 本类日志器（与 CcRc 同款 LogUtils 风格）
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     // 悬停描述：青色粗体"用于编辑可显示名称的方块文字"
     private static final int DESC_COLOR = 0x55FFFF;
@@ -67,21 +72,30 @@ public class EditToolItem extends Item {
 
     /** 打开编辑菜单：MenuProvider 携带坐标 + 当前文字（经同步数据传给客户端）。 */
     static void openEditMenu(ServerPlayer player, BlockPos pos, Component currentText) {
-        NetworkHooks.openScreen(player, new MenuProvider() {
-            @Override
-            public Component getDisplayName() {
-                return Component.translatable("item.cc_rc.edit_tool");
-            }
+        try {
+            NetworkHooks.openScreen(player, new MenuProvider() {
+                @Override
+                public Component getDisplayName() {
+                    return Component.translatable("item.cc_rc.edit_tool");
+                }
 
-            @Override
-            public com.cc_rc.gui.EditTextMenu createMenu(int windowId, Inventory inventory, Player p) {
-                // 构造参数 = 方块坐标 + 当前文字（会被 IForgeMenuType 写进同步数据）
-                return new com.cc_rc.gui.EditTextMenu(windowId, pos, currentText);
-            }
-        }, buf -> {
-            buf.writeBlockPos(pos);
-            buf.writeComponent(currentText);
-        });
+                @Override
+                public com.cc_rc.gui.EditTextMenu createMenu(int windowId, Inventory inventory, Player p) {
+                    // 构造参数 = 方块坐标 + 当前文字（会被 IForgeMenuType 写进同步数据）
+                    return new com.cc_rc.gui.EditTextMenu(windowId, pos, currentText);
+                }
+            }, buf -> {
+                buf.writeBlockPos(pos);
+                buf.writeComponent(currentText);
+            });
+        } catch (Throwable t) {
+            // 防御：dev 环境若在游戏运行时并发执行 gradlew build，重写的 build/classes 可能使
+            // 本方法内的匿名类 EditToolItem$1 懒加载失败（NoClassDefFoundError）→ 直接崩溃整服。
+            // 这里捕获并提示玩家重启游戏，避免服务端 tick 循环被 Error 打断。
+            LOGGER.error("编辑工具菜单打开失败（匿名类加载异常，可能因游戏运行中并发重编译导致）：", t);
+            player.sendSystemMessage(Component.literal(
+                    "编辑工具菜单打开失败（类加载异常）。若刚进行过模组重编译，请重启游戏后再试。"));
+        }
     }
 
     /**

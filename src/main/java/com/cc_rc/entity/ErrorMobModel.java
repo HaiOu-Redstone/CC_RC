@@ -12,21 +12,13 @@ import net.minecraft.resources.ResourceLocation;
 import com.cc_rc.CcRc;
 
 /**
- * 错误生物模型（立体化 ERROR 字牌）。
+ * 错误生物模型（主变种）：ERROR 像素字牌。
  *
- * 由「模型/错误生物/error.obj」的 5 个扁平字块立体化而来：原模型 z 厚度仅 0.05
- * 方块，此处加厚为 0.35 方块（约 5.6 像素），使平贴字牌变成有体积的立体字块，
- * 横向排列组成 "ERROR" 字样；模型以脚底中心为原点，整体宽约 2.1 方块、高约 1.04 方块。
- *
- * 5 个字块（x/y/z 单位为像素，16px=1 方块）：
- *  - E：x[-16.54, -12.19] 宽 4.35   y[0.19, 16.43] 高 16.24  z[-2.8, 2.8] 厚 5.6
- *  - R：x[-10.74,  -5.45] 宽 5.29   y[0.19, 16.43] 高 16.24
- *  - R：x[ -4.09,   1.20] 宽 5.29   y[0.19, 16.43]
- *  - O：x[  2.13,   9.66] 宽 7.53   y[0.00, 16.62] 高 16.62
- *  - R：x[ 11.25,  16.54] 宽 5.29   y[0.19, 16.43]
- *
- * 模型只定义一组静态字牌（无动画部件），渲染时随实体移动/旋转，攻击动画
- * 不需要腿臂（字牌悬空浮动，向敌人倾斜由实体朝向实现）。
+ * 新模型来源「模型/生物/错误生物/新模型/error (1).zip」（Blockbench 导出 json，23 个元素），
+ * 由转换脚本离线生成 Java 几何：2px 宽薄板按像素字形拼出 "ERROR"，z 厚 2px；
+ * 三个 R 斜腿为独立 part 绕各自 origin 旋转 -22.5°（z 轴）。
+ * 模型以脚底中心为原点并居中（x 居中、z 中心化），整体宽约 46/16 方块、高 20/16 方块。
+ * 贴图 32x32（源 texture.png）。
  */
 public class ErrorMobModel extends ErrorMobModelBase {
 
@@ -38,25 +30,45 @@ public class ErrorMobModel extends ErrorMobModelBase {
         super(root);
     }
 
-    /** 构造模型定义（5 个立体 ERROR 字块）。 */
+    /** 构造模型定义（Blockbench 新模型几何，23 元素：20 直板 + 3 旋转斜腿）。 */
     public static LayerDefinition createBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition part = mesh.getRoot();
 
-        // 5 个字块（对应 error.obj 的 object_1~object_5，坐标换算见类注释）
-        // UV 修复：vanilla 盒自动 UV 中，正面（+z/SOUTH 面）采样区为
-        //   U∈[u+sz+sx+sz, u+sz+sx+sz+sx]、V∈[v+sz, v+sz+sy]
-        // 此前五块共用默认 texOffs(0,0)，正面全部叠加采样纹理角落同一区域导致文字错乱。
-        // 现按贴图上五个字母（左下角 x=2/15/28/41/54，y=18，字高 y∈12..18）逐块设置
-        //   texOffs：u = 字母x − sz − sx − sz，v 保持 0（y 方向正确，不动垂直采样）
-        CubeListBuilder letters = CubeListBuilder.create()
-                .texOffs(-14, 0).addBox(-16.54f, 0.19f, -2.80f, 4.35f, 16.24f, 5.60f, new CubeDeformation(0.0F)) // E（采样 x≈2..6）
-                .texOffs(-1, 0).addBox(-10.74f, 0.19f, -2.80f, 5.29f, 16.24f, 5.60f, new CubeDeformation(0.0F))  // R（采样 x≈15..19）
-                .texOffs(12, 0).addBox(-4.09f, 0.19f, -2.80f, 5.29f, 16.24f, 5.60f, new CubeDeformation(0.0F))   // R（采样 x≈28..32）
-                .texOffs(22, 0).addBox(2.13f, 0.00f, -2.80f, 7.53f, 16.62f, 5.60f, new CubeDeformation(0.0F))    // O（采样 x≈41..45）
-                .texOffs(38, 0).addBox(11.25f, 0.19f, -2.80f, 5.29f, 16.24f, 5.60f, new CubeDeformation(0.0F));  // R（采样 x≈54..58）
-        part.addOrReplaceChild("letters", letters, PartPose.offset(0.0F, 0.0F, 0.0F));
+        CubeListBuilder main = CubeListBuilder.create()
+                .addBox(21f, 0f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F))
+                .addBox(15f, 0f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(15f, 18f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(15f, 9f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(12f, 0f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F))
+                .addBox(6f, 11f, -1f, 2f, 7f, 2f, new CubeDeformation(0.0F))
+                .addBox(8f, 18f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(8f, 9f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(2f, 0f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F))
+                .addBox(-4f, 11f, -1f, 2f, 7f, 2f, new CubeDeformation(0.0F))
+                .addBox(-2f, 18f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-2f, 9f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-8f, 2f, -1f, 2f, 16f, 2f, new CubeDeformation(0.0F))
+                .addBox(-14f, 2f, -1f, 2f, 16f, 2f, new CubeDeformation(0.0F))
+                .addBox(-12f, 0f, -1f, 4f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-12f, 18f, -1f, 4f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-17f, 0f, -1f, 2f, 20f, 2f, new CubeDeformation(0.0F))
+                .addBox(-23f, 11f, -1f, 2f, 7f, 2f, new CubeDeformation(0.0F))
+                .addBox(-21f, 18f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+                .addBox(-21f, 9f, -1f, 6f, 2f, 2f, new CubeDeformation(0.0F))
+        ;
+        part.addOrReplaceChild("letters", main, PartPose.ZERO);
+        part.addOrReplaceChild("rot0", CubeListBuilder.create()
+                .addBox(-1f, -6.5f, -1f, 2f, 10f, 2f, new CubeDeformation(0.0F)),
+                PartPose.offsetAndRotation(8f, 6.5f, 0f, 0.0F, 0.0F, -0.39270f)); // 绕(17,6.5,8) 轴 z 旋转 -22.5°
+        part.addOrReplaceChild("rot1", CubeListBuilder.create()
+                .addBox(-1f, -6.5f, -1f, 2f, 10f, 2f, new CubeDeformation(0.0F)),
+                PartPose.offsetAndRotation(-2f, 6.5f, 0f, 0.0F, 0.0F, -0.39270f)); // 绕(7,6.5,8) 轴 z 旋转 -22.5°
+        part.addOrReplaceChild("rot2", CubeListBuilder.create()
+                .addBox(-1f, -6.5f, -1f, 2f, 10f, 2f, new CubeDeformation(0.0F)),
+                PartPose.offsetAndRotation(-21f, 6.5f, 0f, 0.0F, 0.0F, -0.39270f)); // 绕(-12,6.5,8) 轴 z 旋转 -22.5°
 
-        return LayerDefinition.create(mesh, 64, 32);
+        // 贴图 32x32
+        return LayerDefinition.create(mesh, 32, 32);
     }
 }

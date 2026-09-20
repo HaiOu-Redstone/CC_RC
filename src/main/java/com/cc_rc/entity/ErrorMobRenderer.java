@@ -41,6 +41,10 @@ public class ErrorMobRenderer extends MobRenderer<ErrorMob, ErrorMobModelBase> {
 
     @Override
     protected void scale(ErrorMob entity, PoseStack poseStack, float partialTick) {
-        poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
+        // 补偿原版 LivingEntityRenderer 的 pose.scale(-1,-1,1)（绕 Z 180°，模型 y 向下约定）：
+        // 新模型几何是 Blockbench 直译（Y 向上、底部 y=0），这里再乘 -1 抵消翻转，使字牌
+        // 不再上下/左右颠倒；并反向补偿原版 translate(0,-1.501,0)，让模型底部贴地显示。
+        poseStack.scale(-scaleFactor, -scaleFactor, scaleFactor);
+        poseStack.translate(0.0F, 1.501F, 0.0F);
     }
 }
