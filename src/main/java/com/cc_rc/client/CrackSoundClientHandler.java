@@ -3,6 +3,7 @@ package com.cc_rc.client;
 import com.cc_rc.CcRc;
 import com.cc_rc.ModSounds;
 import com.cc_rc.block.password_inputer.PasswordInputerBlock;
+import com.cc_rc.network.CrackSoundPacket;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -59,6 +60,19 @@ public class CrackSoundClientHandler {
         while (it.hasNext()) {
             it.next().getValue().stopLoop();
             it.remove();
+        }
+    }
+
+    /** 从 CrackSoundPacket 取包并执行（由客户端主线程通过方法引用调用，服务端不会加载本类）。 */
+    public static void dispatchPending() {
+        CrackSoundPacket msg = CrackSoundPacket.consumePending();
+        if (msg == null) {
+            return;
+        }
+        if (msg.isStart()) {
+            startCrack(msg.getPos());
+        } else {
+            stopCrack(msg.getPos());
         }
     }
 

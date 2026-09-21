@@ -1,6 +1,7 @@
 package com.cc_rc.client;
 
 import com.cc_rc.ModSounds;
+import com.cc_rc.network.EvilGajinRwrPacket;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
@@ -30,6 +31,19 @@ public class EvilGajinRwrClientHandler {
         EvilGajinRwrSound sound = ACTIVE.remove(entityId);
         if (sound != null) {
             sound.requestStop();
+        }
+    }
+
+    /** 从 EvilGajinRwrPacket 取包并执行（由客户端主线程通过方法引用调用，服务端不会加载本类）。 */
+    public static void dispatchPending() {
+        EvilGajinRwrPacket msg = EvilGajinRwrPacket.consumePending();
+        if (msg == null) {
+            return;
+        }
+        if (msg.isStart()) {
+            startRwr(msg.getEntityId());
+        } else {
+            stopRwr(msg.getEntityId());
         }
     }
 }
