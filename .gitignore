@@ -27,8 +27,8 @@ forge*changelog.txt
 # 本地工具（gh 等，不随仓库上传）
 .tools
 
-# 前置依赖（从 CurseForge 获取，不随仓库上传）
-前置/
+# 前置依赖（cc-tweaked-1.120.2.jar，已入库便于克隆后直接构建；保持与 build.gradle flatDir 一致）
+# 前置/
 
 # 本地崩溃日志
 崩溃日志/
