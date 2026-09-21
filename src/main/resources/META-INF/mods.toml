@@ -27,6 +27,8 @@ description="${mod_description}"
 [[dependencies.${mod_id}]]
     modId="computercraft"
     mandatory=true
-    versionRange="[1.120.2,)"
+    # 兼容所有 Forge 1.20.1 的 CC: Tweaked 版本（官方 1.20.1 分支 v1.20.1-1.105.0 ~ 1.120.2）
+    # 本模组仅使用 CC:T 多年稳定公开 API（IPeripheral/LuaFunction/ComputerSide 等），无版本特有接口
+    versionRange="[1.105.0,)"
     ordering="NONE"
     side="BOTH"
