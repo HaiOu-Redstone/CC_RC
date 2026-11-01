@@ -5,9 +5,12 @@ import com.cc_rc.block.key_cabinet.KeyCabinetBlock;
 import com.cc_rc.block.key_distributor.KeyCabinetRecord;
 import com.cc_rc.block.key_distributor.KeyDistributorBlock;
 import com.cc_rc.block.key_distributor.KeyDistributorBlockEntity;
+import com.cc_rc.network.ModNetwork;
+import com.cc_rc.network.PlaySoundPacket;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import dan200.computercraft.shared.computer.core.ServerContext;
@@ -16,17 +19,24 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * /ccrc 指令：查看/强制修改 CC: Tweaked 外设编号计数器。
@@ -40,6 +50,10 @@ import net.minecraftforge.fml.common.Mod;
  *   否则 getNextId 会继续按内存旧值分配并覆盖文件）。参数带自动补全；仅允许设置
  *   ids.json 中已存在（= 曾被有线调制解调器连接/分配过编号）的类型，防止误设不存在的外设。
  * - /ccrc peripheral list：仅查看 CC 计数文件 ids.json 的内容（类型 → 编号），不做世界扫描。
+ *
+ * 音频相关指令：
+ * - /ccrc sound &lt;声音ID&gt; &lt;目标&gt; [音量]：向指定目标玩家（@p/@a/@e 等）播放已注册声音一次，
+ *   目标必选、音量可选（默认 1.0），无距离限制、无音量衰减（详见 runPlaySound 注释）。
  *
  * CC 的计数文件位于 存档目录/computercraft/ids.json（ServerContext.storageDir() 定位），
  * 内存 Map 为 IDAssigner 私有字段，通过反射同步。
@@ -94,7 +108,20 @@ public class CcrcCommand {
                                                         .executes(ctx -> runKeyCabinetRemove(ctx.getSource(),
                                                                 IntegerArgumentType.getInteger(ctx, "x"),
                                                                 IntegerArgumentType.getInteger(ctx, "y"),
-                                                                IntegerArgumentType.getInteger(ctx, "z")))))))));
+                                                                IntegerArgumentType.getInteger(ctx, "z"))))))))
+                // sound：音频播放指令（目标玩家必选、音量可选，定向播放给目标玩家 @p/@a 等，无距离限制、无音量衰减）
+                .then(Commands.literal("sound")
+                        .then(Commands.argument("声音ID", ResourceLocationArgument.id())
+                                .suggests(CcrcCommand::suggestSounds)
+                                .then(Commands.argument("目标", EntityArgument.players())
+                                        .executes(ctx -> runPlaySound(ctx.getSource(),
+                                                ResourceLocationArgument.getId(ctx, "声音ID"), 1.0F,
+                                                EntityArgument.getPlayers(ctx, "目标")))
+                                        .then(Commands.argument("音量", FloatArgumentType.floatArg(0.0F))
+                                                .executes(ctx -> runPlaySound(ctx.getSource(),
+                                                        ResourceLocationArgument.getId(ctx, "声音ID"),
+                                                        FloatArgumentType.getFloat(ctx, "音量"),
+                                                        EntityArgument.getPlayers(ctx, "目标"))))))));
     }
 
     /**
@@ -254,6 +281,57 @@ public class CcrcCommand {
         }
         source.sendFailure(Component.literal("记录中不存在钥匙柜 (" + x + ", " + y + ", " + z + ")"));
         return 0;
+    }
+
+    // ---------- sound 音频播放指令 ----------
+
+    /**
+     * /ccrc sound <声音ID> <目标> [音量]：向指定目标玩家播放已注册声音一次。
+     * 语法（目标必选、音量可选）：
+     *  - /ccrc sound &lt;声音ID&gt; &lt;目标&gt;：默认音量 1.0，播放给目标（@p/@a/@e 等选择器）；
+     *  - /ccrc sound &lt;声音ID&gt; &lt;目标&gt; &lt;音量&gt;：指定音量播放给目标。
+     * 声音 ID 支持 Tab 补全（候选 = 全部已注册声音，含原版与模组）。
+     * 播放特点：仅发送给目标玩家（其他玩家听不到）；客户端实例播放，无距离衰减、无距离限制。
+     */
+    private static int runPlaySound(CommandSourceStack source, ResourceLocation soundId,
+                                    float volume, Collection<ServerPlayer> targets) {
+        // 校验声音存在（Forge 注册表）
+        SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(soundId);
+        if (event == null) {
+            source.sendFailure(Component.literal("声音 \"" + soundId + "\" 不存在"
+                    + "（可用 Tab 补全查看已注册声音，如 cc_rc:xxx / minecraft:xxx）"));
+            return 0;
+        }
+        if (volume <= 0.0F) {
+            source.sendFailure(Component.literal("音量必须大于 0"));
+            return 0;
+        }
+        if (targets.isEmpty()) {
+            source.sendFailure(Component.literal("没有匹配的目标玩家"));
+            return 0;
+        }
+        // 定向发送给每个目标玩家：客户端无衰减播放（音量 = 指令设置，主音量 MASTER 控制总响度）
+        for (ServerPlayer target : targets) {
+            // 循环变量非 effectively final，复制为最终变量供 lambda 捕获
+            ServerPlayer receiver = target;
+            ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> receiver),
+                    new PlaySoundPacket(soundId, volume));
+        }
+        // targets 参数在方法内被引用 lambda，先固定局部值
+        int playerCount = targets.size();
+        source.sendSuccess(() -> Component.literal("已向 " + playerCount + " 名玩家播放声音 \""
+                + soundId + "\"（音量 " + volume + "）"), true);
+        return 1;
+    }
+
+    /** 声音 ID 参数自动补全：候选 = 全部已注册声音（原版 + 模组）。 */
+    private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestSounds(
+            com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx,
+            com.mojang.brigadier.suggestion.SuggestionsBuilder builder) {
+        for (ResourceLocation key : ForgeRegistries.SOUND_EVENTS.getKeys()) {
+            builder.suggest(key.toString());
+        }
+        return builder.buildFuture();
     }
 
     // ---------- 文件读写 ----------

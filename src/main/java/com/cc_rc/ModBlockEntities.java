@@ -14,6 +14,7 @@ import com.cc_rc.block.digital_knob.DigitalKnobBlockEntity;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBlockEntity;
 import com.cc_rc.block.fridge.FridgeBlockEntity;
 import com.cc_rc.block.key_distributor.KeyDistributorBlockEntity;
+import com.cc_rc.block.poster.PosterBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBusBlockEntity;
 import net.minecraft.world.level.block.Block;
@@ -168,6 +169,14 @@ public class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             DataUnitBlockEntity::new,
                             ModBlocks.DATA_UNIT.get()
+                    ).build(null));
+
+    // 海报方块实体类型（单方块 poster：存图片索引/缩放/偏移，客户端 PosterBER 按其绘制贴图）
+    public static final RegistryObject<BlockEntityType<PosterBlockEntity>> POSTER_BE =
+            BLOCK_ENTITY_TYPES.register("poster_be",
+                    () -> BlockEntityType.Builder.of(
+                            PosterBlockEntity::new,
+                            ModBlocks.POSTER.get()
                     ).build(null));
 
     // 方块探测器方块实体类型（空实体，仅作 CC 外设承载）

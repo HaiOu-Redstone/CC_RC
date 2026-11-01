@@ -21,10 +21,7 @@ import com.cc_rc.block.digital_plotter.DigitalPlotterPeripheral;
 import com.cc_rc.block.extended_relay.ExtendedRelayBusBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBusPeripheral;
 import com.cc_rc.entity.ErrorMob;
-import com.cc_rc.entity.ErrorMobModel;
-import com.cc_rc.entity.ErrorMobNullModel;
-import com.cc_rc.entity.ErrorMobRenderer;
-import com.cc_rc.entity.ErrorMobWarnModel;
+import com.cc_rc.entity.ErrorMobJsonRenderer;
 import com.cc_rc.entity.EvilGajin;
 import com.cc_rc.entity.EvilGajinRenderer;
 import com.cc_rc.entity.GajinModel;
@@ -164,13 +161,14 @@ public class CcRc
             // 钥匙柜/钥匙分发控制器贴图同样含透明区域
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.KEY_CABINET.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.KEY_DISTRIBUTOR.get(), RenderType.cutout());
-            // 海报1：贴图保持透明（异形海报），cutout 渲染让透明部分真正透明而不是变黑
-            ItemBlockRenderTypes.setRenderLayer(ModBlocks.POSTER_1.get(), RenderType.cutout());
-            // 海报 2~16：贴图同样保持透明（方形/竖版异形海报）
-            ModBlocks.POSTERS.forEach(b -> ItemBlockRenderTypes.setRenderLayer(b.get(), RenderType.cutout()));
+            // 海报（单方块）：贴图由 PosterBER 直接绘制，这里保留 cutout 以让破坏粒子的透明区域正确
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.POSTER.get(), RenderType.cutout());
             // 注册编辑工具文字编辑屏幕（关联菜单类型 edit_text）
             net.minecraft.client.gui.screens.MenuScreens.register(
                     ModMenuTypes.EDIT_TEXT.get(), com.cc_rc.gui.EditTextScreen::new);
+            // 注册海报设置屏幕（关联菜单类型 poster）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.POSTER.get(), com.cc_rc.gui.PosterScreen::new);
         }
 
         @SubscribeEvent
@@ -183,24 +181,20 @@ public class CcRc
             event.registerBlockEntityRenderer(ModBlockEntities.DIGITAL_DISPLAY_BE.get(), DigitalDisplayBER::new);
             event.registerBlockEntityRenderer(ModBlockEntities.DIGITAL_KNOB_BE.get(), DigitalKnobBER::new);
             event.registerBlockEntityRenderer(ModBlockEntities.DIGITAL_PLOTTER_BE.get(), DigitalPlotterBER::new);
+            // 海报：自定义渲染器按方块实体参数绘制贴图四边形（不受方块模型坐标限制）
+            event.registerBlockEntityRenderer(ModBlockEntities.POSTER_BE.get(), com.cc_rc.block.poster.PosterBER::new);
             // 粗布告示牌：复用原版 SignRenderer / HangingSignRenderer（按 WoodType 渲染）
             event.registerBlockEntityRenderer(ModBlockEntities.CANVAS_SIGN_BE.get(), SignRenderer::new);
             event.registerBlockEntityRenderer(ModBlockEntities.CANVAS_HANGING_SIGN_BE.get(), HangingSignRenderer::new);
             // 包子弹射物：复用原版 ThrownItemRenderer（按 getDefaultItem 显示 bao_zi 物品贴图）
             event.registerEntityRenderer(ModEntities.BAO_ZI.get(), ThrownItemRenderer::new);
-            // 错误生物：三个变种共用 ErrorMobRenderer，仅模型层/贴图/缩放不同
-            event.registerEntityRenderer(ModEntities.ERROR_MOB.get(), (ctx) -> new ErrorMobRenderer(ctx,
-                    (c) -> new ErrorMobModel(c.bakeLayer(ErrorMobModel.LAYER_LOCATION)),
-                    new net.minecraft.resources.ResourceLocation(CcRc.MODID, "textures/entity/error_mob.png"),
-                    0.45F));
-            event.registerEntityRenderer(ModEntities.ERROR_MOB_NULL.get(), (ctx) -> new ErrorMobRenderer(ctx,
-                    (c) -> new ErrorMobNullModel(c.bakeLayer(ErrorMobNullModel.LAYER_LOCATION)),
-                    new net.minecraft.resources.ResourceLocation(CcRc.MODID, "textures/entity/error_mob_null.png"),
-                    0.75F));
-            event.registerEntityRenderer(ModEntities.ERROR_MOB_WARN.get(), (ctx) -> new ErrorMobRenderer(ctx,
-                    (c) -> new ErrorMobWarnModel(c.bakeLayer(ErrorMobWarnModel.LAYER_LOCATION)),
-                    new net.minecraft.resources.ResourceLocation(CcRc.MODID, "textures/entity/error_mob_warn.png"),
-                    0.45F));
+            // 错误生物：三个变种共用 ErrorMobJsonRenderer（Blockbench json 直渲，仅模型 json/贴图/缩放不同）
+            event.registerEntityRenderer(ModEntities.ERROR_MOB.get(), (ctx) -> new ErrorMobJsonRenderer(ctx,
+                    "models/entity/error_mob.json", "textures/entity/error_mob.png", 0.45F));
+            event.registerEntityRenderer(ModEntities.ERROR_MOB_NULL.get(), (ctx) -> new ErrorMobJsonRenderer(ctx,
+                    "models/entity/error_mob_null.json", "textures/entity/error_mob_null.png", 0.75F));
+            event.registerEntityRenderer(ModEntities.ERROR_MOB_WARN.get(), (ctx) -> new ErrorMobJsonRenderer(ctx,
+                    "models/entity/error_mob_warn.json", "textures/entity/error_mob_warn.png", 0.45F));
             // 盖金蜗牛：被动动物渲染器（GajinModel）
             event.registerEntityRenderer(ModEntities.GAJIN.get(), GajinRenderer::new);
             // 邪恶盖金：Blockbench json 直渲渲染器（EvilGajinRenderer，模型+贴图见 assets/cc_rc/models/entity）
@@ -210,10 +204,7 @@ public class CcRc
         @SubscribeEvent
         public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event)
         {
-            // 错误生物模型层定义：三种字牌（ERROR / NULL / WARN）
-            event.registerLayerDefinition(ErrorMobModel.LAYER_LOCATION, ErrorMobModel::createBodyLayer);
-            event.registerLayerDefinition(ErrorMobNullModel.LAYER_LOCATION, ErrorMobNullModel::createBodyLayer);
-            event.registerLayerDefinition(ErrorMobWarnModel.LAYER_LOCATION, ErrorMobWarnModel::createBodyLayer);
+            // 错误生物不注册模型层：改用 Blockbench json 直渲（ErrorMobJsonRenderer），无需 bake LayerDefinition
             // 盖金蜗牛模型层定义
             event.registerLayerDefinition(GajinModel.LAYER_LOCATION, GajinModel::createBodyLayer);
             // 邪恶盖金不注册模型层：改用 Blockbench json 直渲（EvilGajinRenderer），无需 bake LayerDefinition

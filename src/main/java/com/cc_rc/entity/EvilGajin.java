@@ -8,6 +8,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,7 +52,7 @@ public class EvilGajin extends Zombie {
     private static final double FAST_DIST = 10.0;
 
     /** 两档速度：远处加速追击 / 近身中等速度 */
-    private static final double SPEED_FAST = 0.35;
+    private static final double SPEED_FAST = 0.45;
     private static final double SPEED_CLOSE = 0.28;
 
     /** 受击语音冷却（tick）：10 秒内最多播放一次「局势不太妙」 */
@@ -89,13 +91,16 @@ public class EvilGajin extends Zombie {
     }
 
     /**
-     * 属性：以僵尸属性为基础，覆盖生命 100 / 攻击 20 / 速度 0.35。
+     * 属性：以僵尸属性为基础，覆盖生命 100 / 攻击 20 / 速度 0.35 / 索敌距离 128。
+     * 索敌距离：僵尸默认 FOLLOW_RANGE=35，覆盖为 128（约等于服务端实体 tick 半径上限，
+     * 使玩家远在 100+ 格也能被锁定追击）。
      */
     public static AttributeSupplier.Builder createAttributes() {
         return Zombie.createAttributes()
                 .add(Attributes.MAX_HEALTH, 100.0D)
                 .add(Attributes.ATTACK_DAMAGE, 20.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.35D);
+                .add(Attributes.MOVEMENT_SPEED, 0.35D)
+                .add(Attributes.FOLLOW_RANGE, 128.0D);
     }
 
     /** AI 目标列表：直接继承僵尸完整 AI（追击玩家/近战攻击/寻路等）。 */
@@ -155,7 +160,10 @@ public class EvilGajin extends Zombie {
         return attacked;
     }
 
-    /** 受击语音：受到实际伤害时播放「局势不太妙」，10 秒冷却防刷屏（火焰/中毒等持续伤害）。 */
+    /** 受击语音 + 自动回血：受到实际伤害时播放「局势不太妙」（10 秒冷却防刷屏），
+     *  并施加「生命回复 II」30 秒（与盖金蜗牛一致——注意亡灵生物：EvilGajin 继承 Zombie，
+     *  isInvertedHealAndHarm 为 true，瞬间治疗会被反转成伤害，故必须用再生 REGENERATION，
+     *  该效果对亡灵正常生效）。 */
     @Override
     public boolean hurt(DamageSource source, float amount) {
         boolean damaged = super.hurt(source, amount);
@@ -166,6 +174,8 @@ public class EvilGajin extends Zombie {
                 this.level().playSound(null, this, ModSounds.EVIL_GAJIN_BAD.get(),
                         SoundSource.HOSTILE, 1.2F, 1.0F);
             }
+            // 自动回血：受击后获得生命回复 II（amplifier 1），持续 30 秒（600 tick），仅服务端施加
+            this.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 30 * 20, 1));
         }
         return damaged;
     }

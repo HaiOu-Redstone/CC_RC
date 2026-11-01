@@ -43,5 +43,15 @@ public class ModNetwork {
                 EvilGajinLockPacket::encode,
                 EvilGajinLockPacket::decode,
                 EvilGajinLockPacket::handle);
+        // 音频播放指令（S2C，/ccrc sound 定向发送给目标玩家，客户端无衰减播放指定声音）
+        CHANNEL.registerMessage(5, PlaySoundPacket.class,
+                PlaySoundPacket::encode,
+                PlaySoundPacket::decode,
+                PlaySoundPacket::handle);
+        // 海报设置提交（C2S，客户端把图片索引/缩放/偏移写回海报方块实体）
+        CHANNEL.registerMessage(6, PosterConfigPacket.class,
+                PosterConfigPacket::encode,
+                PosterConfigPacket::decode,
+                PosterConfigPacket::handle);
     }
 }

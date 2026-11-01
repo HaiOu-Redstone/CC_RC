@@ -166,17 +166,9 @@ public class ModItems {
     public static final RegistryObject<Item> BLOCK_DETECTOR_ITEM = ITEMS.register("block_detector",
             () -> new BlockItem(ModBlocks.BLOCK_DETECTOR.get(), new Item.Properties()));
 
-    // 海报1物品（贴墙装饰方块）
-    public static final RegistryObject<Item> POSTER_1_ITEM = ITEMS.register("poster_1",
-            () -> new BlockItem(ModBlocks.POSTER_1.get(), new Item.Properties()));
-
-    // 海报 2~16 物品（方块物品，注册名取自 ModBlocks.POSTERS 对应方块名）
-    public static final List<RegistryObject<Item>> POSTER_ITEMS = new ArrayList<>();
-
-    static {
-        ModBlocks.POSTERS.forEach(p -> POSTER_ITEMS.add(ITEMS.register(p.getId().getPath(),
-                () -> new BlockItem(p.get(), new Item.Properties()))));
-    }
+    // 海报物品（单方块：图片/缩放/偏移由右键设置界面调整，见 PosterScreen）
+    public static final RegistryObject<Item> POSTER_ITEM = ITEMS.register("poster",
+            () -> new BlockItem(ModBlocks.POSTER.get(), new Item.Properties()));
 
     // 奶龙玩偶物品
     public static final RegistryObject<Item> NAI_LONG_TOY_ITEM = ITEMS.register("nai_long_toy",

@@ -139,9 +139,13 @@ public class ServerFaasSoundHandler {
             double dist = Math.sqrt(player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
             this.volume = (float) Mth.clamp(1.0 - dist / FADE_RANGE, 0.0, 1.0) * BASE_VOLUME;
             this.pitch = 1.0F;
-            // 关键：标记为相对播放 + 关闭引擎衰减，让 SoundEngine 不再按距离改音量，
-            // 音量完全由 updateVolume() 手动控制，保证玩家移动时衰减必然生效。
-            this.relative = true;
+            // 关键：世界坐标定位（relative=false）+ 关闭引擎衰减（attenuation=NONE）：
+            //  - relative=false：声源按方块中心世界坐标定位，OpenAL 依玩家朝向正确计算
+            //    左右声道（正对时双耳都有声音）；若 relative=true 则声源被固定在 listener
+            //    自身位置，方向向量为零，pan 退化 → 无论面朝哪边都只有单边有声；
+            //  - attenuation=NONE：关闭引擎距离衰减，音量完全由 updateVolume() 手动控制，
+            //    保证玩家移动时衰减必然生效（与 RWR 追击音同模式）。
+            this.relative = false;
             this.attenuation = SoundInstance.Attenuation.NONE;
             this.x = pos.getX() + 0.5;
             this.y = pos.getY() + 0.5;

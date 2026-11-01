@@ -47,10 +47,8 @@ public class ModCreativeTabs {
                         output.accept(ModItems.DIGITAL_PLOTTER_ITEM.get());
                         output.accept(ModItems.DATA_UNIT_ITEM.get());
                         output.accept(ModItems.BLOCK_DETECTOR_ITEM.get());
-                        // 海报1（贴墙装饰）
-                        output.accept(ModItems.POSTER_1_ITEM.get());
-                        // 海报 2~16（贴墙装饰，含竖版异形海报）
-                        ModItems.POSTER_ITEMS.forEach(i -> output.accept(i.get()));
+                        // 海报（单方块，右键设置图片/缩放/偏移）
+                        output.accept(ModItems.POSTER_ITEM.get());
                         output.accept(ModItems.NAI_LONG_TOY_ITEM.get());
                         output.accept(ModItems.REDSTONE_SENDER_ITEM.get());
                         output.accept(ModItems.REDSTONE_RECEIVER_ITEM.get());

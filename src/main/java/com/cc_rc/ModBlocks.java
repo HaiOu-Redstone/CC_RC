@@ -427,24 +427,15 @@ public class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)));
 
-    // 海报1（贴墙装饰，水平四向放置，碰撞箱 16x16x1，板子贴墙渲染海报图片）
-    public static final RegistryObject<PosterBlock> POSTER_1 = BLOCKS.register("poster_1",
+    // 海报（贴墙装饰，水平四向放置，碰撞箱 16x16x1）
+    // 重构说明：旧版把每张海报各注册成一个方块（poster_2 ~ poster_26，且受原版方块模型元素坐标
+    // ±16/32 像素的硬限制，2 倍竖旗与九格宽「塔塔鲁斯」标志直接加载失败变紫黑块）。
+    // 现在只注册这一个方块：具体显示哪张图片、缩放倍率、垂直/水平偏移量都存在方块实体
+    //（PosterBlockEntity）里，由客户端 PosterBER 直接绘制四边形，尺寸不再受模型限制；
+    // 玩家右键打开设置界面（PosterScreen）切换图片与参数。可选图片见 PosterImages。
+    public static final RegistryObject<PosterBlock> POSTER = BLOCKS.register("poster",
             () -> new PosterBlock(BlockBehaviour.Properties.of()
                     .noCollission()
                     .strength(0.5F)
                     .sound(SoundType.WOOD)));
-
-    // 海报 2~16（贴墙装饰，逻辑同海报1；竖版海报（poster_10~16）宽 1 格、底边贴格子底部、
-    // 模型按图片比例向上超出格子（如 787x1024 高 20.8125px、1654x2339 高 22.625px），碰撞箱保持 16x16x1 不变）
-    public static final List<RegistryObject<PosterBlock>> POSTERS = new ArrayList<>();
-
-    static {
-        for (int i = 2; i <= 16; i++) {
-            final String name = "poster_" + i;
-            POSTERS.add(BLOCKS.register(name, () -> new PosterBlock(BlockBehaviour.Properties.of()
-                    .noCollission()
-                    .strength(0.5F)
-                    .sound(SoundType.WOOD))));
-        }
-    }
 }
