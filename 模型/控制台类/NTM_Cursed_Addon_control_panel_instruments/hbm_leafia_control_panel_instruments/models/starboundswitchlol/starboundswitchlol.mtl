@@ -1,0 +1,35 @@
+newmtl Plane
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+map_Kd ../textures/largeswitch_palette.png
+
+newmtl Plane.001
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+map_Kd ../textures/largeswitch_palette.png
+
+newmtl Plane.002
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+map_Kd ../textures/largeswitch_palette.png
+
+newmtl Cube
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+map_Kd ../textures/largeswitch_palette.png
+
+newmtl Switch
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+map_Kd ../textures/largeswitch_palette.png
+

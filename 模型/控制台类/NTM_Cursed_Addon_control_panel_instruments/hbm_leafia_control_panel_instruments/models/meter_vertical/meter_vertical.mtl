@@ -1,0 +1,18 @@
+newmtl Base
+Kd 0.1000 0.1000 0.1000
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+
+newmtl Meter
+Kd 1.0000 1.0000 1.0000
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+
+newmtl Needle
+Kd 1.0000 1.0000 1.0000
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+

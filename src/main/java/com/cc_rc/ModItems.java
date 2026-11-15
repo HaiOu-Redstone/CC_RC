@@ -4,6 +4,7 @@ import com.cc_rc.item.AttackDescriptionItem;
 import com.cc_rc.item.BaguetteItem;
 import com.cc_rc.item.BaoZiItem;
 import com.cc_rc.item.CardItem;
+import com.cc_rc.item.ConsoleCompItem;
 import com.cc_rc.item.CrowbarItem;
 import com.cc_rc.item.DescriptionBlockItem;
 import com.cc_rc.item.DescriptionHangingSignItem;
@@ -169,6 +170,107 @@ public class ModItems {
     // 海报物品（单方块：图片/缩放/偏移由右键设置界面调整，见 PosterScreen）
     public static final RegistryObject<Item> POSTER_ITEM = ITEMS.register("poster",
             () -> new BlockItem(ModBlocks.POSTER.get(), new Item.Properties()));
+
+    // 多方块控制柜 - 结构方块、总线方块与辅助计算机物品
+    public static final RegistryObject<Item> CONSOLE_BLOCK_ITEM = ITEMS.register("controller_block",
+            () -> new BlockItem(ModBlocks.CONSOLE_BLOCK.get(), new Item.Properties()));
+    // 蓝色 / 黑色控制柜结构方块物品（作用与默认色相同，仅连接时按颜色区分）
+    public static final RegistryObject<Item> CONSOLE_BLOCK_BLUE_ITEM = ITEMS.register("controller_block_blue",
+            () -> new BlockItem(ModBlocks.CONSOLE_BLOCK_BLUE.get(), new Item.Properties()));
+    public static final RegistryObject<Item> CONSOLE_BLOCK_BLACK_ITEM = ITEMS.register("controller_block_black",
+            () -> new BlockItem(ModBlocks.CONSOLE_BLOCK_BLACK.get(), new Item.Properties()));
+    public static final RegistryObject<Item> CONSOLE_BUS_ITEM = ITEMS.register("controller_bus",
+            () -> new BlockItem(ModBlocks.CONSOLE_BUS.get(), new Item.Properties()));
+    public static final RegistryObject<Item> CONTROLLER_AUX_ITEM = ITEMS.register("controller_aux",
+            () -> new BlockItem(ModBlocks.CONTROLLER_AUX.get(), new Item.Properties()));
+
+    // 控制柜表面组件物品（右键控制柜表面放置，右键已有组件打开设置界面）
+    public static final RegistryObject<Item> CONSOLE_GAUGE = ITEMS.register("controller_meter",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.GAUGE,
+                    new Item.Properties()));
+    public static final RegistryObject<Item> CONSOLE_NUMITRON = ITEMS.register("controller_display",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.NUMITRON,
+                    new Item.Properties()));
+    // 显示器（图表面板，模型复用数字显示屏）
+    public static final RegistryObject<Item> CONSOLE_GRAPH = ITEMS.register("controller_plotter",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.GRAPH,
+                    new Item.Properties()));
+    // 圆盘记录仪 L（更高、带笔的独立模型）
+    public static final RegistryObject<Item> CONSOLE_GRAPH_L = ITEMS.register("controller_plotter_l",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.GRAPH_L,
+                    new Item.Properties()));
+    public static final RegistryObject<Item> CONSOLE_INDICATOR = ITEMS.register("controller_lamp",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.INDICATOR,
+                    new Item.Properties()));
+    public static final RegistryObject<Item> CONSOLE_KEYPAD = ITEMS.register("controller_button",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.KEYPAD,
+                    new Item.Properties()));
+    public static final RegistryObject<Item> CONSOLE_TERMINAL = ITEMS.register("controller_terminal",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.TERMINAL,
+                    new Item.Properties()));
+    // 旋钮开关（panel_props 模型包）
+    public static final RegistryObject<Item> CONSOLE_KNOB_SWITCH = ITEMS.register("controller_switch",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.KNOB_SWITCH,
+                    new Item.Properties()));
+    // 拉杆开关（panel_props 模型包）
+    public static final RegistryObject<Item> CONSOLE_LEVER_SWITCH = ITEMS.register("controller_lever",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.LEVER_SWITCH,
+                    new Item.Properties()));
+    // 立式条形仪表
+    public static final RegistryObject<Item> CONSOLE_GAUGE_V = ITEMS.register("controller_gauge",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.GAUGE_V,
+                    new Item.Properties()));
+    // 弧形表盘仪表
+    public static final RegistryObject<Item> CONSOLE_GAUGE_ARC = ITEMS.register("controller_knob",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.GAUGE_ARC,
+                    new Item.Properties()));
+    // RGB 颜色控制器（灯面随 R/G/B 变量变色）
+    public static final RegistryObject<Item> CONSOLE_RGB = ITEMS.register("controller_rgb",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.RGB_COLOR,
+                    new Item.Properties()));
+    // 阀门式拉杆（开 / 关两套模型，把手角度不同）
+    public static final RegistryObject<Item> CONSOLE_LEVER_F = ITEMS.register("controller_lever_f",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.LEVER_F,
+                    new Item.Properties()));
+    // 旋转按钮（复位时中间部分顺时针旋转 90°）
+    public static final RegistryObject<Item> CONSOLE_BUTTON_X = ITEMS.register("controller_button_x",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.BUTTON_X,
+                    new Item.Properties()));
+    // 三状态旋钮开关（三个档位对应三套模型，右键 0→1→2→0 循环）
+    public static final RegistryObject<Item> CONSOLE_T_SWITCH = ITEMS.register("controller_t_switch",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.T_SWITCH,
+                    new Item.Properties()));
+    // 三状态拉杆（三个档位对应三套模型）
+    public static final RegistryObject<Item> CONSOLE_T_LEVER = ITEMS.register("controller_t_lever",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.T_LEVER,
+                    new Item.Properties()));
+    // 双色指示灯（布尔量，红亮 / 绿亮两套模型切换）
+    public static final RegistryObject<Item> CONSOLE_LAMP_D = ITEMS.register("controller_lamp_d",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.LAMP_D,
+                    new Item.Properties()));
+    // 扇形刻度仪表（0 在左下 30°，顺时针 240° 到右下 30°）
+    public static final RegistryObject<Item> CONSOLE_GAUGE_F = ITEMS.register("controller_gauge_f",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.GAUGE_F,
+                    new Item.Properties()));
+    // 同步指示器（指针位置浮点变量 + 转速附加变量 <代号>_s，按条件切换亮 / 灭灯模型）
+    public static final RegistryObject<Item> CONSOLE_SYNCHROSCOPE = ITEMS.register("controller_synchroscope",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.SYNCHROSCOPE,
+                    new Item.Properties()));
+    // 安全按钮（带玻璃罩：Shift+右键开 / 关盖，开盖后右键按下）
+    public static final RegistryObject<Item> CONSOLE_BUTTON_S = ITEMS.register("controller_button_s",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.BUTTON_S,
+                    new Item.Properties()));
+    // 钥匙开关（需要插入匹配的「控制柜钥匙」才能操作）
+    public static final RegistryObject<Item> CONSOLE_SWITCH_K = ITEMS.register("controller_switch_k",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.SWITCH_K,
+                    new Item.Properties()));
+    // 控制柜钥匙（NBT 记录所属组件代号；右键钥匙开关插入）
+    public static final RegistryObject<Item> CONSOLE_KEY = ITEMS.register("console_key",
+            () -> new com.cc_rc.item.ConsoleKeyItem(new Item.Properties().stacksTo(1)));
+    // 警报器（灯 + 静音 + 重置）
+    public static final RegistryObject<Item> CONSOLE_ALARM = ITEMS.register("controller_alarm",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.ALARM,
+                    new Item.Properties()));
 
     // 奶龙玩偶物品
     public static final RegistryObject<Item> NAI_LONG_TOY_ITEM = ITEMS.register("nai_long_toy",
@@ -613,6 +715,11 @@ public class ModItems {
     // 副手放置可显示名称的方块时自动打开编辑界面。不可堆叠。
     public static final RegistryObject<Item> EDIT_TOOL = ITEMS.register("edit_tool",
             () -> new com.cc_rc.item.EditToolItem(new Item.Properties()
+                    .stacksTo(1)));
+
+    // 画图工具（draw_tool）：右键控制柜外表面打开绘图编辑器（矩形 / 线段 / 箭头 / 预设图案）。
+    public static final RegistryObject<Item> DRAW_TOOL = ITEMS.register("draw_tool",
+            () -> new com.cc_rc.item.DrawToolItem(new Item.Properties()
                     .stacksTo(1)));
 
     // ==================== 盖金蜗牛与金鹰 ====================

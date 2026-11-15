@@ -1,0 +1,56 @@
+newmtl MAT_rbmk_gauge
+Ka 0.1 0.1 0.1
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 16
+illum 2
+map_Kd textures/gauge.png
+
+newmtl MAT_rbmk_key_pad
+Ka 0.1 0.1 0.1
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 16
+illum 2
+map_Kd textures/keypad.png
+
+newmtl MAT_rbmk_indicator
+Ka 0.1 0.1 0.1
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 16
+illum 2
+map_Kd textures/indicator.png
+
+newmtl MAT_rbmk_terminal
+Ka 0.1 0.1 0.1
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 16
+illum 2
+map_Kd textures/terminal.png
+
+newmtl MAT_rbmk_numitron
+Ka 0.1 0.1 0.1
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 16
+illum 2
+map_Kd textures/numitron.png
+
+newmtl MAT_rbmk_graph
+Ka 0.1 0.1 0.1
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 16
+illum 2
+map_Kd textures/numitron.png
+
+newmtl MAT_rbmk_lever
+Ka 0.1 0.1 0.1
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 16
+illum 2
+map_Kd textures/lever.png
+

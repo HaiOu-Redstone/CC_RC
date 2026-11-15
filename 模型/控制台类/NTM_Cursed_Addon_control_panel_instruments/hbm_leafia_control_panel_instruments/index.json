@@ -1,0 +1,169 @@
+[
+ {
+  "key": "lever",
+  "registry": "leafia_lever_v / leafia_lever_h",
+  "name": "Vertical / Horizontal Lever",
+  "file": "lever.obj",
+  "parts": [
+   "Base",
+   "Lever",
+   "Base.001"
+  ],
+  "faces": 184,
+  "verts": 118,
+  "control_size": "1×2×1.25 / 2×1×1.25",
+  "model_scale": 0.5,
+  "bbox": [
+   2.0,
+   3.6,
+   4.0
+  ],
+  "gui_textures": [
+   "lever_vertical.png",
+   "lever_horizontal.png"
+  ],
+  "anim": "Lever 手柄 pivot (0, 0.1, 0) 绕 X 转 -50*(curLevel/50-1)；水平版额外 rotateY(-90)",
+  "note": "整模型 scale(0.5)，无贴图（solid + 顶点色）"
+ },
+ {
+  "key": "meter_vertical",
+  "registry": "leafia_meter_v",
+  "name": "Vertical Meter",
+  "file": "meter_vertical.obj",
+  "parts": [
+   "Base",
+   "Meter",
+   "Needle"
+  ],
+  "faces": 270,
+  "verts": 160,
+  "control_size": "1.7×5×1.25",
+  "model_scale": 1.0,
+  "bbox": [
+   1.7,
+   5.853,
+   5.732
+  ],
+  "gui_textures": [
+   "meter_vertical_-3.png",
+   "meter_vertical_-2.png",
+   "meter_vertical_-1.png",
+   "meter_vertical_0.png",
+   "meter_vertical_1.png",
+   "meter_vertical_2.png",
+   "meter_vertical_3.png"
+  ],
+  "anim": "Needle / Meter pivot (0, -1.75, 0) 绕 X 转 -needleOffset*(360/32) 与 curAngle",
+  "note": "表身无贴图；刻度线由代码用 quad 画（divisions/subdivisions）"
+ },
+ {
+  "key": "nixie",
+  "registry": "leafia_nixie",
+  "name": "Nixie Tube Display",
+  "file": "nixie.obj",
+  "parts": [
+   "Border",
+   "BorderLeft",
+   "InsideLeft",
+   "Inside",
+   "Tube",
+   "Screws",
+   "ClipPlane"
+  ],
+  "faces": 166,
+  "verts": 132,
+  "control_size": "1.75×2.5×0.0625（每位）",
+  "model_scale": 1.0,
+  "bbox": [
+   1.375,
+   1.137,
+   2.75
+  ],
+  "gui_textures": [
+   "nixie.png"
+  ],
+  "anim": "每位沿 X 平铺 translate(i,0,0)；BorderLeft/Screws/InsideLeft 仅在首尾位，末位再 rotateY(180)",
+  "note": "Tube 是 0.2 alpha 的橙色玻璃罩，ClipPlane 用于裁剪数字"
+ },
+ {
+  "key": "starboundbuttonlol",
+  "registry": "leafia_sbbutton",
+  "name": "Large Button (Starbound)",
+  "file": "starboundbuttonlol.obj",
+  "parts": [
+   "Plane",
+   "Plane.001",
+   "Plane.002",
+   "Circle",
+   "Circle.001"
+  ],
+  "faces": 218,
+  "verts": 158,
+  "control_size": "6×6×0.5",
+  "model_scale": 3.0,
+  "bbox": [
+   2.0,
+   0.312,
+   2.0
+  ],
+  "gui_textures": [
+   "starboundbuttonlol.png",
+   "largeswitch_palette.png"
+  ],
+  "anim": "按下时 Circle.001 沿 Y 平移 -0.125；未点亮时整体乘 0.5 灰",
+  "note": "唯一带真正贴图的模型之一（调色板 largeswitch_palette.png）"
+ },
+ {
+  "key": "starboundswitchlol",
+  "registry": "leafia_sbswitch",
+  "name": "Large Switch (Starbound)",
+  "file": "starboundswitchlol.obj",
+  "parts": [
+   "Plane",
+   "Plane.001",
+   "Plane.002",
+   "Cube",
+   "Switch"
+  ],
+  "faces": 222,
+  "verts": 154,
+  "control_size": "6×6×0.5",
+  "model_scale": 3.0,
+  "bbox": [
+   2.0,
+   0.812,
+   2.0
+  ],
+  "gui_textures": [
+   "starboundswitchlol.png",
+   "largeswitch_palette.png"
+  ],
+  "anim": "Switch pivot (0, 0.125, 0) 绕 X 转 -65*(1-curLevel/50)",
+  "note": "贴图 largeswitch_palette.png"
+ },
+ {
+  "key": "textindicator",
+  "registry": "leafia_textindicator",
+  "name": "Text Indicator",
+  "file": "textindicator.obj",
+  "parts": [
+   "Plane",
+   "Plane.001"
+  ],
+  "faces": 34,
+  "verts": 24,
+  "control_size": "4.5×1.8×0.25",
+  "model_scale": 0.6666666666666666,
+  "bbox": [
+   7.0,
+   0.375,
+   3.0
+  ],
+  "gui_textures": [
+   "textindicator.png",
+   "textindicator_light.png"
+  ],
+  "anim": "Plane.001 画两遍：基础色 + 叠加发光（blend SRC_ALPHA/ONE，alpha = (t/duration)^0.5）",
+  "note": "灯面用 textindicator_light.png，其余 solid 灰"
+ }
+]

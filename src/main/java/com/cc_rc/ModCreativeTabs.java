@@ -49,6 +49,46 @@ public class ModCreativeTabs {
                         output.accept(ModItems.BLOCK_DETECTOR_ITEM.get());
                         // 海报（单方块，右键设置图片/缩放/偏移）
                         output.accept(ModItems.POSTER_ITEM.get());
+                        // 多方块控制柜：结构方块 + 总线方块 + 辅助计算机
+                        output.accept(ModItems.CONSOLE_BLOCK_ITEM.get());
+                        output.accept(ModItems.CONSOLE_BLOCK_BLUE_ITEM.get());
+                        output.accept(ModItems.CONSOLE_BLOCK_BLACK_ITEM.get());
+                        output.accept(ModItems.CONSOLE_BUS_ITEM.get());
+                        output.accept(ModItems.CONTROLLER_AUX_ITEM.get());
+                        // 控制柜表面组件（仪表 / 数字显示屏 / 指示灯 / 按钮面板 / 发信终端）
+                        output.accept(ModItems.CONSOLE_GAUGE.get());
+                        output.accept(ModItems.CONSOLE_NUMITRON.get());
+                        output.accept(ModItems.CONSOLE_GRAPH.get());
+                        // 圆盘记录仪 L（带笔的独立模型）
+                        output.accept(ModItems.CONSOLE_GRAPH_L.get());
+                        output.accept(ModItems.CONSOLE_INDICATOR.get());
+                        output.accept(ModItems.CONSOLE_KEYPAD.get());
+                        output.accept(ModItems.CONSOLE_TERMINAL.get());
+                        // 第四期追加：旋钮开关 / 拉杆开关 / 立式仪表 / 弧形仪表
+                        output.accept(ModItems.CONSOLE_KNOB_SWITCH.get());
+                        output.accept(ModItems.CONSOLE_LEVER_SWITCH.get());
+                        output.accept(ModItems.CONSOLE_GAUGE_V.get());
+                        output.accept(ModItems.CONSOLE_GAUGE_ARC.get());
+                        // RGB 颜色控制器（第三十三期）
+                        output.accept(ModItems.CONSOLE_RGB.get());
+                        // 阀门式拉杆 + 旋转按钮（第三十四期）
+                        output.accept(ModItems.CONSOLE_LEVER_F.get());
+                        output.accept(ModItems.CONSOLE_BUTTON_X.get());
+                        // 三状态开关 + 双色指示灯（第三十五期）
+                        output.accept(ModItems.CONSOLE_T_SWITCH.get());
+                        output.accept(ModItems.CONSOLE_T_LEVER.get());
+                        output.accept(ModItems.CONSOLE_LAMP_D.get());
+                        // 扇形刻度仪表（gauge_f）
+                        output.accept(ModItems.CONSOLE_GAUGE_F.get());
+                        // 同步指示器（synchroscope）
+                        output.accept(ModItems.CONSOLE_SYNCHROSCOPE.get());
+                        // 安全按钮（带玻璃罩）
+                        output.accept(ModItems.CONSOLE_BUTTON_S.get());
+                        // 钥匙开关 + 控制柜钥匙
+                        output.accept(ModItems.CONSOLE_SWITCH_K.get());
+                        output.accept(ModItems.CONSOLE_KEY.get());
+                        // 警报器（灯 + 静音 + 重置）
+                        output.accept(ModItems.CONSOLE_ALARM.get());
                         output.accept(ModItems.NAI_LONG_TOY_ITEM.get());
                         output.accept(ModItems.REDSTONE_SENDER_ITEM.get());
                         output.accept(ModItems.REDSTONE_RECEIVER_ITEM.get());
@@ -58,6 +98,8 @@ public class ModCreativeTabs {
                         output.accept(ModItems.MULTI_TOOL.get());
                         // 编辑工具：编辑可显示名称的方块文字
                         output.accept(ModItems.EDIT_TOOL.get());
+                        // 画图工具：在控制柜表面绘制图案
+                        output.accept(ModItems.DRAW_TOOL.get());
                         output.accept(ModItems.MUSIC_DISC_LEVEL5.get());
                         output.accept(ModItems.MUSIC_DISC_RAILUGUN.get());
                         output.accept(ModItems.MUSIC_DISC_NEVER.get());

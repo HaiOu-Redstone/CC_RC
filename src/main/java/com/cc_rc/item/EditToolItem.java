@@ -59,6 +59,16 @@ public class EditToolItem extends Item {
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
 
+        // 控制台结构方块：在结构表面添加 / 编辑文字（位置由客户端命中检测决定）
+        if (com.cc_rc.block.console.ConsoleStructureHelper.isConsole(
+                level.getBlockState(context.getClickedPos()))) {
+            if (level.isClientSide) {
+                // 只有客户端有字体宽度，可精确判断是否点在某条文字的覆盖区域内
+                com.cc_rc.client.ConsoleTextClient.requestEdit(context);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+
         // 目标方块实体必须是可显示名称的方块（ITextDisplay）
         BlockEntity be = level.getBlockEntity(context.getClickedPos());
         if (!(be instanceof ITextDisplay)) return InteractionResult.PASS;
@@ -82,20 +92,121 @@ public class EditToolItem extends Item {
                 @Override
                 public com.cc_rc.gui.EditTextMenu createMenu(int windowId, Inventory inventory, Player p) {
                     // 构造参数 = 方块坐标 + 当前文字（会被 IForgeMenuType 写进同步数据）
-                    return new com.cc_rc.gui.EditTextMenu(windowId, pos, currentText);
+                    return new com.cc_rc.gui.EditTextMenu(windowId, pos, currentText, -1);
                 }
             }, buf -> {
+                // 同步数据顺序需与 MenuType 解码一致：方块坐标 + 当前文字 + 组件 id（-1 = 普通方块）
                 buf.writeBlockPos(pos);
                 buf.writeComponent(currentText);
+                buf.writeVarInt(-1);
             });
         } catch (Throwable t) {
-            // 防御：dev 环境若在游戏运行时并发执行 gradlew build，重写的 build/classes 可能使
-            // 本方法内的匿名类 EditToolItem$1 懒加载失败（NoClassDefFoundError）→ 直接崩溃整服。
-            // 这里捕获并提示玩家重启游戏，避免服务端 tick 循环被 Error 打断。
-            LOGGER.error("编辑工具菜单打开失败（匿名类加载异常，可能因游戏运行中并发重编译导致）：", t);
-            player.sendSystemMessage(Component.literal(
-                    "编辑工具菜单打开失败（类加载异常）。若刚进行过模组重编译，请重启游戏后再试。"));
+            logOpenFailure(player, t);
         }
+    }
+
+    /**
+     * 打开控制台结构表面文字的专用编辑界面（服务端调用，参数来自 ConsoleTextRequestPacket）。
+     *
+     * @param bus   总线方块实体（结构数据源）
+     * @param entry 已有文字（新建时为 null，使用默认样式/锚点/缩放）
+     * @param textId 已有文字 id；-1 = 新建
+     * @param face  文字所在的结构外表面
+     * @param u     锚点相对该表面中心的横向像素偏移
+     * @param v     锚点相对该表面中心的纵向像素偏移
+     */
+    public static void openConsoleTextMenu(ServerPlayer player,
+                                           com.cc_rc.block.console.ConsoleBusBlockEntity bus,
+                                           com.cc_rc.block.console.ConsoleBusBlockEntity.TextEntry entry,
+                                           int textId, net.minecraft.core.Direction face,
+                                           float u, float v) {
+        BlockPos busPos = bus.getBlockPos().immutable();
+        int faceOrd = face.get3DDataValue();
+        int anchorH = entry == null ? 1 : entry.anchorH;
+        int anchorV = entry == null ? 1 : entry.anchorV;
+        float scale = entry == null
+                ? com.cc_rc.Config.getConsoleTextDefaultScale()
+                : entry.scale;
+        Component currentText = entry == null ? Component.empty() : entry.toComponent();
+        int color = entry == null ? -1 : entry.color;
+        boolean bold = entry != null && entry.bold;
+        boolean italic = entry != null && entry.italic;
+        boolean underline = entry != null && entry.underline;
+        boolean strike = entry != null && entry.strikethrough;
+
+        // 表面半宽/半高（像素）：供客户端把锚点坐标夹在表面范围内
+        net.minecraft.core.Direction busFacing = bus.getBusFacing();
+        float halfW = (float) com.cc_rc.block.console.ConsoleSurface.halfWidthPx(face, busFacing,
+                bus.getSizeX(), bus.getSizeY(), bus.getSizeZ());
+        float halfH = (float) com.cc_rc.block.console.ConsoleSurface.halfHeightPx(face, busFacing,
+                bus.getSizeX(), bus.getSizeY(), bus.getSizeZ());
+
+        try {
+            NetworkHooks.openScreen(player, new MenuProvider() {
+                @Override
+                public Component getDisplayName() {
+                    return Component.translatable("item.cc_rc.edit_tool");
+                }
+
+                @Override
+                public com.cc_rc.gui.ConsoleTextMenu createMenu(int windowId, Inventory inventory, Player p) {
+                    return new com.cc_rc.gui.ConsoleTextMenu(windowId, busPos, textId, faceOrd,
+                            u, v, currentText, color, bold, italic, underline, strike,
+                            anchorH, anchorV, scale, halfW, halfH);
+                }
+            }, buf -> com.cc_rc.gui.ConsoleTextMenu.write(buf, new com.cc_rc.gui.ConsoleTextMenu(
+                    -1, busPos, textId, faceOrd, u, v, currentText, color, bold, italic,
+                    underline, strike, anchorH, anchorV, scale, halfW, halfH)));
+        } catch (Throwable t) {
+            logOpenFailure(player, t);
+        }
+    }
+
+    /**
+     * 打开控制台组件「附带文字」的编辑界面（服务端调用，参数来自 ConsoleCompTextRequestPacket）。
+     *
+     * 附带文字位置相对组件固定、大小固定，没有位置 / 锚点 / 缩放选项，
+     * 因此直接复用普通文字编辑界面，由菜单里的 compId 区分提交目标。
+     *
+     * @param bus   总线方块实体（结构数据源）
+     * @param entry 目标组件（附带文字内容作为输入框初始值）
+     */
+    public static void openCompTextMenu(ServerPlayer player,
+                                        com.cc_rc.block.console.ConsoleBusBlockEntity bus,
+                                        com.cc_rc.block.console.ConsoleBusBlockEntity.CompEntry entry) {
+        BlockPos busPos = bus.getBlockPos().immutable();
+        int compId = entry.id;
+        Component currentText = entry.text == null ? Component.empty() : entry.text.toComponent();
+        try {
+            NetworkHooks.openScreen(player, new MenuProvider() {
+                @Override
+                public Component getDisplayName() {
+                    return Component.translatable("item.cc_rc.edit_tool");
+                }
+
+                @Override
+                public com.cc_rc.gui.EditTextMenu createMenu(int windowId, Inventory inventory, Player p) {
+                    return new com.cc_rc.gui.EditTextMenu(windowId, busPos, currentText, compId);
+                }
+            }, buf -> {
+                // 同步数据顺序需与 MenuType 解码一致：方块坐标 + 当前文字 + 组件 id
+                buf.writeBlockPos(busPos);
+                buf.writeComponent(currentText);
+                buf.writeVarInt(compId);
+            });
+        } catch (Throwable t) {
+            logOpenFailure(player, t);
+        }
+    }
+
+    /** 打开界面失败的兜底处理（避免服务端 tick 循环被 Error 打断）。 */
+    private static void logOpenFailure(ServerPlayer player, Throwable t) {
+        // 防御：dev 环境若在游戏运行时并发执行 gradlew build，重写的 build/classes 可能使
+        // 匿名类懒加载失败（NoClassDefFoundError）→ 直接崩溃整服。
+        // 这里捕获并提示玩家重启游戏，避免服务端 tick 循环被 Error 打断。
+        LOGGER.error("编辑工具菜单打开失败（匿名类加载异常，可能因游戏运行中并发重编译导致）：", t);
+        player.sendSystemMessage(Component.literal(
+                "编辑工具菜单打开失败（类加载异常）。若刚进行过模组重编译，请重启游戏后再试。"));
     }
 
     /**

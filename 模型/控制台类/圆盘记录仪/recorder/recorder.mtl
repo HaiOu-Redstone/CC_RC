@@ -1,0 +1,8 @@
+newmtl prop
+Ka 0.16 0.16 0.16
+Kd 1 1 1
+Ks 0.03 0.03 0.03
+Ns 6
+d 1.0
+illum 2
+map_Kd recorder.png

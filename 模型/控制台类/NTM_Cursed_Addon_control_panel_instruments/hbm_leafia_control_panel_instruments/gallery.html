@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>NTM Cursed Addon — 控制面板仪表模型</title>
+<style>
+ :root{color-scheme:dark}
+ body{margin:0;background:#14151a;color:#e7e8ee;font:14px/1.6 "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+ header{padding:30px 40px 10px;border-bottom:1px solid #2a2c34}
+ h1{margin:0 0 6px;font-size:21px}
+ header p{margin:0;color:#9aa0ad;font-size:13px}
+ .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;padding:26px 40px 48px}
+ .card{background:#1b1d24;border:1px solid #2a2c34;border-radius:12px;overflow:hidden}
+ .shot{background:#101114;aspect-ratio:1/1}
+ .shot img{width:100%;height:100%;object-fit:contain}
+ h2{font-size:15px;margin:14px 16px 4px}
+ .en{display:block;font-size:12px;color:#8d93a1;font-weight:400}
+ dl{margin:8px 16px;display:grid;grid-template-columns:62px 1fr;gap:3px 10px;font-size:12.5px}
+ dt{color:#8d93a1} dd{margin:0;word-break:break-word}
+ code{background:#22252d;padding:1px 5px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+ .note{margin:0 16px 16px;font-size:12px;color:#8d93a1}
+ footer{padding:0 40px 40px;color:#7b8290;font-size:12px}
+</style></head><body>
+<header><h1>NTM Cursed Addon — 自定义控制面板仪表模型</h1>
+<p>ntmleafia/NTM-Cursed-Addon @ c085b54 · assets/leafia/textures/_integrated/control_panel/instruments · LicenseRef-PolyForm-Shield-1.0.0（作者授权）</p></header>
+<div class="grid">
+    <article class="card">
+      <div class="shot"><img src="previews/lever_iso.png" alt="lever"></div>
+      <h2>Vertical / Horizontal Lever <span class="en">lever</span></h2>
+      <dl>
+        <dt>注册名</dt><dd><code>leafia_lever_v / leafia_lever_h</code></dd>
+        <dt>模型</dt><dd><code>lever.obj</code></dd>
+        <dt>部件</dt><dd><code>Base, Lever, Base.001</code></dd>
+        <dt>规模</dt><dd>184 面 / 118 顶点</dd>
+        <dt>控件尺寸</dt><dd>1×2×1.25 / 2×1×1.25（模型 scale 0.5）</dd>
+        <dt>动画</dt><dd>Lever 手柄 pivot (0, 0.1, 0) 绕 X 转 -50*(curLevel/50-1)；水平版额外 rotateY(-90)</dd>
+      </dl>
+      <p class="note">整模型 scale(0.5)，无贴图（solid + 顶点色）</p>
+    </article>
+    <article class="card">
+      <div class="shot"><img src="previews/meter_vertical_iso.png" alt="meter_vertical"></div>
+      <h2>Vertical Meter <span class="en">meter_vertical</span></h2>
+      <dl>
+        <dt>注册名</dt><dd><code>leafia_meter_v</code></dd>
+        <dt>模型</dt><dd><code>meter_vertical.obj</code></dd>
+        <dt>部件</dt><dd><code>Base, Meter, Needle</code></dd>
+        <dt>规模</dt><dd>270 面 / 160 顶点</dd>
+        <dt>控件尺寸</dt><dd>1.7×5×1.25（模型 scale 1.0）</dd>
+        <dt>动画</dt><dd>Needle / Meter pivot (0, -1.75, 0) 绕 X 转 -needleOffset*(360/32) 与 curAngle</dd>
+      </dl>
+      <p class="note">表身无贴图；刻度线由代码用 quad 画（divisions/subdivisions）</p>
+    </article>
+    <article class="card">
+      <div class="shot"><img src="previews/nixie_iso.png" alt="nixie"></div>
+      <h2>Nixie Tube Display <span class="en">nixie</span></h2>
+      <dl>
+        <dt>注册名</dt><dd><code>leafia_nixie</code></dd>
+        <dt>模型</dt><dd><code>nixie.obj</code></dd>
+        <dt>部件</dt><dd><code>Border, BorderLeft, InsideLeft, Inside, Tube, Screws, ClipPlane</code></dd>
+        <dt>规模</dt><dd>166 面 / 132 顶点</dd>
+        <dt>控件尺寸</dt><dd>1.75×2.5×0.0625（每位）（模型 scale 1.0）</dd>
+        <dt>动画</dt><dd>每位沿 X 平铺 translate(i,0,0)；BorderLeft/Screws/InsideLeft 仅在首尾位，末位再 rotateY(180)</dd>
+      </dl>
+      <p class="note">Tube 是 0.2 alpha 的橙色玻璃罩，ClipPlane 用于裁剪数字</p>
+    </article>
+    <article class="card">
+      <div class="shot"><img src="previews/starboundbuttonlol_iso.png" alt="starboundbuttonlol"></div>
+      <h2>Large Button (Starbound) <span class="en">starboundbuttonlol</span></h2>
+      <dl>
+        <dt>注册名</dt><dd><code>leafia_sbbutton</code></dd>
+        <dt>模型</dt><dd><code>starboundbuttonlol.obj</code></dd>
+        <dt>部件</dt><dd><code>Plane, Plane.001, Plane.002, Circle, Circle.001</code></dd>
+        <dt>规模</dt><dd>218 面 / 158 顶点</dd>
+        <dt>控件尺寸</dt><dd>6×6×0.5（模型 scale 3.0）</dd>
+        <dt>动画</dt><dd>按下时 Circle.001 沿 Y 平移 -0.125；未点亮时整体乘 0.5 灰</dd>
+      </dl>
+      <p class="note">唯一带真正贴图的模型之一（调色板 largeswitch_palette.png）</p>
+    </article>
+    <article class="card">
+      <div class="shot"><img src="previews/starboundswitchlol_iso.png" alt="starboundswitchlol"></div>
+      <h2>Large Switch (Starbound) <span class="en">starboundswitchlol</span></h2>
+      <dl>
+        <dt>注册名</dt><dd><code>leafia_sbswitch</code></dd>
+        <dt>模型</dt><dd><code>starboundswitchlol.obj</code></dd>
+        <dt>部件</dt><dd><code>Plane, Plane.001, Plane.002, Cube, Switch</code></dd>
+        <dt>规模</dt><dd>222 面 / 154 顶点</dd>
+        <dt>控件尺寸</dt><dd>6×6×0.5（模型 scale 3.0）</dd>
+        <dt>动画</dt><dd>Switch pivot (0, 0.125, 0) 绕 X 转 -65*(1-curLevel/50)</dd>
+      </dl>
+      <p class="note">贴图 largeswitch_palette.png</p>
+    </article>
+    <article class="card">
+      <div class="shot"><img src="previews/textindicator_iso.png" alt="textindicator"></div>
+      <h2>Text Indicator <span class="en">textindicator</span></h2>
+      <dl>
+        <dt>注册名</dt><dd><code>leafia_textindicator</code></dd>
+        <dt>模型</dt><dd><code>textindicator.obj</code></dd>
+        <dt>部件</dt><dd><code>Plane, Plane.001</code></dd>
+        <dt>规模</dt><dd>34 面 / 24 顶点</dd>
+        <dt>控件尺寸</dt><dd>4.5×1.8×0.25（模型 scale 0.6666666666666666）</dd>
+        <dt>动画</dt><dd>Plane.001 画两遍：基础色 + 叠加发光（blend SRC_ALPHA/ONE，alpha = (t/duration)^0.5）</dd>
+      </dl>
+      <p class="note">灯面用 textindicator_light.png，其余 solid 灰</p>
+    </article></div>
+<footer>预览为脚本内软件光栅化（正交 + 兰伯特着色），深色部件亮度已提升以便观察结构。</footer>
+</body></html>

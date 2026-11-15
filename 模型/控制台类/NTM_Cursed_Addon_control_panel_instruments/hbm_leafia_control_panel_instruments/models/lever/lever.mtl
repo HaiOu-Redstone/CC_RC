@@ -1,0 +1,18 @@
+newmtl Base
+Kd 0.3060 0.3060 0.3060
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+
+newmtl Lever
+Kd 0.5330 0.5330 0.5330
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+
+newmtl Base.001
+Kd 0.7650 0.7650 0.7650
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+

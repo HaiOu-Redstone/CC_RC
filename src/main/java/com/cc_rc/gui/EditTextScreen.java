@@ -2,6 +2,7 @@ package com.cc_rc.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.cc_rc.CcRc;
+import com.cc_rc.network.ConsoleCompTextPacket;
 import com.cc_rc.network.EditTextPacket;
 import com.cc_rc.network.ModNetwork;
 import net.minecraft.client.gui.GuiGraphics;
@@ -157,11 +158,17 @@ public class EditTextScreen extends AbstractContainerScreen<EditTextMenu> {
                 Style.EMPTY.withBold(active).withColor(0xFFFFFF)));
     }
 
-    /** 提交输入并关闭：发送 C2S 包把文字与样式写入目标方块。 */
+    /** 提交输入并关闭：按目标类型发送对应 C2S 包写入文字。 */
     private void submitAndClose() {
-        String text = this.input.getValue();
-        ModNetwork.CHANNEL.sendToServer(new EditTextPacket(
-                menu.pos, text, color, bold, italic, underline, strikethrough));
+        if (menu.compId >= 0) {
+            // 控制台组件的附带文字：位置/大小由组件类型固定，只提交内容与样式
+            ModNetwork.CHANNEL.sendToServer(new ConsoleCompTextPacket(
+                    menu.pos, menu.compId, this.input.getValue(), color,
+                    bold, italic, underline, strikethrough));
+        } else {
+            ModNetwork.CHANNEL.sendToServer(new EditTextPacket(
+                    menu.pos, this.input.getValue(), color, bold, italic, underline, strikethrough));
+        }
         this.onClose();
     }
 

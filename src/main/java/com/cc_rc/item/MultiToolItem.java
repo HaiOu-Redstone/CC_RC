@@ -83,6 +83,15 @@ public class MultiToolItem extends Item {
 
         BlockState state = level.getBlockState(pos);
 
+        // 控制台结构方块：按住右键拖动表面组件 / 文字（命中检测与跟随仅在客户端进行）
+        if (com.cc_rc.block.console.ConsoleStructureHelper.isConsole(state)) {
+            if (level.isClientSide) {
+                return com.cc_rc.client.ConsoleDragClient.begin(context);
+            }
+            // 服务端只需消费交互，实际位置变更通过拖动专用的网络包同步
+            return InteractionResult.SUCCESS;
+        }
+
         // 钥匙柜：记录其朝向与坐标到工具 NBT（供后续录入控制器）
         if (state.getBlock() instanceof KeyCabinetBlock) {
             // 客户端也返回 SUCCESS 消费交互，防止后续逻辑拦截

@@ -14,6 +14,8 @@ import com.cc_rc.block.digital_knob.DigitalKnobBlockEntity;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBlockEntity;
 import com.cc_rc.block.fridge.FridgeBlockEntity;
 import com.cc_rc.block.key_distributor.KeyDistributorBlockEntity;
+import com.cc_rc.block.console.ConsoleBlockEntity;
+import com.cc_rc.block.console.ConsoleBusBlockEntity;
 import com.cc_rc.block.poster.PosterBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBusBlockEntity;
@@ -185,5 +187,23 @@ public class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             BlockDetectorBlockEntity::new,
                             ModBlocks.BLOCK_DETECTOR.get()
+                    ).build(null));
+
+    // 控制柜结构方块实体（只存所属总线 + 结构状态，供 BER 画网格、拆除时解除成型）
+    public static final RegistryObject<BlockEntityType<ConsoleBlockEntity>> CONSOLE_BLOCK_BE =
+            BLOCK_ENTITY_TYPES.register("controller_block_be",
+                    () -> BlockEntityType.Builder.of(
+                            ConsoleBlockEntity::new,
+                            ModBlocks.CONSOLE_BLOCK.get(),
+                            ModBlocks.CONSOLE_BLOCK_BLUE.get(),
+                            ModBlocks.CONSOLE_BLOCK_BLACK.get()
+                    ).build(null));
+
+    // 控制柜总线方块实体（结构三态 + 最小角/尺寸/格数，低频巡检结构完整性）
+    public static final RegistryObject<BlockEntityType<ConsoleBusBlockEntity>> CONSOLE_BUS_BE =
+            BLOCK_ENTITY_TYPES.register("controller_bus_be",
+                    () -> BlockEntityType.Builder.of(
+                            ConsoleBusBlockEntity::new,
+                            ModBlocks.CONSOLE_BUS.get()
                     ).build(null));
 }

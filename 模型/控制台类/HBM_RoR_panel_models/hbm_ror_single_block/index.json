@@ -1,0 +1,150 @@
+[
+ {
+  "block": "rbmk_gauge",
+  "zh": "无线红石信号流量控制器面板",
+  "en": "Redstone-over-Radio Gauge",
+  "obj": "gauge.obj",
+  "texture": "textures/models/network/gauge.png",
+  "faces": 129,
+  "units": 4,
+  "layout_faces": 516,
+  "parts": [
+   "Needle",
+   "Gauge"
+  ],
+  "unit_bbox": [
+   0.0625,
+   0.3125,
+   0.3125
+  ],
+  "note": "4 个表盘，指针 pivot (0,0.4375,-0.125) 绕 -X 转 angle-85，angle∈[0,80]"
+ },
+ {
+  "block": "rbmk_key_pad",
+  "zh": "无线红石信号按钮面板",
+  "en": "Redstone-over-Radio Keypad",
+  "obj": "button.obj",
+  "texture": "textures/models/network/keypad.png",
+  "faces": 20,
+  "units": 4,
+  "layout_faces": 80,
+  "parts": [
+   "Socket",
+   "Button"
+  ],
+  "unit_bbox": [
+   0.125,
+   0.3125,
+   0.3125
+  ],
+  "note": "4 个按钮，按下时 Button 沿 +X 偏移 -0.03125"
+ },
+ {
+  "block": "rbmk_indicator",
+  "zh": "无线红石信号指示灯",
+  "en": "Redstone-over-Radio Indicator Lights",
+  "obj": "indicator.obj",
+  "texture": "textures/models/network/indicator.png",
+  "faces": 18,
+  "units": 6,
+  "layout_faces": 108,
+  "parts": [
+   "Light",
+   "Base"
+  ],
+  "unit_bbox": [
+   0.0625,
+   0.25,
+   0.4375
+  ],
+  "note": "6 个指示灯，Light 面片满亮绘制"
+ },
+ {
+  "block": "rbmk_lever",
+  "zh": "无线红石信号拉杆",
+  "en": "Redstone-over-Radio Lever",
+  "obj": "lever.obj",
+  "texture": "textures/models/network/lever.png",
+  "faces": 202,
+  "units": 2,
+  "layout_faces": 404,
+  "parts": [
+   "Lever",
+   "Base"
+  ],
+  "unit_bbox": [
+   0.1875,
+   0.9062,
+   0.375
+  ],
+  "note": "2 个拉杆，Lever 手柄 pivot (0.125,0.5625,0) 绕 Z 转 -180*progress"
+ },
+ {
+  "block": "rbmk_numitron",
+  "zh": "无线红石信号数字显示器",
+  "en": "Redstone-over-Radio Numeric Display",
+  "obj": "numitron.obj",
+  "texture": "textures/models/network/numitron.png",
+  "faces": 26,
+  "units": 2,
+  "layout_faces": 52,
+  "parts": [
+   "Plane"
+  ],
+  "unit_bbox": [
+   0.0625,
+   0.3125,
+   0.8125
+  ],
+  "note": "2 个数码屏；数字由 numitron_lights.png 叠层绘制，不在模型里"
+ },
+ {
+  "block": "rbmk_graph",
+  "zh": "无线红石信号图表面板",
+  "en": "Redstone-over-Radio Graph",
+  "obj": "numitron.obj",
+  "texture": "textures/models/network/numitron.png",
+  "faces": 26,
+  "units": 2,
+  "layout_faces": 52,
+  "parts": [
+   "Plane"
+  ],
+  "unit_bbox": [
+   0.0625,
+   0.3125,
+   0.8125
+  ],
+  "note": "复用 numitron 模型，曲线由代码绘制"
+ },
+ {
+  "block": "rbmk_terminal",
+  "zh": "无线红石信号发信终端",
+  "en": "Redstone-over-Radio Terminal",
+  "obj": "terminal.obj",
+  "texture": "textures/models/network/terminal.png",
+  "faces": 26,
+  "units": 1,
+  "layout_faces": 26,
+  "parts": [
+   "Base"
+  ],
+  "unit_bbox": [
+   0.125,
+   0.875,
+   0.875
+  ],
+  "note": "单件终端；文字行按 translate(0,10*scale,0) 滚动"
+ },
+ {
+  "block": "radio_torch_*",
+  "zh": "无线红石信号发射器/接收器/控制器/读取器/计数器/逻辑接收器",
+  "en": "RoR torches",
+  "obj": "(无 obj，纯立方体)",
+  "texture": "textures/blocks/rtty_*.png",
+  "faces": 0,
+  "units": 1,
+  "parts": [],
+  "note": "6 个单方块，只有 6 面贴图，开/关状态两张图"
+ }
+]

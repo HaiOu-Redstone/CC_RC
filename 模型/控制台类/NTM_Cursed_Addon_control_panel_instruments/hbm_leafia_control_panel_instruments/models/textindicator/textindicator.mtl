@@ -1,0 +1,13 @@
+newmtl Plane
+Kd 0.2900 0.2900 0.2900
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+
+newmtl Plane.001
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 20
+illum 2
+map_Kd ../textures/textindicator_light.png
+

@@ -53,5 +53,85 @@ public class ModNetwork {
                 PosterConfigPacket::encode,
                 PosterConfigPacket::decode,
                 PosterConfigPacket::handle);
+        // 控制台总线操作（C2S，客户端请求成型 / 锁定 / 解锁）
+        CHANNEL.registerMessage(7, ConsoleStructurePacket.class,
+                ConsoleStructurePacket::encode,
+                ConsoleStructurePacket::decode,
+                ConsoleStructurePacket::handle);
+        // 控制台表面文字：请求打开编辑界面（C2S，客户端先做命中检测再请服务端开界面）
+        CHANNEL.registerMessage(8, ConsoleTextRequestPacket.class,
+                ConsoleTextRequestPacket::encode,
+                ConsoleTextRequestPacket::decode,
+                ConsoleTextRequestPacket::handle);
+        // 控制台表面文字：提交内容与样式（C2S，写入总线方块实体）
+        CHANNEL.registerMessage(9, ConsoleTextPacket.class,
+                ConsoleTextPacket::encode,
+                ConsoleTextPacket::decode,
+                ConsoleTextPacket::handle);
+        // 控制台表面组件：请求打开设置界面（C2S）
+        CHANNEL.registerMessage(10, ConsoleCompRequestPacket.class,
+                ConsoleCompRequestPacket::encode,
+                ConsoleCompRequestPacket::decode,
+                ConsoleCompRequestPacket::handle);
+        // 控制台表面组件：提交代号/位置或删除（C2S）
+        CHANNEL.registerMessage(11, ConsoleCompPacket.class,
+                ConsoleCompPacket::encode,
+                ConsoleCompPacket::decode,
+                ConsoleCompPacket::handle);
+        // 控制台组件附带文字：请求打开普通文字编辑界面（C2S）
+        CHANNEL.registerMessage(12, ConsoleCompTextRequestPacket.class,
+                ConsoleCompTextRequestPacket::encode,
+                ConsoleCompTextRequestPacket::decode,
+                ConsoleCompTextRequestPacket::handle);
+        // 控制台组件附带文字：提交内容与样式（C2S，写入总线方块实体）
+        CHANNEL.registerMessage(13, ConsoleCompTextPacket.class,
+                ConsoleCompTextPacket::encode,
+                ConsoleCompTextPacket::decode,
+                ConsoleCompTextPacket::handle);
+        // 控制台表面文字：拖动（只改锚点位置，C2S）
+        CHANNEL.registerMessage(14, ConsoleTextMovePacket.class,
+                ConsoleTextMovePacket::encode,
+                ConsoleTextMovePacket::decode,
+                ConsoleTextMovePacket::handle);
+        // 控制柜变量表：创建 / 删除 / 保存数值（C2S）
+        CHANNEL.registerMessage(15, ConsoleVarPacket.class,
+                ConsoleVarPacket::encode,
+                ConsoleVarPacket::decode,
+                ConsoleVarPacket::handle);
+        // 控制柜程序表：保存整张程序（C2S）
+        CHANNEL.registerMessage(16, ConsoleProgramPacket.class,
+                ConsoleProgramPacket::encode,
+                ConsoleProgramPacket::decode,
+                ConsoleProgramPacket::handle);
+        // 控制台按钮：弹起时间为 0 时松手释放（C2S）
+        CHANNEL.registerMessage(17, ConsoleKeypadReleasePacket.class,
+                ConsoleKeypadReleasePacket::encode,
+                ConsoleKeypadReleasePacket::decode,
+                ConsoleKeypadReleasePacket::handle);
+        // 控制柜配置：客户端上传本地 JSON 加载到总线（C2S）
+        CHANNEL.registerMessage(18, ConsoleConfigUploadPacket.class,
+                ConsoleConfigUploadPacket::encode,
+                ConsoleConfigUploadPacket::decode,
+                ConsoleConfigUploadPacket::handle);
+        // 控制柜配置：服务端回执加载结果（S2C）
+        CHANNEL.registerMessage(19, ConsoleConfigResultPacket.class,
+                ConsoleConfigResultPacket::encode,
+                ConsoleConfigResultPacket::decode,
+                ConsoleConfigResultPacket::handle);
+        // 控制柜表面绘图：修改 / 移动 / 删除 / 新建图案（C2S）
+        CHANNEL.registerMessage(21, ConsoleDrawPacket.class,
+                ConsoleDrawPacket::encode,
+                ConsoleDrawPacket::decode,
+                ConsoleDrawPacket::handle);
+        // 控制柜表面绘图：新建图案的回执（S2C，携带新图形 id 供属性界面继续编辑）
+        CHANNEL.registerMessage(22, ConsoleDrawCreatedPacket.class,
+                ConsoleDrawCreatedPacket::encode,
+                ConsoleDrawCreatedPacket::decode,
+                ConsoleDrawCreatedPacket::handle);
+        // 画图工具：保存默认设置（颜色 / 线宽 / 缩放 / 图层 / 类型 / 快速绘画开关等，C2S）
+        CHANNEL.registerMessage(23, DrawToolSettingsPacket.class,
+                DrawToolSettingsPacket::encode,
+                DrawToolSettingsPacket::decode,
+                DrawToolSettingsPacket::handle);
     }
 }

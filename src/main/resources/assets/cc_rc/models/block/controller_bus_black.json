@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "cc_rc:block/controller/controller_bus_side_black",
+    "down": "cc_rc:block/controller/controller_bus_side_black",
+    "up": "cc_rc:block/controller/controller_bus_side_black",
+    "north": "cc_rc:block/controller/controller_bus_front_black",
+    "south": "cc_rc:block/controller/controller_bus_side_black",
+    "east": "cc_rc:block/controller/controller_bus_side_black",
+    "west": "cc_rc:block/controller/controller_bus_side_black"
+  }
+}

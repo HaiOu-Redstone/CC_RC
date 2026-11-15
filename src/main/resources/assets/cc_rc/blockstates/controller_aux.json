@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "color=default,facing=north": { "model": "cc_rc:block/controller_aux" },
+    "color=default,facing=east": { "model": "cc_rc:block/controller_aux", "y": 90 },
+    "color=default,facing=south": { "model": "cc_rc:block/controller_aux", "y": 180 },
+    "color=default,facing=west": { "model": "cc_rc:block/controller_aux", "y": 270 },
+    "color=blue,facing=north": { "model": "cc_rc:block/controller_aux_blue" },
+    "color=blue,facing=east": { "model": "cc_rc:block/controller_aux_blue", "y": 90 },
+    "color=blue,facing=south": { "model": "cc_rc:block/controller_aux_blue", "y": 180 },
+    "color=blue,facing=west": { "model": "cc_rc:block/controller_aux_blue", "y": 270 },
+    "color=black,facing=north": { "model": "cc_rc:block/controller_aux_black" },
+    "color=black,facing=east": { "model": "cc_rc:block/controller_aux_black", "y": 90 },
+    "color=black,facing=south": { "model": "cc_rc:block/controller_aux_black", "y": 180 },
+    "color=black,facing=west": { "model": "cc_rc:block/controller_aux_black", "y": 270 }
+  }
+}

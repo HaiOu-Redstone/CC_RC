@@ -42,6 +42,15 @@ public class Config
     // 扩展红石继电器总线配置
     private static final ForgeConfigSpec.IntValue RELAY_BUS_MAX_DISTANCE;
 
+    // 控制台表面文字配置
+    private static final ForgeConfigSpec.DoubleValue CONSOLE_TEXT_DEFAULT_SCALE;
+    // 控制台按钮组件配置
+    private static final ForgeConfigSpec.IntValue CONSOLE_BUTTON_HOLD_TICKS;
+    // 控制柜程序变量表配置
+    private static final ForgeConfigSpec.IntValue CONSOLE_PROGRAM_MAX_VARS;
+    // 控制柜同步指示器配置
+    private static final ForgeConfigSpec.DoubleValue CONSOLE_SYNCHROSCOPE_LAMP_SPEED;
+
     static {
         BUILDER.push("safe_button");
 
@@ -142,6 +151,39 @@ public class Config
                 .defineInRange("max_distance", 16, 1, 64);
 
         BUILDER.pop();
+
+        BUILDER.push("console_text");
+
+        CONSOLE_TEXT_DEFAULT_SCALE = BUILDER
+                .comment("控制台表面文字与组件附带文字的默认字体缩放倍率（1 字体像素 = 该值个结构像素），默认 0.15")
+                .defineInRange("default_scale", 0.15D, 0.05D, 4.0D);
+
+        BUILDER.pop();
+
+        BUILDER.push("console_button");
+
+        CONSOLE_BUTTON_HOLD_TICKS = BUILDER
+                .comment("控制台按钮组件按下后保持按下的时间（tick），20 tick = 1 秒，默认 20")
+                .defineInRange("hold_ticks", 20, 1, 200);
+
+        BUILDER.pop();
+
+        BUILDER.push("console_program");
+
+        CONSOLE_PROGRAM_MAX_VARS = BUILDER
+                .comment("控制柜程序变量表的最大槽位数（含 0 号只读运行间隔槽）。",
+                        "默认 64；最大 256（字节码地址使用 1 字节，0~255），配置超过 256 时会被限制为 256。")
+                .defineInRange("max_vars", 64, 2, 256);
+
+        BUILDER.pop();
+
+        BUILDER.push("console_synchroscope");
+
+        CONSOLE_SYNCHROSCOPE_LAMP_SPEED = BUILDER
+                .comment("同步指示器亮灯的最高转速（度/tick）：转速绝对值小于该值且指针角度在 ±15° 内时亮灯，默认 15")
+                .defineInRange("lamp_speed", 15.0D, 0.0D, 180.0D);
+
+        BUILDER.pop();
     }
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -192,6 +234,34 @@ public class Config
     /** 扩展红石继电器总线沿面向方向搜索继电器的最大距离（格，默认 16） */
     public static int getRelayBusMaxDistance() {
         return RELAY_BUS_MAX_DISTANCE.get();
+    }
+
+    /** 控制台表面文字 / 组件附带文字的默认缩放倍率（默认 0.15） */
+    public static float getConsoleTextDefaultScale() {
+        return CONSOLE_TEXT_DEFAULT_SCALE.get().floatValue();
+    }
+
+    /**
+     * 同步指示器亮灯的最高转速（度/tick，默认 15）。
+     * 转速绝对值小于该值且指针角度在 ±15° 内时显示「灯亮」模型。
+     */
+    public static float getSynchroscopeLampSpeed() {
+        return CONSOLE_SYNCHROSCOPE_LAMP_SPEED.get().floatValue();
+    }
+
+    /** 控制台按钮组件按下后保持按下的时间（tick，默认 20） */
+    public static int getConsoleButtonHoldTicks() {
+        return CONSOLE_BUTTON_HOLD_TICKS.get();
+    }
+
+    /**
+     * 控制柜程序变量表的最大槽位数（含 0 号只读运行间隔槽）。
+     *
+     * 默认 64，硬上限 256（字节码地址为 1 字节，0~255）；
+     * 即使配置文件被手动改成更大的值，这里也会再夹紧到 256。
+     */
+    public static int getConsoleProgramMaxVars() {
+        return Math.max(2, Math.min(256, CONSOLE_PROGRAM_MAX_VARS.get()));
     }
 
     /**

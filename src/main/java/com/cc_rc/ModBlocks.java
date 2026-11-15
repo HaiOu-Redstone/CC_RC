@@ -21,6 +21,10 @@ import com.cc_rc.block.canvas_sign.CanvasCeilingHangingSignBlock;
 import com.cc_rc.block.canvas_sign.CanvasStandingSignBlock;
 import com.cc_rc.block.canvas_sign.CanvasWallHangingSignBlock;
 import com.cc_rc.block.canvas_sign.CanvasWallSignBlock;
+import com.cc_rc.block.console.ConsoleBlock;
+import com.cc_rc.block.console.ConsoleBusBlock;
+import com.cc_rc.block.console.ConsoleColor;
+import com.cc_rc.block.console.ControllerAuxBlock;
 import com.cc_rc.block.fridge.FridgeBlock;
 import com.cc_rc.block.key_cabinet.KeyCabinetBlock;
 import com.cc_rc.block.key_distributor.KeyDistributorBlock;
@@ -438,4 +442,43 @@ public class ModBlocks {
                     .noCollission()
                     .strength(0.5F)
                     .sound(SoundType.WOOD)));
+
+    // 多方块控制柜 - 结构方块（完整立方体，无方向；结构数据保存在总线方块实体里）
+    public static final RegistryObject<ConsoleBlock> CONSOLE_BLOCK = BLOCKS.register("controller_block",
+            () -> new ConsoleBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
+    // 控制柜方块的颜色变体（蓝色 / 黑色）：作用与默认色完全相同，
+    // 只有同色方块能拼成同一个结构，异色可以相邻但互不连接。
+    public static final RegistryObject<ConsoleBlock> CONSOLE_BLOCK_BLUE = BLOCKS.register("controller_block_blue",
+            () -> new ConsoleBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLUE)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL), ConsoleColor.BLUE));
+
+    public static final RegistryObject<ConsoleBlock> CONSOLE_BLOCK_BLACK = BLOCKS.register("controller_block_black",
+            () -> new ConsoleBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL), ConsoleColor.BLACK));
+
+    // 多方块控制柜 - 总线方块（六向放置，右键打开结构界面；校验/成型/锁定都由它负责）
+    public static final RegistryObject<ConsoleBusBlock> CONSOLE_BUS = BLOCKS.register("controller_bus",
+            () -> new ConsoleBusBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
+    // 控制柜辅助计算机（装饰方块，邻接总线放置；右键打开总线的程序界面）
+    public static final RegistryObject<ControllerAuxBlock> CONTROLLER_AUX = BLOCKS.register("controller_aux",
+            () -> new ControllerAuxBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(2.0F)
+                    .sound(SoundType.METAL)));
 }

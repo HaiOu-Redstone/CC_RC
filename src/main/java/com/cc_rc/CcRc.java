@@ -18,6 +18,8 @@ import com.cc_rc.block.digital_knob.DigitalKnobPeripheral;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBER;
 import com.cc_rc.block.digital_plotter.DigitalPlotterBlockEntity;
 import com.cc_rc.block.digital_plotter.DigitalPlotterPeripheral;
+import com.cc_rc.block.console.ConsoleBusBlockEntity;
+import com.cc_rc.block.console.ConsoleBusPeripheral;
 import com.cc_rc.block.extended_relay.ExtendedRelayBusBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBusPeripheral;
 import com.cc_rc.entity.ErrorMob;
@@ -127,6 +129,10 @@ public class CcRc
                 if (world.getBlockEntity(pos) instanceof ExtendedRelayBusBlockEntity relayBusBE) {
                     return LazyOptional.of(() -> new ExtendedRelayBusPeripheral(relayBusBE));
                 }
+                // 控制柜总线：读写变量与组件值的 CC 外设（Lua 线程 0 tick，主线程批量结算）
+                if (world.getBlockEntity(pos) instanceof ConsoleBusBlockEntity consoleBusBE) {
+                    return LazyOptional.of(() -> new ConsoleBusPeripheral(consoleBusBE));
+                }
                 // 数据单元：读写名称 / 整个列表 / 列表某一位的 CC 外设
                 if (world.getBlockEntity(pos) instanceof DataUnitBlockEntity unitBE) {
                     return LazyOptional.of(() -> new DataUnitPeripheral(unitBE));
@@ -149,6 +155,27 @@ public class CcRc
         LOGGER.info("CC: 反应堆控制台 服务器启动！");
     }
 
+    /**
+     * 爆炸保护：完全成型（锁定）状态下的控制台结构方块不会被爆炸破坏。
+     * 做法是在爆炸结算前，把锁定成员从受影响方块列表里剔除（总线不受保护，可炸掉以解锁）。
+     */
+    @SubscribeEvent
+    public void onExplosionDetonate(net.minecraftforge.event.level.ExplosionEvent.Detonate event)
+    {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        java.util.List<BlockPos> protectedPositions = new java.util.ArrayList<>();
+        for (BlockPos pos : event.getAffectedBlocks()) {
+            if (com.cc_rc.block.console.ConsoleStructureHelper.isConsole(
+                    event.getLevel().getBlockState(pos))
+                    && com.cc_rc.block.console.ConsoleStructureHelper.isLocked(event.getLevel(), pos)) {
+                protectedPositions.add(pos);
+            }
+        }
+        event.getAffectedBlocks().removeAll(protectedPositions);
+    }
+
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents
     {
@@ -169,6 +196,21 @@ public class CcRc
             // 注册海报设置屏幕（关联菜单类型 poster）
             net.minecraft.client.gui.screens.MenuScreens.register(
                     ModMenuTypes.POSTER.get(), com.cc_rc.gui.PosterScreen::new);
+            // 注册控制台总线屏幕（关联菜单类型 console）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.CONSOLE.get(), com.cc_rc.gui.ConsoleScreen::new);
+            // 注册控制台表面文字专用屏幕（关联菜单类型 console_text）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.CONSOLE_TEXT.get(), com.cc_rc.gui.ConsoleTextScreen::new);
+            // 注册控制台表面组件设置屏幕（关联菜单类型 console_comp）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.CONSOLE_COMP.get(), com.cc_rc.gui.ConsoleCompScreen::new);
+            // 注册控制柜表面绘图屏幕（关联菜单类型 console_draw）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.CONSOLE_DRAW.get(), com.cc_rc.gui.ConsoleDrawScreen::new);
+            // 注册控制柜程序屏幕（关联菜单类型 console_program）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.CONSOLE_PROGRAM.get(), com.cc_rc.gui.ConsoleProgramScreen::new);
         }
 
         @SubscribeEvent
@@ -183,6 +225,12 @@ public class CcRc
             event.registerBlockEntityRenderer(ModBlockEntities.DIGITAL_PLOTTER_BE.get(), DigitalPlotterBER::new);
             // 海报：自定义渲染器按方块实体参数绘制贴图四边形（不受方块模型坐标限制）
             event.registerBlockEntityRenderer(ModBlockEntities.POSTER_BE.get(), com.cc_rc.block.poster.PosterBER::new);
+            // 控制台结构方块：部分成型时在外露表面绘制一像素网格（辅助按像素摆放组件）
+            event.registerBlockEntityRenderer(ModBlockEntities.CONSOLE_BLOCK_BE.get(),
+                    com.cc_rc.block.console.ConsoleBER::new);
+            // 控制台总线：渲染整个结构表面上的全部文字（文字数据存在总线方块实体里）
+            event.registerBlockEntityRenderer(ModBlockEntities.CONSOLE_BUS_BE.get(),
+                    com.cc_rc.block.console.ConsoleBusBER::new);
             // 粗布告示牌：复用原版 SignRenderer / HangingSignRenderer（按 WoodType 渲染）
             event.registerBlockEntityRenderer(ModBlockEntities.CANVAS_SIGN_BE.get(), SignRenderer::new);
             event.registerBlockEntityRenderer(ModBlockEntities.CANVAS_HANGING_SIGN_BE.get(), HangingSignRenderer::new);

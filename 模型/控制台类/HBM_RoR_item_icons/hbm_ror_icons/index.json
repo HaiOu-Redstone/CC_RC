@@ -1,0 +1,165 @@
+[
+ {
+  "id": "rbmk_gauge",
+  "zh": "无线红石信号流量控制器面板",
+  "en": "roR gauge",
+  "kind": "panel",
+  "source_model": "rbmk_gauge_surface.obj（单件）",
+  "alt": "icons_16_cluster/rbmk_gauge.png",
+  "texture": "../textures/gauge.png",
+  "has_screen": false
+ },
+ {
+  "id": "rbmk_key_pad",
+  "zh": "无线红石信号按钮面板",
+  "en": "roR keypad",
+  "kind": "panel",
+  "source_model": "rbmk_key_pad_surface.obj（单件）",
+  "alt": "icons_16_cluster/rbmk_key_pad.png",
+  "texture": "../textures/keypad.png",
+  "has_screen": false
+ },
+ {
+  "id": "rbmk_indicator",
+  "zh": "无线红石信号指示灯",
+  "en": "roR indicator",
+  "kind": "panel",
+  "source_model": "rbmk_indicator_surface.obj（单件）",
+  "alt": "icons_16_cluster/rbmk_indicator.png",
+  "texture": "../textures/indicator.png",
+  "has_screen": false
+ },
+ {
+  "id": "rbmk_lever",
+  "zh": "无线红石信号拉杆",
+  "en": "roR lever",
+  "kind": "panel",
+  "source_model": "rbmk_lever_surface.obj（单件）",
+  "alt": "icons_16_cluster/rbmk_lever.png",
+  "texture": "../textures/lever.png",
+  "has_screen": false
+ },
+ {
+  "id": "rbmk_numitron",
+  "zh": "无线红石信号数字显示器",
+  "en": "roR numitron",
+  "kind": "panel",
+  "source_model": "rbmk_numitron_surface.obj（单件）",
+  "alt": "icons_16_cluster/rbmk_numitron.png",
+  "texture": "../textures/numitron.png",
+  "has_screen": false
+ },
+ {
+  "id": "rbmk_graph",
+  "zh": "无线红石信号图表面板",
+  "en": "roR graph",
+  "kind": "panel",
+  "source_model": "rbmk_graph_surface.obj（单件）",
+  "alt": "icons_16_cluster/rbmk_graph.png",
+  "texture": "../textures/numitron.png",
+  "has_screen": false
+ },
+ {
+  "id": "rbmk_terminal",
+  "zh": "无线红石信号发信终端",
+  "en": "roR terminal",
+  "kind": "panel",
+  "source_model": "rbmk_terminal_surface.obj（单件）",
+  "alt": "icons_16_cluster/rbmk_terminal.png",
+  "texture": "../textures/terminal.png",
+  "has_screen": false
+ },
+ {
+  "id": "rbmk_display",
+  "zh": "RBMK显示面板",
+  "en": "RBMK display panel",
+  "kind": "panel",
+  "source_model": "(block face only)",
+  "texture": "textures/blocks/rbmk/rbmk_display.png",
+  "has_screen": true
+ },
+ {
+  "id": "rbmk_display_blank",
+  "zh": "无线红石信号空白面板",
+  "en": "blank RoR panel",
+  "kind": "panel",
+  "source_model": "(block face only)",
+  "texture": "textures/blocks/rbmk/rbmk_display.png",
+  "has_screen": false
+ },
+ {
+  "id": "radio_torch_sender",
+  "zh": "无线红石信号发射器",
+  "en": "radio_torch_sender",
+  "kind": "torch-block",
+  "source_model": "(cube)",
+  "texture": "../textures/rtty_sender_off.png",
+  "has_screen": false,
+  "states": [
+   "rtty_sender_off.png",
+   "rtty_sender_on.png"
+  ]
+ },
+ {
+  "id": "radio_torch_receiver",
+  "zh": "无线红石信号接收器",
+  "en": "radio_torch_receiver",
+  "kind": "torch-block",
+  "source_model": "(cube)",
+  "texture": "../textures/rtty_rec_off.png",
+  "has_screen": false,
+  "states": [
+   "rtty_rec_off.png",
+   "rtty_rec_on.png"
+  ]
+ },
+ {
+  "id": "radio_torch_counter",
+  "zh": "无线红石物品计数器",
+  "en": "radio_torch_counter",
+  "kind": "torch-block",
+  "source_model": "(cube)",
+  "texture": "../textures/rtty_counter.png",
+  "has_screen": false,
+  "states": [
+   "rtty_counter.png"
+  ]
+ },
+ {
+  "id": "radio_torch_logic",
+  "zh": "无线红石逻辑接收器",
+  "en": "radio_torch_logic",
+  "kind": "torch-block",
+  "source_model": "(cube)",
+  "texture": "../textures/rtty_logic_off.png",
+  "has_screen": false,
+  "states": [
+   "rtty_logic_off.png",
+   "rtty_logic_on.png"
+  ]
+ },
+ {
+  "id": "radio_torch_reader",
+  "zh": "无线红石信号读取器",
+  "en": "radio_torch_reader",
+  "kind": "torch-block",
+  "source_model": "(cube)",
+  "texture": "../textures/rtty_reader.png",
+  "has_screen": false,
+  "states": [
+   "rtty_reader.png"
+  ]
+ },
+ {
+  "id": "radio_torch_controller",
+  "zh": "无线红石信号控制器",
+  "en": "radio_torch_controller",
+  "kind": "torch-block",
+  "source_model": "(cube)",
+  "texture": "../textures/rtty_controller.png",
+  "has_screen": false,
+  "states": [
+   "rtty_controller.png"
+  ]
+ }
+]

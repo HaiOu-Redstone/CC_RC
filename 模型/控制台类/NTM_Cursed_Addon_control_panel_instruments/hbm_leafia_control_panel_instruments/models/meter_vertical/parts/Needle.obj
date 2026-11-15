@@ -1,0 +1,6 @@
+# part Needle  (meter_vertical)
+mtllib meter_vertical.mtl
+v 0.584529 1.237000 0.000000
+v 0.795471 1.237000 0.105471
+v 0.795471 1.237000 -0.105471
+f 1/229 2/230 3/231

@@ -1,0 +1,8 @@
+newmtl prop
+Ka 0.18 0.18 0.18
+Kd 1 1 1
+Ks 0.04 0.04 0.04
+Ns 6
+d 1.0
+illum 2
+map_Kd lever_switch.png

@@ -54,7 +54,7 @@ public class InstructionBook2Item extends WrittenBookItem {
         // 封面
         pages.add(page("说明书 2\n\n--CC: 反应堆控制台--\n\n本说明书收录本模组 CC 相关配件的 Lua 外设使用方法。"));
         // 目录
-        pages.add(page("【目录】\n1. 数码显示器\n2. 数字调节器\n3. 数字圆盘记录仪\n4. 扩展红石继电器/总线\n5. 方块探测器"));
+        pages.add(page("【目录】\n1. 数码显示器\n2. 数字调节器\n3. 数字圆盘记录仪\n4. 扩展红石继电器/总线\n5. 方块探测器\n6. 控制柜总线"));
         // 数码显示器 - 外设与 setStatus
         pages.add(page("1. 数码显示器\n\n外设类型: digital_display\n通过 CC 调制解调器连接后即可调用。\n\nsetStatus(text: string)\n  -> string\n设置橙色状态文字，参数为字符串。\n返回设置后的文字。"));
         // 数码显示器 - getStatus 与示例
@@ -81,6 +81,14 @@ public class InstructionBook2Item extends WrittenBookItem {
         pages.add(page("5. 方块探测器(续)\n\ngetFacing()\n  -> string\n返回探测方向字符串：\nnorth/south/west/east/up/down\n\ngetBlockInfo()\n  -> table | nil\n返回面向方块信息表：\n{x, y, z, id, name, mod,\nisBlockEntity}\n目标区块未加载返回 nil。"));
         // 方块探测器 - getBlockEntityData 与示例
         pages.add(page("5. 方块探测器(续)\n\ngetBlockEntityData()\n  -> table | nil\n目标为方块实体时返回其完整 NBT\n数据(类似 /data get block，\n含 id 与坐标)，不可修改；\n无方块实体或未加载返回 nil。\n\n示例(Lua):\np=peripheral.find(\"block_detector\")\nlocal t=p.getBlockInfo()\nprint(t.id, t.mod, t.x, t.y, t.z)"));
+        // 控制柜总线 - 外设与变量读写
+        pages.add(page("6. 控制柜总线\n\n外设类型: controller_bus\n用调制解调器连接控制柜总线后，\n可读写变量与组件值(不能改程序)。\n\n所有方法 0 tick 返回，多次读写\n在主线程同一 tick 末尾统一结算，\n不会每个调用拖一个 tick。\n\n结算顺序：\n辅助计算机 -> CC 读写 -> 组件更新"));
+        // 控制柜总线 - 变量函数
+        pages.add(page("6. 控制柜总线(续)\n\nlistVars()\n  -> table\n每项 {name, type, address,\ncomponent}；type 为 bool/float，\ncomponent 为绑定设备代号。\n\ngetVar(name)\n  -> number | boolean | nil\n\nsetVar(name, value)\n  -> boolean\n类型须与变量一致(bool/float)。\n\ngetPeriod()\n  -> number 运行间隔(只读)"));
+        // 控制柜总线 - 组件函数
+        pages.add(page("6. 控制柜总线(续)\n\nlistComponents()\n  -> table 每项 {code,type,id,kind}\n\ngetComponent(code)\n  -> table | nil\n含 value/state/decimals/unit。\n\ngetComponentValue(code)\n  -> number | boolean | nil\n\nsetComponentValue(code, value)\n  -> boolean\n按钮面板只读，返回 false。\ncode 为组件设置界面里的代号。"));
+        // 控制柜总线 - 圆盘记录仪与示例
+        pages.add(page("6. 控制柜总线(续)\n\n圆盘记录仪(组件类型 graph)：\npushPoint(code, value)\n  -> number 写入采样点(0~100钳制)\nsetPoint(code, index, value)\n  -> boolean 索引 1~50，1=最新\ngetPoint(code, index)\n  -> number | nil\ngetPoints(code)\n  -> table 长度50，索引1=最新\n\n示例(Lua):\np=peripheral.find(\"controller_bus\")\nprint(p.getVar(\"flow\"))\np.setVar(\"flow\", 42)\np.pushPoint(\"GRAPH_1\", 42)"));
         tag.put(WrittenBookItem.TAG_PAGES, pages);
 
         return stack;
