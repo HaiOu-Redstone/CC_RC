@@ -4,6 +4,7 @@ import com.cc_rc.client.ConsoleCompModels;
 import com.cc_rc.client.ConsoleCompTextures;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.List;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import net.minecraft.client.Minecraft;
@@ -137,6 +138,22 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
     private static final int INDICATOR_OFF_GRAY = 97;
 
     /**
+     * 数字键盘（numpad）屏幕可绘制区域（结构像素，取自模型说明：宽 9.6、高 1.9，
+     * 屏幕中心 y = 13.35，组件中心 y = 8）。
+     */
+    private static final float KEYPAD_SCREEN_W = 9.6F;
+    private static final float KEYPAD_SCREEN_H = 1.9F;
+    /** 屏幕中心相对组件锚点的垂直偏移（结构像素）。 */
+    private static final float KEYPAD_SCREEN_V = 5.35F;
+    /**
+     * 屏幕前平面（设计单位，1/16 格）：模型屏幕在 2.975 处，
+     * 数字画在略靠前的位置（2.99），既不穿进玻璃也不跑到外框之外。
+     */
+    private static final float KEYPAD_SCREEN_X = 2.99F;
+    /** 数字键盘未设置颜色时的数字颜色（LED 橙色）。 */
+    private static final int KEYPAD_DEFAULT_COLOR = 0xFFFFA040;
+
+    /**
      * 组件附带文字与组件矩形之间的间距（结构像素）。
      * 右侧 / 下方排布的文字留一点空隙，避免紧贴模型边缘。
      */
@@ -154,26 +171,63 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
         }
         // 绘图层先画（位于组件下方），再画组件、读数与文字
         ConsoleDrawRenderer.render(be, poseStack, bufferSource);
-        renderComponents(be, poseStack, bufferSource);
-        renderCompReadouts(be, poseStack, bufferSource);
-        renderCompTexts(be, poseStack, bufferSource);
+        renderComponents(be, be.getComps(), null, poseStack, bufferSource);
+        renderCompReadouts(be, be.getComps(), null, poseStack, bufferSource);
+        renderCompTexts(be, be.getComps(), null, poseStack, bufferSource);
         if (be.getTexts().isEmpty()) {
             return;
         }
-
-        BlockPos origin = be.getOrigin();
-        int sizeX = be.getSizeX();
-        int sizeY = be.getSizeY();
-        int sizeZ = be.getSizeZ();
-        Direction busFacing = be.getBusFacing();
         Font font = Minecraft.getInstance().font;
-
         for (ConsoleBusBlockEntity.TextEntry entry : be.getTexts()) {
-            drawText(poseStack, bufferSource, font, origin, sizeX, sizeY, sizeZ,
-                    entry.face, busFacing, be.getBlockPos(), entry.u, entry.v,
+            drawText(poseStack, bufferSource, font, frameOf(be, entry.face, null),
+                    entry.u, entry.v,
                     entry.anchorH, entry.anchorV, entry.scale,
                     ConsoleSurface.TEXT_OUTSET, entry.toComponent(), 0xFFFFFFFF);
         }
+    }
+
+    /**
+     * 斜面控制台的渲染入口：用斜面坐标系绘制「宿主格子内」的组件 / 读数 / 文字 / 绘图。
+     *
+     * 数据仍取自总线（按宿主面 + 坐标过滤），这里只是换了一套绘制坐标系，
+     * 因此组件与文字会自动随坡面倾斜。
+     */
+    public static void renderMapped(ConsoleBusBlockEntity be, ConsoleFrame frame,
+                                    List<ConsoleBusBlockEntity.CompEntry> comps,
+                                    List<ConsoleBusBlockEntity.TextEntry> texts,
+                                    List<com.cc_rc.block.console.draw.ConsoleShape> shapes,
+                                    PoseStack poseStack, MultiBufferSource bufferSource) {
+        if (be.getOrigin() == null) {
+            return;
+        }
+        ConsoleDrawRenderer.renderInFrame(frame, shapes, poseStack, bufferSource);
+        renderComponents(be, comps, frame, poseStack, bufferSource);
+        renderCompReadouts(be, comps, frame, poseStack, bufferSource);
+        renderCompTexts(be, comps, frame, poseStack, bufferSource);
+        if (texts.isEmpty()) {
+            return;
+        }
+        Font font = Minecraft.getInstance().font;
+        for (ConsoleBusBlockEntity.TextEntry entry : texts) {
+            drawText(poseStack, bufferSource, font, frame,
+                    entry.u, entry.v,
+                    entry.anchorH, entry.anchorV, entry.scale,
+                    ConsoleSurface.TEXT_OUTSET, entry.toComponent(), 0xFFFFFFFF);
+        }
+    }
+
+    /**
+     * 取某个面的绘制坐标系。
+     *
+     * @param fixed 非 null 时直接使用（斜面渲染：所有内容共用斜面坐标系）
+     */
+    private static ConsoleFrame frameOf(ConsoleBusBlockEntity be, Direction face,
+                                        ConsoleFrame fixed) {
+        if (fixed != null) {
+            return fixed;
+        }
+        return ConsoleFrame.ofFace(be.getBlockPos(), be.getOrigin(),
+                be.getSizeX(), be.getSizeY(), be.getSizeZ(), face, be.getBusFacing());
     }
 
     /**
@@ -188,12 +242,11 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
      * @param color   文字颜色（ARGB，0xFFFFFFFF = 白色）
      */
     private static void drawText(PoseStack poseStack, MultiBufferSource bufferSource, Font font,
-                                 BlockPos origin, int sizeX, int sizeY, int sizeZ,
-                                 Direction face, Direction busFacing, BlockPos busPos,
+                                 ConsoleFrame frame,
                                  float u, float v, int anchorH, int anchorV, float scale,
                                  double outset, Component text, int color) {
-        drawTextScaled(poseStack, bufferSource, font, origin, sizeX, sizeY, sizeZ,
-                face, busFacing, busPos, u, v, anchorH, anchorV, scale, scale,
+        drawTextScaled(poseStack, bufferSource, font, frame,
+                u, v, anchorH, anchorV, scale, scale,
                 outset, text, color);
     }
 
@@ -204,26 +257,21 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
      * @param scaleV 垂直方向：1 字体像素 = scaleV 结构像素
      */
     private static void drawTextScaled(PoseStack poseStack, MultiBufferSource bufferSource,
-                                       Font font,
-                                       BlockPos origin, int sizeX, int sizeY, int sizeZ,
-                                       Direction face, Direction busFacing, BlockPos busPos,
+                                       Font font, ConsoleFrame frame,
                                        float u, float v, int anchorH, int anchorV,
                                        float scaleU, float scaleV,
                                        double outset, Component text, int color) {
         if (text.getString().isEmpty()) {
             return;
         }
-        // 文字中心的世界坐标（沿外法线外推，避免与方块面深度冲突）
-        Vec3 center = ConsoleSurface.toWorld(origin, sizeX, sizeY, sizeZ, face, busFacing,
-                u, v, outset);
-        // 方块实体渲染时 PoseStack 已平移到「方块坐标 - 摄像机」，因此这里改用相对方块坐标
-        center = center.subtract(busPos.getX(), busPos.getY(), busPos.getZ());
+        // 文字中心相对渲染方块的坐标（沿外法线外推，避免与方块面深度冲突）
+        Vec3 center = frame.toLocal(u, v, outset);
 
         double perFontPixelU = scaleU / ConsoleSurface.PIXELS_PER_BLOCK;
         double perFontPixelV = scaleV / ConsoleSurface.PIXELS_PER_BLOCK;
-        Vec3 uAxis = ConsoleSurface.u(face, busFacing).scale(perFontPixelU);
-        Vec3 vAxis = ConsoleSurface.v(face, busFacing).scale(-perFontPixelV);
-        Vec3 nAxis = ConsoleSurface.normal(face).scale(perFontPixelU);
+        Vec3 uAxis = frame.u().scale(perFontPixelU);
+        Vec3 vAxis = frame.v().scale(-perFontPixelV);
+        Vec3 nAxis = frame.n().scale(perFontPixelU);
 
         // 用 16 参数构造（JOML 的矩阵字段并非公开，不能直接赋值）
         Matrix4f local = new Matrix4f(
@@ -260,17 +308,14 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
      * 并把模型包围盒中心 (centerY, centerZ) 对齐到组件锚点 (u, v)，
      * 最内侧的 x（minX）贴到表面，避免嵌进方块。
      */
-    private void renderComponents(ConsoleBusBlockEntity be, PoseStack poseStack,
-                                  MultiBufferSource bufferSource) {
-        if (be.getComps().isEmpty()) {
+    private static void renderComponents(ConsoleBusBlockEntity be,
+                                         List<ConsoleBusBlockEntity.CompEntry> comps,
+                                         ConsoleFrame fixedFrame,
+                                         PoseStack poseStack,
+                                         MultiBufferSource bufferSource) {
+        if (comps.isEmpty()) {
             return;
         }
-        BlockPos origin = be.getOrigin();
-        int sizeX = be.getSizeX();
-        int sizeY = be.getSizeY();
-        int sizeZ = be.getSizeZ();
-        Direction busFacing = be.getBusFacing();
-        BlockPos busPos = be.getBlockPos();
         // 当前游戏时间：按钮按下 / 安全按钮开盖等状态需要按时刻判断
         long gameTime = be.getLevel() == null ? 0L : be.getLevel().getGameTime();
 
@@ -281,7 +326,7 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
         // 就是这个原因），表现为整个组件都套上玻璃贴图、整体变半透明。
         for (int pass = 0; pass < 2; pass++) {
             boolean glassPass = pass == 1;
-            for (ConsoleBusBlockEntity.CompEntry comp : be.getComps()) {
+            for (ConsoleBusBlockEntity.CompEntry comp : comps) {
                 // RGB 颜色控制器有附带文字时隐藏模型，只显示该附带文字（见 renderCompTexts）；
                 // 没有附带文字时正常显示模型（与是否填写代号无关）
                 if (comp.type == ConsoleCompType.RGB_COLOR && !comp.text.isEmpty()) {
@@ -291,17 +336,16 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
             if (mesh == null) {
                 continue;
             }
-            Direction face = comp.face;
+            ConsoleFrame frame = frameOf(be, comp.face, fixedFrame);
             // 组件锚点的世界坐标（先算，用于取光照）。
             // 沿外法线外推 COMP_OUTSET，使模型最内侧的面离开方块表面，避免共面深度冲突
-            Vec3 anchorWorld = ConsoleSurface.toWorld(origin, sizeX, sizeY, sizeZ,
-                    face, busFacing, comp.u, comp.v, COMP_OUTSET);
+            Vec3 anchorWorld = frame.toWorld(comp.u, comp.v, COMP_OUTSET);
             // 方块实体渲染时 PoseStack 已平移到「方块坐标 - 摄像机」，改为相对方块坐标
-            Vec3 anchor = anchorWorld.subtract(busPos.getX(), busPos.getY(), busPos.getZ());
+            Vec3 anchor = frame.toLocal(comp.u, comp.v, COMP_OUTSET);
 
-            Vec3 uAxis = ConsoleSurface.u(face, busFacing);
-            Vec3 vAxis = ConsoleSurface.v(face, busFacing);
-            Vec3 nAxis = ConsoleSurface.normal(face);
+            Vec3 uAxis = frame.u();
+            Vec3 vAxis = frame.v();
+            Vec3 nAxis = frame.n();
 
             // 实际缩放 = 类型默认缩放 × 玩家设置的组件缩放（交互判定使用同一倍率）。
             // 缩放必须**以锚点为中心**：把三个基向量与平移量里所有与模型尺寸相关的项
@@ -645,14 +689,17 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
      * 集中放在模型批次之后可以避免打断组件贴图批次（历史问题是组件绘制中切换
      * RenderType 会导致着色贴图整体失效）。
      */
-    private void renderCompTexts(ConsoleBusBlockEntity be, PoseStack poseStack,
-                                 MultiBufferSource bufferSource) {
-        if (be.getComps().isEmpty()) {
+    private static void renderCompTexts(ConsoleBusBlockEntity be,
+                                        List<ConsoleBusBlockEntity.CompEntry> comps,
+                                        ConsoleFrame fixedFrame,
+                                        PoseStack poseStack,
+                                        MultiBufferSource bufferSource) {
+        if (comps.isEmpty()) {
             return;
         }
-        for (ConsoleBusBlockEntity.CompEntry comp : be.getComps()) {
+        for (ConsoleBusBlockEntity.CompEntry comp : comps) {
             if (comp.type == ConsoleCompType.RGB_COLOR) {
-                renderRgbText(be, poseStack, bufferSource, comp);
+                renderRgbText(be, fixedFrame, poseStack, bufferSource, comp);
                 continue;
             }
             ConsoleCompModels.ObjMesh mesh = meshFor(comp,
@@ -660,7 +707,7 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
             if (mesh == null) {
                 continue;
             }
-            renderCompText(be, poseStack, bufferSource, comp, mesh);
+            renderCompText(be, fixedFrame, poseStack, bufferSource, comp, mesh);
         }
     }
 
@@ -671,9 +718,10 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
      * 文字颜色取控制器当前灯色（未着色时为白色），用于指示当前颜色。
      * 文字大小与其它组件一致：默认文字大小 × 玩家组件缩放（缩放比 1 即默认大小）。
      */
-    private void renderRgbText(ConsoleBusBlockEntity be, PoseStack poseStack,
-                               MultiBufferSource bufferSource,
-                               ConsoleBusBlockEntity.CompEntry comp) {
+    private static void renderRgbText(ConsoleBusBlockEntity be, ConsoleFrame fixedFrame,
+                                      PoseStack poseStack,
+                                      MultiBufferSource bufferSource,
+                                      ConsoleBusBlockEntity.CompEntry comp) {
         if (comp.text.isEmpty()) {
             return;
         }
@@ -690,8 +738,7 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
                 .withUnderlined(comp.text.underline).withStrikethrough(comp.text.strikethrough);
         Component label = Component.literal(comp.text.text).withStyle(style);
         drawText(poseStack, bufferSource, Minecraft.getInstance().font,
-                be.getOrigin(), be.getSizeX(), be.getSizeY(), be.getSizeZ(),
-                comp.face, be.getBusFacing(), be.getBlockPos(),
+                frameOf(be, comp.face, fixedFrame),
                 comp.u, comp.v, 1, 1,
                 // 缩放比 1 时为旧版默认文字大小，随玩家组件缩放同步放大 / 缩小
                 com.cc_rc.Config.getConsoleTextDefaultScale() * comp.scale,
@@ -709,10 +756,11 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
      *  - 按钮（按键区）：组件右侧、垂直居中、左对齐；
      *  - 其他（流量表 / 数码管 / 发信终端）：组件下方、水平居中、上对齐（文字向下展开）。
      */
-    private void renderCompText(ConsoleBusBlockEntity be, PoseStack poseStack,
-                                MultiBufferSource bufferSource,
-                                ConsoleBusBlockEntity.CompEntry comp,
-                                ConsoleCompModels.ObjMesh mesh) {
+    private static void renderCompText(ConsoleBusBlockEntity be, ConsoleFrame fixedFrame,
+                                       PoseStack poseStack,
+                                       MultiBufferSource bufferSource,
+                                       ConsoleBusBlockEntity.CompEntry comp,
+                                       ConsoleCompModels.ObjMesh mesh) {
         ConsoleBusBlockEntity.CompText text = comp.text;
         if (text == null || text.isEmpty()) {
             return;
@@ -744,8 +792,7 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
             }
         }
         drawText(poseStack, bufferSource, Minecraft.getInstance().font,
-                be.getOrigin(), be.getSizeX(), be.getSizeY(), be.getSizeZ(),
-                comp.face, be.getBusFacing(), be.getBlockPos(),
+                frameOf(be, comp.face, fixedFrame),
                 u, v, anchorH, anchorV,
                 com.cc_rc.Config.getConsoleTextDefaultScale() * s, outset, text.toComponent(),
                 0xFFFFFFFF);
@@ -851,32 +898,39 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
      * 与组件附带文字一样放在模型批次之后绘制，避免打断组件贴图批次
      * （组件绘制中切换 RenderType 会让染色整体失效）。
      */
-    private void renderCompReadouts(ConsoleBusBlockEntity be, PoseStack poseStack,
-                                    MultiBufferSource bufferSource) {
-        if (be.getComps().isEmpty()) {
+    private static void renderCompReadouts(ConsoleBusBlockEntity be,
+                                          List<ConsoleBusBlockEntity.CompEntry> comps,
+                                          ConsoleFrame fixedFrame,
+                                          PoseStack poseStack,
+                                          MultiBufferSource bufferSource) {
+        if (comps.isEmpty()) {
             return;
         }
         Font font = Minecraft.getInstance().font;
-        for (ConsoleBusBlockEntity.CompEntry comp : be.getComps()) {
+        for (ConsoleBusBlockEntity.CompEntry comp : comps) {
             ConsoleCompModels.ObjMesh mesh = meshFor(comp,
                     be.getLevel() == null ? 0L : be.getLevel().getGameTime());
             if (mesh == null) {
                 continue;
             }
             if (comp.type == ConsoleCompType.NUMITRON) {
-                renderDisplayValue(be, poseStack, bufferSource, font, comp, mesh);
+                renderDisplayValue(be, fixedFrame, poseStack, bufferSource, font, comp, mesh);
+            } else if (comp.type == ConsoleCompType.NUMPAD) {
+                // 数字键盘：在模型上方的屏幕区域绘制当前数值
+                renderNumpadValue(be, fixedFrame, poseStack, bufferSource, font, comp);
             } else if (comp.type == ConsoleCompType.GRAPH
                     || comp.type == ConsoleCompType.GRAPH_L) {
-                renderPlotHistory(be, poseStack, bufferSource, font, comp, mesh);
+                renderPlotHistory(be, fixedFrame, poseStack, bufferSource, font, comp, mesh);
             }
         }
     }
 
     /** 数码显示器：格式化后的数值 + 单位，居中显示在屏幕上。 */
-    private void renderDisplayValue(ConsoleBusBlockEntity be, PoseStack poseStack,
-                                    MultiBufferSource bufferSource, Font font,
-                                    ConsoleBusBlockEntity.CompEntry comp,
-                                    ConsoleCompModels.ObjMesh mesh) {
+    private static void renderDisplayValue(ConsoleBusBlockEntity be, ConsoleFrame fixedFrame,
+                                           PoseStack poseStack,
+                                           MultiBufferSource bufferSource, Font font,
+                                           ConsoleBusBlockEntity.CompEntry comp,
+                                           ConsoleCompModels.ObjMesh mesh) {
         float value = Float.isFinite(comp.value) ? comp.value : 0.0F;
         String number = String.format(java.util.Locale.ROOT,
                 "%." + comp.decimals + "f", value);
@@ -892,17 +946,86 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
         int color = comp.color == ConsoleBusBlockEntity.CompEntry.NO_COLOR
                 ? 0xFFFFFFFF : (0xFF000000 | comp.color);
         drawText(poseStack, bufferSource, font,
-                be.getOrigin(), be.getSizeX(), be.getSizeY(), be.getSizeZ(),
-                comp.face, be.getBusFacing(), be.getBlockPos(),
+                frameOf(be, comp.face, fixedFrame),
                 comp.u, comp.v, 1, 1, scale,
                 screenOutset(comp, mesh), Component.literal(text), color);
     }
 
+    /**
+     * 数字键盘：在模型上方的屏幕区域绘制当前数值。
+     *
+     * 显示区只有 4 个字符位（取自模型说明），因此数值按「最多 4 个字符」格式化：
+     * 优先保留小数，超长时减少小数位，仍超长时取整；数字颜色使用组件颜色，
+     * 未设置颜色时用 LED 橙色。
+     */
+    private static void renderNumpadValue(ConsoleBusBlockEntity be, ConsoleFrame fixedFrame,
+                                          PoseStack poseStack,
+                                          MultiBufferSource bufferSource, Font font,
+                                          ConsoleBusBlockEntity.CompEntry comp) {
+        String text = formatNumpadValue(comp.value);
+        if (text.isEmpty()) {
+            return;
+        }
+        // 组件实际倍率（类型默认缩放 × 玩家缩放）：模型按该倍率绘制，
+        // 屏幕的宽 / 高 / 中心偏移必须同样乘它，否则数字会跑到模型上方并偏大
+        float k = comp.effectiveScale();
+        int color = comp.color == ConsoleBusBlockEntity.CompEntry.NO_COLOR
+                ? KEYPAD_DEFAULT_COLOR : (0xFF000000 | comp.color);
+        float fontW = Math.max(1.0F, (float) font.width(text));
+        float scale = Math.min(KEYPAD_SCREEN_H * k / font.lineHeight,
+                KEYPAD_SCREEN_W * k / fontW) * 0.92F;
+        // 外推：屏幕前平面略靠内（2.99 / 16 格），避免与玻璃面 / 外框深度冲突
+        double outset = COMP_OUTSET
+                + (KEYPAD_SCREEN_X / ConsoleSurface.PIXELS_PER_BLOCK) * comp.effectiveScale();
+        // 字体行高中心比数字字形中心低约 1 个字体像素，绘制时下移锚点做补偿
+        drawText(poseStack, bufferSource, font,
+                frameOf(be, comp.face, fixedFrame),
+                comp.u, comp.v + KEYPAD_SCREEN_V * k - scale, 1, 1, scale,
+                outset, Component.literal(text), color);
+    }
+
+    /**
+     * 数字键盘的 4 字符显示格式。
+     * 例：0 → "0"，12.5 → "12.5"，123.456 → "123"，超出 4 位时显示 "9999" / "-999"。
+     */
+    private static String formatNumpadValue(float raw) {
+        float value = Float.isFinite(raw) ? raw : 0.0F;
+        String text = trimTrailingZeros(String.format(java.util.Locale.ROOT, "%.2f", value));
+        if (text.length() > 4) {
+            text = trimTrailingZeros(String.format(java.util.Locale.ROOT, "%.1f", value));
+        }
+        if (text.length() > 4) {
+            text = String.valueOf(Math.round(value));
+        }
+        if (text.length() > 4) {
+            // 极端大值：屏幕装不下，显示能表示的最大 / 最小值
+            text = value < 0.0F ? "-999" : "9999";
+        }
+        // 舍入后可能得到 "-0"，统一显示为 "0"
+        return "-0".equals(text) ? "0" : text;
+    }
+
+    /** 去掉小数末尾多余的 0 与小数点（"12.50" → "12.5"，"12.00" → "12"）。 */
+    private static String trimTrailingZeros(String text) {
+        if (text.indexOf('.') < 0) {
+            return text;
+        }
+        int end = text.length();
+        while (end > 0 && text.charAt(end - 1) == '0') {
+            end--;
+        }
+        if (end > 0 && text.charAt(end - 1) == '.') {
+            end--;
+        }
+        return text.substring(0, end);
+    }
+
     /** 圆盘记录仪：把历史采样按列画成细柱状趋势（最新值在最右列）。 */
-    private void renderPlotHistory(ConsoleBusBlockEntity be, PoseStack poseStack,
-                                   MultiBufferSource bufferSource, Font font,
-                                   ConsoleBusBlockEntity.CompEntry comp,
-                                   ConsoleCompModels.ObjMesh mesh) {
+    private static void renderPlotHistory(ConsoleBusBlockEntity be, ConsoleFrame fixedFrame,
+                                          PoseStack poseStack,
+                                          MultiBufferSource bufferSource, Font font,
+                                          ConsoleBusBlockEntity.CompEntry comp,
+                                          ConsoleCompModels.ObjMesh mesh) {
         if (comp.history == null) {
             return;
         }
@@ -937,8 +1060,7 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
             float v = comp.v + baseV + heightV * value / PLOT_VALUE_MAX;
             // 垂直居中对齐时字形中心比锚点高 0.5 个字体像素，这里把锚点下移同样距离使点居中
             drawTextScaled(poseStack, bufferSource, font,
-                    be.getOrigin(), be.getSizeX(), be.getSizeY(), be.getSizeZ(),
-                    comp.face, be.getBusFacing(), be.getBlockPos(),
+                    frameOf(be, comp.face, fixedFrame),
                     u, v - 0.5F * scaleV, 1, 1, scaleU, scaleV,
                     outset, block, color);
         }

@@ -34,7 +34,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class ConsoleDrawScreen extends AbstractContainerScreen<ConsoleDrawMenu> {
 
-    private static final int GUI_W = 320;
+    private static final int GUI_W = 386;
     private static final int GUI_H = 220;
 
     /** 类型按钮排布。 */
@@ -66,12 +66,20 @@ public class ConsoleDrawScreen extends AbstractContainerScreen<ConsoleDrawMenu> 
     /** 底部按钮行。 */
     private static final int BUTTON_Y = 190;
 
-    /** 右侧贴图样式列表：2 列，格子 24×24，间距 4。 */
+    /** 右侧贴图样式列表：4 列 × 3 行（一次显示 12 个），格子 24×24，间距 4。 */
     private static final int PRESET_LIST_X = 260;
     private static final int PRESET_LIST_Y = 32;
     private static final int PRESET_CELL = 24;
     private static final int PRESET_GAP = 4;
-    private static final int PRESET_COLS = 2;
+    private static final int PRESET_COLS = 4;
+    /** 右侧列表面板内最多显示的行数（图案多于 4×3 时用滚轮翻看）。 */
+    private static final int PRESET_VISIBLE_ROWS = 3;
+    /** 列表面板上下边界相对 GUI 左上角的 Y（与 renderPresetList 保持一致）。 */
+    private static final int PRESET_PANEL_TOP = 14;
+    private static final int PRESET_PANEL_BOTTOM = 118;
+    /** 列表面板右边界（相对 GUI 左上角）：格子区右侧再留 6 像素。 */
+    private static final int PRESET_PANEL_RIGHT =
+            PRESET_LIST_X + PRESET_COLS * (PRESET_CELL + PRESET_GAP) + 6;
 
     /** 16 种染料色（RGB）。 */
     private static final int[] DYE_COLORS = {
@@ -95,6 +103,8 @@ public class ConsoleDrawScreen extends AbstractContainerScreen<ConsoleDrawMenu> 
     private String presetId;
     private float presetRotation;
     private float presetScale;
+    /** 贴图样式列表的滚动行偏移（0 = 从第一行开始）。 */
+    private int presetScroll;
     /** 图案锚点（左下角，像素）。 */
     private float anchorU;
     private float anchorV;
@@ -603,19 +613,25 @@ public class ConsoleDrawScreen extends AbstractContainerScreen<ConsoleDrawMenu> 
         int x = this.leftPos;
         int y = this.topPos;
         int panelLeft = x + PRESET_LIST_X - 6;
-        int panelRight = x + GUI_W - 6;
-        int panelTop = y + 14;
-        int panelBottom = y + 118;
+        int panelRight = x + PRESET_PANEL_RIGHT;
+        int panelTop = y + PRESET_PANEL_TOP;
+        int panelBottom = y + PRESET_PANEL_BOTTOM;
         graphics.fill(panelLeft, panelTop, panelRight, panelBottom, 0xFF1E1E1E);
         border(graphics, panelLeft, panelTop, panelRight, panelBottom, 0xFF606060);
         graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.preset_list"),
                 x + PRESET_LIST_X, y + 18, 0xFFFFFFFF, false);
 
         List<ConsoleDrawPresets.Preset> all = ConsoleDrawPresets.all();
+        // 超出可见行的部分裁掉，滚轮翻看（见 mouseScrolled）
+        graphics.enableScissor(panelLeft, panelTop, panelRight, panelBottom);
         for (int i = 0; i < all.size(); i++) {
+            int row = i / PRESET_COLS - this.presetScroll;
+            if (row < 0 || row >= PRESET_VISIBLE_ROWS) {
+                continue;
+            }
             ConsoleDrawPresets.Preset preset = all.get(i);
             int cx = x + presetCellX(i);
-            int cy = y + presetCellY(i);
+            int cy = y + PRESET_LIST_Y + row * (PRESET_CELL + PRESET_GAP);
             graphics.fill(cx, cy, cx + PRESET_CELL, cy + PRESET_CELL, 0xFF2A2A2A);
             int inner = PRESET_CELL - 4;
             // 11 参重载：把 size×size 的纯白蒙版缩放到格子内
@@ -626,6 +642,47 @@ public class ConsoleDrawScreen extends AbstractContainerScreen<ConsoleDrawMenu> 
             border(graphics, cx, cy, cx + PRESET_CELL, cy + PRESET_CELL,
                     selected ? 0xFFFFFFFF : 0xFF606060);
         }
+        graphics.disableScissor();
+        // 可滚动时在面板右侧画一条滚动条指示
+        int maxScroll = presetMaxScroll();
+        if (maxScroll > 0) {
+            int trackTop = panelTop + 2;
+            int trackBottom = panelBottom - 2;
+            int trackHeight = trackBottom - trackTop;
+            int rows = presetRowCount();
+            int thumbHeight = Math.max(8, trackHeight * PRESET_VISIBLE_ROWS / rows);
+            int thumbTop = trackTop + (trackHeight - thumbHeight) * this.presetScroll / maxScroll;
+            graphics.fill(panelRight - 3, trackTop, panelRight - 1, trackBottom, 0xFF303030);
+            graphics.fill(panelRight - 3, thumbTop, panelRight - 1, thumbTop + thumbHeight,
+                    0xFFA0A0A0);
+        }
+    }
+
+    /** 贴图样式总行数（向上取整）。 */
+    private static int presetRowCount() {
+        int count = ConsoleDrawPresets.all().size();
+        return (count + PRESET_COLS - 1) / PRESET_COLS;
+    }
+
+    /** 贴图样式列表的最大滚动行偏移。 */
+    private static int presetMaxScroll() {
+        return Math.max(0, presetRowCount() - PRESET_VISIBLE_ROWS);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        int panelLeft = this.leftPos + PRESET_LIST_X - 6;
+        int panelRight = this.leftPos + PRESET_PANEL_RIGHT;
+        int panelTop = this.topPos + PRESET_PANEL_TOP;
+        int panelBottom = this.topPos + PRESET_PANEL_BOTTOM;
+        if (mouseX >= panelLeft && mouseX < panelRight
+                && mouseY >= panelTop && mouseY < panelBottom
+                && presetMaxScroll() > 0) {
+            int next = this.presetScroll - (int) Math.signum(delta);
+            this.presetScroll = Math.max(0, Math.min(presetMaxScroll(), next));
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     /** 选中项的白色描边。 */
@@ -654,11 +711,6 @@ public class ConsoleDrawScreen extends AbstractContainerScreen<ConsoleDrawMenu> 
     /** 贴图样式格子相对 GUI 左上角的 X。 */
     private static int presetCellX(int index) {
         return PRESET_LIST_X + (index % PRESET_COLS) * (PRESET_CELL + PRESET_GAP);
-    }
-
-    /** 贴图样式格子相对 GUI 左上角的 Y。 */
-    private static int presetCellY(int index) {
-        return PRESET_LIST_Y + (index / PRESET_COLS) * (PRESET_CELL + PRESET_GAP);
     }
 
     private int typeIndex() {
@@ -698,8 +750,13 @@ public class ConsoleDrawScreen extends AbstractContainerScreen<ConsoleDrawMenu> 
             // 贴图样式列表：手动绘制，命中区域与绘制坐标使用同一套换算
             List<ConsoleDrawPresets.Preset> all = ConsoleDrawPresets.all();
             for (int i = 0; i < all.size(); i++) {
+                // 只命中当前滚动位置下可见的格子
+                int row = i / PRESET_COLS - this.presetScroll;
+                if (row < 0 || row >= PRESET_VISIBLE_ROWS) {
+                    continue;
+                }
                 int cx = this.leftPos + presetCellX(i);
-                int cy = this.topPos + presetCellY(i);
+                int cy = this.topPos + PRESET_LIST_Y + row * (PRESET_CELL + PRESET_GAP);
                 if (mouseX >= cx && mouseX < cx + PRESET_CELL
                         && mouseY >= cy && mouseY < cy + PRESET_CELL) {
                     selectPreset(all.get(i).id());

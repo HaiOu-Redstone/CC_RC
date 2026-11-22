@@ -1,7 +1,7 @@
 # CC：反应堆控制台（cc_rc）开发日志
 
 > 模组 ID：`cc_rc` ｜ Minecraft Forge 1.20.1 ｜ 前置：CC: Tweaked
-> 本文档按「目录 / 代码 / 注册物品」三部分组织，目录为索引，方便快速定位源码与实现。
+> 本文档按「目录 / 代码 / 注册物品」三部分组织：**「二、代码」描述模组当前已实现的功能与代码现状**（按模块组织，不按开发期次），目录为索引，方便快速定位源码与实现；每次改动的变更记录见 `临时日志.md`。
 > **版本记录（v0.0.7）**：新增 F.A.A.S服务器方块 `server_faas_1/2/3`（水平四方向放置朝向玩家，靠近时持续播放 `server_noise` 环境音效，三种变体共用 `ServerFaasBlock` 方块类，模型来自"模型/FAAS"并转为 Java 格式，另补三张方块掉落表）；版本号由 0.0.6 升至 0.0.7。**上版本记录（v0.0.6）**：新增模组 logo（`模型/logo.png`，256x256，经 mods.toml `logoFile` 声明）；版本号由 0.0.5 升至 0.0.6。**修复**：mods.toml 的 `description` 由多行字符串 `'''...'''` 改为单行 `"..."`，避免第三方启动器（HMCL/PCL2 等）解析 TOML 失败导致 logo 不显示。
 
 ---
@@ -35,9 +35,9 @@
 | 23 | 划线 | 数字圆盘记录仪（50点0~100线图 + CC外设） | [二、9 数字圆盘记录仪](#9-数字圆盘记录仪digitalplotter) |
 | 24 | 移植 | 旧模组移植物品（冰冻罗非鱼/绿酒/何意味/合一味）与自定义 Tier | [二、10 旧模组移植物品](#10-旧模组移植物品modtooltiers) |
 | 25 | 物品 | 描述型物品机制（DescriptionItem/SwordItem/AttackDescriptionItem）与新增月饼/压缩饼干 | [二、11 描述型物品与新增食物](#11-描述型物品与新增食物) |
-| 26 | 注册 | 所有注册方块（按方块类归组） | [三、1 方块](#1-方块blocks) |
-| 27 | 注册 | 所有注册物品（含唱片） | [三、2 物品](#2-物品items) |
-| 28 | 注册 | 方块实体 / 声音 / 创造标签 / 弹射物实体 | [三、3~6 方块实体·声音·创造标签·弹射物实体](#3-方块实体block-entity-types) |
+| 26 | 注册 | 所有注册方块（按方块类归组） | [三、1 方块](#1-方块blocks共-134-个) |
+| 27 | 注册 | 所有注册物品（含唱片） | [三、2 物品](#2-物品items共-172-个) |
+| 28 | 注册 | 方块实体 / 声音 / 创造标签 / 弹射物实体 | [三、3~6 方块实体·声音·创造标签·弹射物实体](#3-方块实体block-entity-types共-22-个) |
 | 29 | 文字显示 | 大号空控制面板（3 倍字号居中文字 + 16x14x2 碰撞箱） | [二、3.2 通用文字渲染 ConsolePanelBER](#32-通用文字渲染consolepanelber) |
 | 30 | 物品 | 搬运物品与搬运物品栏（箱装土豆、16 色粗布告示牌与悬挂告示牌 + 自定义方块实体，标签按注册名排序） | [二、12 搬运物品与搬运物品栏](#12-搬运物品与搬运物品栏) |
 | 31 | 注册 | 搬运方块：冰箱（27 格容器 + 原版箱子 GUI）、水槽（纯装饰） | [二、13 冰箱与水槽](#13-冰箱与水槽) |
@@ -54,10 +54,10 @@
 | 42 | 红石/物品 | 密码输入器 password_inputer（放置/碰撞箱同控制面板，on/off 两态，破解成功向后方强充能15，1秒后自动关）+ 破解器 password_cracker（手持右键开始破解，20秒可配置，离开5格/切快捷栏即中断重置） | [二、24 密码输入器与破解器](#24-密码输入器与破解器passwordinputerblock--passwordcrackmanager) |
 | 43 | 红石/物品 | 核弹按钮 nuke_button（放置/碰撞箱同控制面板，6 状态输出 0/5/7/10/10/15，钥匙推进状态）+ 核弹发射钥匙 1/2 key_1/key_2（右键消耗推进状态） | [二、25 核弹按钮与钥匙](#25-核弹按钮与钥匙nukebuttonblock) |
 | 44 | 红石/物品 | 钥匙柜 key_cabinet（水平四向放置，多功能工具右键记录坐标朝向）+ 钥匙分发控制器 key_distributor（六面 key_sender 贴图，方块实体存记录；≤5 信号校验删除失效记录、>5 随机分发钥匙1/2 高亮不消失掉落物） | [二、26 钥匙柜与钥匙分发控制器](#26-钥匙柜与钥匙分发控制器keycabinetblock--keydistributorblock) |
-| 45 | 生物/物品 | 错误生物 error_mob（由 QQ 发送的 error.obj 立体化生成的敌对生物实体，仿蠹虫寻路/攻击，无方块交互，不自然生成）+ 刷怪蛋 error_mob_spawn_egg + 变种 error_mob_null/error_mob_warn（null.zip/WARN.zip，仅模型贴图不同）+ 各自刷怪蛋 | [二、27 错误生物](#27-错误生物error_mob) |
-| 46 | 物品/GUI | 编辑工具 edit_tool（主手右键可显示名称方块打开文字编辑 GUI；副手放置自动打开编辑界面）+ 统一接口 ITextDisplay | [二、28 编辑工具](#28-编辑工具edit_tool) |
+| 45 | 生物/物品 | 错误生物 error_mob（由 QQ 发送的 error.obj 立体化生成的敌对生物实体，仿蠹虫寻路/攻击，无方块交互，不自然生成）+ 刷怪蛋 error_mob_spawn_egg + 变种 error_mob_null/error_mob_warn（null.zip/WARN.zip，仅模型贴图不同）+ 各自刷怪蛋 | [二、27 错误生物](#27-错误生物errormob) |
+| 46 | 物品/GUI | 编辑工具 edit_tool（主手右键可显示名称方块打开文字编辑 GUI；副手放置自动打开编辑界面）+ 统一接口 ITextDisplay | [二、28 编辑工具](#28-编辑工具edittool) |
 | 47 | 红石/CC外设 | 扩展红石继电器 extended_relay（总线远端红石端口）+ 扩展红石继电器总线 relay_bus（CC 外设 redstone_relay_bus，沿朝向距离搜索继电器读写信号） | [二、29 扩展红石继电器与总线](#29-扩展红石继电器与总线extendedrelayblock--relaybusblock) |
-| 48 | 生物/物品 | 盖金蜗牛 gajin（AI 参考原版猪无乘骑机制，金鹰作为食物吸引/繁殖，右键播放 gajin 音效，平常无叫声）+ 刷怪蛋 gajin_spawn_egg + 金鹰 golden_eagle（堆叠 64，蜗牛食物） | [二、30 盖金蜗牛与金鹰](#30-盖金蜗牛与金鹰gajinsnail--golden_eagle) |
+| 48 | 生物/物品 | 盖金蜗牛 gajin（AI 参考原版猪无乘骑机制，金鹰作为食物吸引/繁殖，右键播放 gajin 音效，平常无叫声）+ 刷怪蛋 gajin_spawn_egg + 金鹰 golden_eagle（堆叠 64，蜗牛食物） | [二、30 盖金蜗牛与金鹰](#30-盖金蜗牛与金鹰gajinsnail--goldeneagle) |
 | 49 | 物品/音乐 | 唱片音乐 6 张（GitHub issue #1：bit / broken_boy / panic_track / resonance / roller_mobster / sabotage，VLC mono OGG + RecordItem 注册 + 双语 lang） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
 | 50 | CC 外设 | CC 外设无延迟改造（风险最小方案）：knob/display/plotter volatile+dirty+tick 节流广播，relay_bus RelayState 双缓存 + 总线缓存 + Lua 零 Level 访问，修复 Inputs 落盘 | [二、32 CC 外设无延迟改造](#32-cc-外设无延迟改造风险最小方案实施) |
 | 51 | 物品/音乐 | 唱片音乐 2 张（friends_wine 朋友的酒 / air 鸟之诗，mp4 源文件经 ffmpeg 提取音频转 mono OGG + RecordItem 注册 + 双语 lang） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
@@ -66,24 +66,32 @@
 | 54 | 资源整理 | 贴图/模型目录整理：textures/block 与 models/block 顶层散装文件全部归入各方块同名文件夹（含 redstone_receiver/sender、relay_bus、extended_relay 等多贴图方块），所有 JSON 引用同步更新（99 文件） | [二、35 贴图/模型资源目录整理](#35-贴图模型资源目录整理) |
 | 55 | 方块/GUI | 控制面板文字样式：染料右键面板染字（16 色，不消耗染料）+ 编辑工具 GUI 新增 B/I/U/S 格式按钮与 16 色块（打开时读取当前样式），EditTextPacket 携带完整样式（颜色/粗体/斜体/下划线/删除线） | [二、36 控制面板文字样式](#36-控制面板文字样式染料染色--编辑工具格式按钮) |
 | 56 | 方块 | ~~海报1 poster_1~~（已删除：与 poster_2 贴图完全相同，属第一张重复注册） | [二、37 海报](#37-海报posterblock) |
-| 57 | 方块/GUI | 海报 poster（**重构：只注册一个方块**，右键打开 GUI 选图片 + 缩放倍率 + dy/dz 偏移；渲染改 BlockEntityRenderer 直绘四边形，彻底摆脱原版模型元素坐标 ±16/32 限制；旧 poster_2~26 方块/物品/模型/blockstate 全部删除，25 张贴图保留为可选图片） | [二、37 海报](#37-海报posterblock) |
+| 57 | 方块/GUI | 海报 poster（**重构：只注册一个方块**，右键打开 GUI 选图片 + 缩放倍率 + dy/dz 偏移；渲染改 BlockEntityRenderer 直绘四边形，彻底摆脱原版模型元素坐标 ±16/32 限制；旧 poster_2~26 方块/物品/模型/blockstate 全部删除，贴图保留为可选图片，`PosterImages.LIST` 现有 47 条（46 张可选，索引 45 水循环已隐藏）） | [二、37 海报](#37-海报posterblock) |
 | 58 | 生物/物品 | 邪恶盖金 evil_gajin（敌对生物，僵尸 AI 不燃烧/不捡装备，100 血 20 攻，距离变速追击，锁定/攻击/击杀/受击全套语音 + RWR 追击循环音，模型暂用盖金蜗牛）+ 刷怪蛋 evil_gajin_spawn_egg | [二、38 邪恶盖金](#38-邪恶盖金evilgajin--evil_gajin) |
 | 59 | 生物/渲染 | 错误生物新模型（ERROR/NULL/WARN 像素字牌，来源模型/生物/错误生物/新模型三个 Blockbench zip：纯红占位贴图 + 每面独立 UV json）——先离线转 Java addBox，后改 **Blockbench json 直渲**（ErrorMobJsonRenderer 直接加载 json 渲染，复用 BlockbenchJsonModel，同邪恶盖金方案；删除全部 Java Model 类与模型层注册） | [二、39 错误生物新模型](#39-错误生物新模型errornullwarn-像素字牌) |
 | 60 | 生物/渲染 | 邪恶盖金换 Blockbench JSON 直渲模型（gaijin_t58.zip：17 元素 5 旋转，texture_size 32x32）——不再转 Java ModelPart，新增运行时加载器 BlockbenchJsonModel 逐元素逐面绘制（每面独立 UV + 旋转元素绕 origin 旋转），渲染器改为 EntityRenderer 直渲 | [二、40 邪恶盖金 JSON 直渲模型](#40-邪恶盖金-json-直渲模型blockbenchjsonmodel) |
 | 61 | 物品/音乐 | 唱片「LEVEL !」music_disc_level（感叹号不入注册名，VLC mono OGG 160k ≈1:59，比较器输出 13 复用 reimu，music_discs 标签兼容唱片机） | [二、31 唱片音乐](#31-唱片音乐github-issue-1-新增-6-张) |
 | 62 | 指令 | /ccrc sound 音频播放指令（`<声音ID> <目标> [音量]`，**目标必选**、音量可选，定向播放给 @p/@a/@e 等，无距离限制无衰减；S2C 纯数据包 PlaySoundPacket id5 + 客户端 CommandSoundInstance 无衰减播放，遵循 PR#2 服务端加载安全模式） | [二、23 /ccrc 指令](#23-ccrc-指令ccrccommand) |
-| 63 | 方块/GUI | 多方块控制台·第一期：控制台结构方块 console_block + 控制台总线 console_bus（六向面板）；总线 GUI 一键校验并成型（BFS 泛洪 + 最小外接长方体体积一致性 + 4096 格上限 + 5 种失败原因），三态 未成型/部分成型/完全成型；完全成型禁止挖掘并免疫爆炸（需总线解锁）；部分成型时结构外露表面绘制一像素网格 | [二、41 多方块控制台](#41-多方块控制台console_block--console_bus) |
-| 64 | 方块/GUI | 控制柜程序界面·第二阶段：辅助计算机 controller_aux 右键绑定唯一相邻总线并打开程序界面（左 1/3 变量表滚轮滚动，右 2/3 程序区留空）；变量表支持按槽位创建 / 删除变量、绑定现有设备（变量名 = 设备代号）、布尔点击切换、浮点就地输入、保存数值并强制上传绑定组件；新增 ConsoleVarPacket id15 与服务端名称 / 类型 / 槽位校验 | [二、42 控制柜程序界面](#42-控制柜程序界面第二阶段变量表-gui) |
-| 65 | 方块/GUI | 控制柜组件 RGB 颜色控制器 controller_rgb（主名称布尔启用 + R/G/B 三个浮点通道变量驱动灯面染色、连接组件同步颜色、命名后隐藏模型只显示彩色名称、显示原色开关；配置 JSON 支持） | [二、41 多方块控制台](#41-多方块控制台consoleblock--consolebusblock) |
-| 66 | 方块/渲染 | 控制柜组件 阀门拉杆 controller_lever_f（开关语义，开关两套 OBJ 把手角度 + 红色背板/把手染色）与 旋转按钮 controller_button_x（按钮语义，未按下时 Rotate 分组顺时针 90° 复位 + 黄色背板染色）；染色采样点改为按贴图动态扫描白块（找不到回退旧 512 常量） | [二、41 多方块控制台](#41-多方块控制台consoleblock--consolebusblock) |
-| 67 | 方块/渲染 | 控制柜组件 三状态旋钮开关 controller_t_switch / 三状态拉杆 controller_t_lever（浮点变量 0/1/2，右键 0→1→2→0 循环，各三套模型）+ 双色指示灯 controller_lamp_d（布尔量，红亮 / 绿亮两套模型切换）；RGB 控制器模型换型为 indicator_orange_on（只染灯面）；新组件仅染背板 `o Panel` | [二、41 多方块控制台](#41-多方块控制台consoleblock--consolebusblock) |
-| 68 | 物品/GUI | 画图工具 draw_tool（右键控制柜表面打开属性界面，默认未创建，点选类型或右侧贴图样式后才创建图案，直接关闭不留图案；可设置类型/颜色/线宽/图层/尺寸/位置或删除；线宽 0.1~4.0、缩放 0.1~3.0、预设旋转为任意角度；线段与箭头默认长度 8、角度 0；工具 NBT 记住颜色/线宽/缩放/图层/类型/预设；shift+右键空气打开设置界面：快速绘画 / 吸附整数 / 平直线优先；快速绘画下图案单击生成、矩形线段箭头两次右键取点；多功能工具可像拖动组件一样拖动图案；图形存总线方块实体并随 NBT 同步；网络包 id 21/22/23、菜单 console_draw） | [二、41 画图工具](#第四十一期画图工具draw_tool) |
-| 69 | 方块/渲染 | 控制柜组件 扇形仪表 controller_gauge_f（gauge_f）：功能与流量表相同（绑定浮点变量、可整图着色），指针 0 = 左下 30°、顺时针扫 240° 到右下 30° = 100；`o Needle` 绕模型 X 轴旋转，烘焙角 -17° | [二、42 扇形仪表](#第四十二期扇形仪表gauge_f) |
-| 70 | 方块/渲染 | 控制柜组件 同步指示器 controller_synchroscope（synchroscope）：自身浮点变量为指针角度（-180~180，正上方 = 0），附加浮点变量 `<代号>_s` 为转速（度/tick，正 = 顺时针）；成型后按转速持续旋转并在 ±180 环绕，转速绝对值小于配置阈值（默认 15）且角度在 ±15° 内时切换为灯亮模型 | [二、43 同步指示器](#第四十三期同步指示器synchroscope) |
-| 71 | 方块/渲染 | 控制柜组件 安全按钮 controller_button_s（button_s）：带玻璃罩三套模型（合盖 / 开盖弹起 / 开盖按下），Shift+右键开/关盖、开盖后右键按下（按下期间不可关盖）；盖子自动关闭时间可设置（0 = 不自动关，默认 100t）；玻璃面 `usemtl glass` 用 `entityTranslucentCull` 半透明批次两遍绘制（真正透明）；按钮本体 `o Button` 标记 `usemtl tint` 可染色（面板 / 金属框 / 玻璃罩保持原色，无纯白块时保留原 UV 只乘顶点色） | [二、44 安全按钮](#第四十四期安全按钮button_s) |
-| 72 | 方块/物品 | 控制柜组件 钥匙开关 controller_switch_k（switch_k）+ 控制柜钥匙 console_key：四套模型（合盖/开盖 × 有无钥匙），部分成型 Shift+右键取钥匙（NBT 记组件代号），成型后默认无钥匙不能开关，钥匙右键插入（消耗）后才能开关，空手 Shift+右键拔钥匙（开闭 / 常开 / 常闭三种模式限制），布尔变量只看开关状态 | [二、45 钥匙开关](#第四十五期钥匙开关switch_k) |
-| 73 | 方块/渲染 | 控制柜组件 圆盘记录仪 L controller_plotter_l（graph_l）：独立更高的模型（16×13，带右侧 `o Pen` 笔），浮点变量 / 历史采样 / 推送触发名称与圆盘记录仪相同；笔只按最新采样值（history[0]）上下平移，曲线按新纸面区域绘制，组件颜色只染曲线 | [二、46 圆盘记录仪 L](#第四十六期圆盘记录仪-lgraph_l) |
-| 74 | 方块/渲染 | 控制柜组件 警报器 controller_alarm（alarm）：面板从左到右为方形灯 / 静音按钮 / 重置按钮，主布尔变量 true = 报警；报警中未静音时灯闪烁并从组件位置周期播放占位音效，按静音按钮静音（只读复制变量 `<代号>_Q` 置 true、灯常亮、停止发声），按重置按钮把主变量写回 false 并熄灭；6 套模型变体（灯灭/灯亮 × 中键按下 / 右键按下） | [二、47 警报器](#第四十七期警报器alarm) |
+| 63 | 方块/GUI | 控制柜系统总览：`controller_block`（蓝 / 黑变体）拼长方体，外侧唯一 `controller_bus` 总线保存结构状态 / 组件 / 文字 / 绘图 / 变量表 / 程序行 / 配置；`controller_aux` 右键相邻总线打开程序界面；同色连通泛洪 + 长方体完整性 + 每 100 tick 巡检，三态 未成型 / 部分成型 / 完全成型 | [二、41 控制柜系统](#41-控制柜系统consoleblock--consolebusblock--controller) |
+| 64 | 方块 | 结构与成型：`main` 标记、总线六向面、成型校验的 5 种失败原因、完全成型禁止挖掘并免疫爆炸 | [二、41.1 结构与成型](#411-结构与成型) |
+| 65 | 渲染 | 表面坐标系与渲染：`ConsoleSurface` / `ConsoleFrame` 统一 `(u, v)` 换算，`ConsoleBusBER` 绘制组件模型、读数、文字与绘图 | [二、41.2 表面坐标系与渲染](#412-表面坐标系与渲染) |
+| 66 | 方块/GUI | 组件通用机制：放置 / 颜色（贴图白块采样染色）/ 附带文字 / 缩放 / 拖动 | [二、41.3 组件通用机制](#413-组件通用机制放置--颜色--附带文字--缩放--拖动) |
+| 67 | 方块/GUI | 组件清单（23 种）：仪表 `controller_meter`、数字屏 `controller_display`、圆盘记录仪 `controller_graph`、指示灯 `controller_lamp`、键盘 `controller_button`、端子、旋钮 / 拉杆开关、各类按钮与旋钮等 | [二、41.4 组件清单](#414-组件清单) |
+| 68 | 方块/GUI | 程序系统：变量表、`ProgramIR`、`ProgramExprParser` 文本表达式、`ProgramVM` 字节码栈式执行、程序编辑界面 | [二、41.5 程序系统](#415-程序系统变量表--ir--字节码-vm--表达式--编辑界面) |
+| 69 | 兼容 | CC: Tweaked 外设接口：`ConsoleBusPeripheral` 与 `ConsoleCcBridge` 取数 / 写值排队 | [二、41.6 CC: Tweaked 外设接口](#416-cc-tweaked-外设接口) |
+| 70 | 数据 | 配置 JSON 保存与加载：`ConsoleConfigJson` 结构与保存 / 加载界面 | [二、41.7 配置 JSON 保存与加载](#417-配置-json-保存与加载) |
+| 71 | 物品/GUI | 画图工具 `draw_tool`：右键控制柜表面打开属性界面，24 种预设图案 + 矩形 / 线段 / 箭头，图案存总线方块实体并随 NBT 同步 | [二、41.8 画图工具](#418-画图工具draw_tool) |
+| 72 | 方块/渲染 | 斜面控制台 `controller_slope`（默认 / 蓝 / 黑）：把宿主被盖住那一格的组件 / 文字 / 绘图按斜面坐标系重画，颜色须与结构一致 | [二、41.9 斜面控制台](#419-斜面控制台controller_slope) |
+| 73 | 方块/GUI | 辅助计算机与界面清单：`controller_aux` 绑定总线，`ConsoleProgramScreen` / `ConsoleConfigScreen` 等界面一览 | [二、41.10 辅助计算机与界面清单](#4110-辅助计算机与界面清单) |
+| 74 | 数据 | 关键数据格式：NBT / 网络包 / 配置 JSON 的字段结构 | [二、41.11 关键数据格式](#4111-关键数据格式nbt--网络包--配置-json) |
+| 75 | 状态 | 控制柜现状与待办：已完成部分与已知未实现项 | [二、41.12 现状与待办](#4112-现状与待办) |
+| 76 | 方块/GUI | 涂鸦文字 `graffiti`：贴墙透明方块，右键墙面放置并打开文字编辑界面，客户端 BER 直接在墙面绘制文字 | [二、42 涂鸦文字](#42-涂鸦文字graffiti) |
+| 77 | 方块/GUI | 涂鸦形状 `graffiti_shape`：贴墙透明方块，手持画图工具右键墙面放置并按工具设置初始化，BER 复用控制柜画图渲染器 | [二、43 涂鸦形状](#43-涂鸦形状graffiti_shape) |
+| 78 | 实体/GUI | 便签 `note`：贴墙实体，可贴在方块表面任意浮点位置，四行文字各自颜色与格式，左键移除、Shift+右键取回 | [二、44 便签](#44-便签note) |
+| 79 | 物品/渲染 | 激光笔 `laser_pointer`：手持时客户端从手部向「视线与碰撞箱表面的交点」绘制红线（最长 16 格、线宽 0.02 格，Config 可调），所有玩家可见，无网络包 | [二、45 激光笔](#45-激光笔laser_pointer) |
+| 80 | 方块/GUI | 音频播放器 `audio_player`：客户端循环播放任意已注册音效，四种红石模式（触发 / 反触发 / 脉冲 / 常开），可设范围 / 衰减 / 起始 / 截至 / 间隔（负值重叠）/ 音量（0~500%），界面显示音效时长并带名称补全 | [二、46 音频播放器](#46-音频播放器audio_player) |
+| 81 | 音频素材 | 麦卡锡音频 96 条：按「英文类别_英文名」批量注册声音（mechanical / explosion / alarm / running / music），VLC 单声道 64kbps，仅带 `^` 标记的素材按完整循环裁剪 | [三、4 声音](#4-声音sound-events共-134-个) |
+| 82 | 方块/GUI | 水循环图 `water_cycle_chart`（独立贴墙物品，固定 2 格宽模型渲染 512×362 低清图；右键打开高清查看界面，5000×3536 高清图仅界面打开时加载、关闭即 `TextureManager.release` 释放显存；海报列表索引 45 保留为隐藏低清条目以兼容旧存档） | [二、48 水循环图](#48-水循环图water_cycle_chart) |
 
 ---
 
@@ -1046,6 +1054,11 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 - **注册**：ModSounds（`music_level`）、ModItems（RecordItem，**比较器输出 13**——1~15 已被全部占用故复用级别 13，同 reimu；Rarity.RARE stacksTo(1)，ticks 2383）、sounds.json（stream:true + subtitle）、models/item、lang 中英「音乐唱片 / Music Disc」「LEVEL !」、subtitle、`minecraft:tags/items/music_discs` 标签、ModCreativeTabs；
 - **构建**：gradlew build BUILD SUCCESSFUL（36s）；三、2 物品 152→**153**、三、4 声音 38→**39**（唱片 33 + 非唱片 6）已同步。
 
+**补充（2026-11-22）：全部唱片统一重压为 64kbps 单声道**：
+- **转码**：33 张唱片全部以 VLC `transcode{acodec=vorb,ab=64,channels=1,samplerate=44100}` 从原始素材重转（不从旧 160k ogg 二次压缩）。优先用「模型/唱片」源；缺源者取自 `E:\视频\BGM`：`level5`←LEVEL5 -judgelight-.mp3、`railugun`←OnlyMyRailgun.m4a、`never`←Never Gomma Give You Up.m4a、`assumptions`←Assumptions.mp3、`conrnfield_chase`←原野追逐-3.mp3、`move`←動く、動く (チトver.).mp3、`more_one_night`←More One Night (チトver.).mp3、`rain`←雨だれの歌.mp3、`end`←終ワリノ歌.mp3、`underground_river` / `hanezeve_caradhina`←Kevin Penkin 同名 mp3。
+- **结果**：`sounds/music` 下 35 个 ogg（33 唱片 + 2 个反应堆音效未改）由 **144.11MB → 61.43MB（约 −57%）**；全部 `ch=1 / 44100Hz`，时长与原文件一致（±1s），RecordItem 的 ticks 无需改动。
+- **备份**：原文件完整保留在 `build/music_backup/`（另有 `build/bloom.ogg.bak`）；gradlew build BUILD SUCCESSFUL（25s）。
+
 ### 32. CC 外设无延迟改造（风险最小方案实施）
 
 背景：实测证实 CC 的 `mainThread=true` 外设调用**每个调用单独消耗 1 个主线程 tick**（任务执行后 resume Lua 需经 ComputerThread 异步排队，下一个任务只能下一 tick 才执行），连续 N 次调用 ≈ N tick 延迟。按此前定案的风险最小方案改造全部 4 个 CC 外设：
@@ -1122,62 +1135,31 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
   - 再下方 y=118 起 **16 个染料色块按钮**（8 列 x 2 行，16x10，`DyeColor.values()` 顺序取 `getTextColor()`），选中白色边框；GUI 内可直接选色，与染料染色互通；
   - 打开时从 `menu.currentText.getStyle()` 读取当前样式作为按钮/色块初值（含"空文字仅存样式"的场景）；提交时把**完整样式**（颜色 RGB + 四格式布尔）随包写回；`color=-1` = 不设置颜色（恢复默认白）。
 - **网络**（[EditTextPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/EditTextPacket.java)，C2S 通道 index 2）：字段扩展为 `text + color(int,-1=无) + bold/italic/underline/strikethrough(boolean)`，encode/decode 同步调整；服务端以 `Component.literal(text).withStyle(style)` 重建写入（空文本仍 = 清除显示）。
-- **微调**（用户反馈后）：①染料染色**不再消耗染料**（编辑工具 GUI 已能直接改颜色，染料仅作快捷手段）；②格式按钮未激活态由灰色改**白色**（仅以粗细区分，暗背景下可读性更好）。
+- **行为约定**：染料染色**不消耗染料**（编辑工具 GUI 已能直接改颜色，染料仅作快捷手段）；格式按钮未激活态为**白色**（仅以粗细区分，暗背景下可读性更好）。
 - **构建**：gradlew build BUILD SUCCESSFUL（28s/26s，微调后 29s）。
 
 ### 37. 海报（PosterBlock）
-贴墙装饰方块。**当前实现：全局只注册一个方块 `poster`**（旧版 poster_2 ~ poster_26 多方块方案已废弃，见本节末「旧实现」）。方块实体保存「当前图片 + 缩放倍率 + dy/dz 偏移」，客户端 `PosterBER` 直接绘制贴图四边形，**因此尺寸不受原版方块模型元素坐标每轴 [-16, 32] 的限制**（旧版 2 倍竖旗 / 塔塔鲁斯九格宽就是因此加载失败变紫黑块）。素材取自 `模型\其他物品\海报\`，双三次缩放并**保留 alpha 透明通道**。
+
+贴墙装饰方块。**全局只注册一个方块 `poster`**（旧版 poster_2 ~ poster_26 多方块方案已废弃并被本方案取代）。方块实体保存「当前图片 + 缩放倍率 + dy/dz 偏移」，客户端 `PosterBER` 直接绘制贴图四边形，**因此尺寸不受原版方块模型元素坐标每轴 [-16, 32] 的限制**（旧版 2 倍竖旗 / 塔塔鲁斯九格宽即因此加载失败变紫黑块）。素材取自 `模型\其他物品\海报\`，双三次缩放并**保留 alpha 透明通道**。
 
 - **方块**（[PosterBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterBlock.java)）extends `HorizontalDirectionalBlock` implements `EntityBlock`：
   - **水平四向放置**：`getStateForPlacement` 仅点击水平墙面时 `FACING = getClickedFace()`，点击顶/底面返回 null（只能贴墙）；
   - **碰撞箱 16x16x1**：`SHAPE_NORTH=box(0,0,15,16,16,16)`（板子贴墙侧），SOUTH=z0~1 / EAST=x0~1 / WEST=x15~16；
   - `canSurvive` 校验支撑墙 `pos.relative(FACING.getOpposite()).isSolid()`；`updateShape` 支撑墙消失即转 AIR；
-  - 属性 `noCollission + strength(0.5F) + WOOD`；
-  - `getRenderShape = INVISIBLE`（方块本体不渲染）+ `newBlockEntity`；`use` 右键（非潜行）服务端调 `PosterMenu.open` 打开设置界面。
+  - 属性 `noCollission + strength(0.5F) + WOOD`；`getRenderShape = INVISIBLE`（方块本体不渲染）+ `newBlockEntity`；`use` 右键（非潜行）服务端调 `PosterMenu.open` 打开设置界面。
 - **方块实体**（[PosterBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterBlockEntity.java)）：字段 `Image`(图片索引) / `Scale`(倍率，1.0=宽 1 格) / `Dy`(垂直偏移，**单位格**) / `Dz`(水平偏移，**单位格**)，`setConfig` 统一夹取（scale 0.05~20、偏移 ±16 格）；NBT 读写 + `getUpdateTag`/`getUpdatePacket` 客户端同步；`getRenderBoundingBox` 扩大为 `inflate(scale+offset+4)` 防止大图被视锥剔除。
-- **渲染器**（[PosterBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterBER.java)）：`RenderType.entityCutoutNoCull(贴图)` 手绘一个四边形。几何：以观者视角锚点=贴墙面左上角（离墙 1 像素），图片向右/向下延伸；宽=scale，高=scale*原图高/原图宽（保持比例）；dz 沿观者向右、dy 沿 +Y，**单位均为格（可直接写 0.5）**。四朝向锚点与「向右」向量（与 FACING=可见面法线一致，不会镜像）：NORTH (1,15/16) r=-X；SOUTH (0,1/16) r=+X；EAST (1/16,1) r=-Z；WEST (15/16,0) r=+Z。
-- **图片表**（[PosterImages.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterImages.java)）：**共 24 张**，贴图位于 `textures/block/poster/`，**文件名/图片 id 按原始图片名称命名**（GUI 悬停显示的 name 即素材原名）。`Image` 字段：`id`(英文贴图名) / `name`(原始图片名) / `texture` / `width` / `height` / `top`(顶部透明留白)。**索引 0 = `no_material`「无材质」为默认材质**（新放置的海报默认显示它，方块模型 particle 与物品贴图也改用它），其余依次：`goggles_mark` 戴护目镜标识、`mixue_sign` 蜜雪冰城招牌、`poster_1~8`（原 1~8.png）、`ask_yourself`/`energy`/`forgetting`/`parking_lot`/`see_more`/`than_just_you`/`we_need_you`、`mystery_mark` 神秘标识、`flag_quantum_energy`/`flag_quantum_science`/`flag_quantum_lighting`/`flag_quantum_atomic` 四张量子竖旗、`tartarus_gate` 塔塔鲁斯上层入口 logo。
-- **GUI**：`PosterMenu`（无槽位菜单，把坐标+当前配置写进同步数据）/ `PosterScreen`（自绘 212x190 深色面板：7 列 x 4 行缩略图 + 缩放/dy/dz 三个输入框 + 应用按钮）/ `PosterConfigPacket`（C2S，服务端校验方块实体类型 + 8 格距离后写入并 `sendBlockUpdated` 同步）。注册：`ModBlockEntities.POSTER_BE`、`ModMenuTypes.POSTER`、`ModNetwork` id=6、`CcRc` client setup `MenuScreens.register` + `RegisterRenderers` 注册 BER。
-- **微调（用户反馈后）**：①缩略图几乎空白——原用 9 参 `GuiGraphics.blit`（只截取贴图左上角同尺寸区域、**不支持缩放**），改用 11 参重载 `blit(tex, x, y, w, h, u, v, uW, vH, texW, texH)` 采样整图并拉伸到缩略图框；②dy/dz 由「像素（16=1格）」改为**直接输入格数**（方便填 0.5），BER 不再除 16，偏移上限 ±16 格，界面标签/提示同步改为「垂直 dy（格）/ 水平 dz（格）/ 单位：格（可输入 0.5）」。
-- **微调 2（用户反馈后）**：①**默认定位 = 图片顶端对齐方块顶端**：实测 25 张贴图的 alpha 包围盒，只有 poster_10~16（256x512 画布）内容底对齐、顶部有透明留白（top=179，poster_13 为 150），其余图片 top=0；`Image` 增加 `top` 字段（`contentHeight()/aspect()/v0()`），BER 采样 v 从 `v0` 到 1、几何高度按内容高计算，GUI 缩略图也裁掉透明留白——因此图片 9~15（缩略图第 9~15 格 = poster_10~16）默认即「图片顶端贴方块顶端」；②**手持海报物品时标记方块本体**：`PosterBER` 检测本地玩家主手/副手持有 poster 物品，在贴墙面叠加一张 1x1 半透明（alpha 110、全亮 0xF000F0）物品图标（`RenderType.entityTranslucent`），使透明的海报方块位置可见；标记画在**未偏移的锚点**上（标的是方块而非图片）。
-- **微调 3（用户反馈后）**：①**删除重复图片**：原 4 组量子竖旗各有「1 倍 / 2 倍」两份**完全相同**的贴图（MD5 逐一核对一致：poster_18=19、20=21、22=23、24=25），缩放倍率可调后各删掉 2 倍那份（poster_19/21/23/25）；②**按图片名称命名**：用「源图等比缩放后与贴图逐像素比对」反查 25 张贴图的来源（方形 8 张、竖版 7 张、旗帜 4 张、神秘标识、塔塔鲁斯均为 diff≈0），贴图文件名与图片 id 全部改为图片原名对应的英文标识，GUI 悬停提示由「图片 N」改为显示原始图片名称；③**新增 3 张海报**（素材同路径 `模型\其他物品\海报\新海报`）：`no_material` 无材质（16x16 原尺寸，**索引 0 = 默认材质**）、`goggles_mark` 戴护目镜标识（384x512 → 256x341）、`mixue_sign` 蜜雪冰城招牌（1087x363 → 768x256）；④方块模型 particle 与物品贴图同步改为 `no_material`。图片总数 25 - 4 + 3 = **24 张**。
-- **微调 4（索引秩序修正，重要约定）**：图片索引保存在方块实体 NBT 里，**顺序即存档数据**，一旦发布就不能在中间插入或调换。本次先把新增的「戴护目镜标识」「蜜雪冰城招牌」移到列表末尾，恢复「无材质 = 索引 0、其余按之前注册顺序」的排布（旧图片索引相对第一次创建时 +1）。**后续注册新海报只能 `LIST.add`/在末尾追加，禁止插入中间**，否则所有已放置海报都会变成别的图。
-- **资源**：新增 `blockstates/poster.json`（facing 四向 y=0/90/180/270）、`models/block/poster.json`（仅 particle，无 elements）、`models/item/poster.json`（item/generated + `textures/item/poster.png`）；**删除**旧 poster_2~26 的 blockstate/model/item 贴图共 100 个文件，`textures/block/poster/` 现有 24 张贴图（重命名+去重后）。
-- **lang**：zh_cn「海报 / 海报设置 / 缩放倍率 / 垂直 dy（格）/ 水平 dz（格）/ 应用 / 单位：格（可输入 0.5）」，en_us 对应英文。
+- **渲染器**（[PosterBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterBER.java)）：`RenderType.entityCutoutNoCull(贴图)` 手绘一个四边形。几何：以观者视角锚点=贴墙面左上角，图片向右/向下延伸；宽=scale，高=scale*原图高/原图宽（保持比例）；dz 沿观者向右、dy 沿 +Y，**单位均为格（可直接写 0.5）**。四朝向锚点与「向右」向量（与 FACING=可见面法线一致，不会镜像）：NORTH (1,15/16) r=-X；SOUTH (0,1/16) r=+X；EAST (1/16,1) r=-Z；WEST (15/16,0) r=+Z。**贴墙间隙** `WALL_GAP = 0.5F/16.0F`（半个像素 = 1/32 格），四个朝向的锚点相应取 1/32、31/32，只调整贴图与墙面之间的视觉间隙以避免 Z-fighting；碰撞箱仍为 16×16×1。
+- **手持物品标记**：`PosterBER` 检测本地玩家主手/副手持有 poster 物品时，在贴墙面叠加 1x1 半透明（alpha 110、全亮 0xF000F0）物品图标（`RenderType.entityTranslucent`），标记画在**未偏移的锚点**上（标的是方块而非图片），使透明的海报方块位置可见。
+- **图片表**（[PosterImages.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterImages.java)）：`PosterImages.LIST` 共 **47 条（46 张可选）**，贴图位于 `textures/block/poster/`，文件名 / 图片 id 为原始图片名对应的英文标识（GUI 悬停显示中文原名），`Image` 字段为 `id / name / texture / width / height / top`。**索引 0 = `no_material`「无材质」为默认材质**（新放置的海报默认显示它，方块模型 particle 与物品贴图也改用它）；索引 1~23 为早期素材：`goggles_mark` 戴护目镜标识、`mixue_sign` 蜜雪冰城招牌、`poster_1~8`（原 1~8.png）、`ask_yourself`/`energy`/`forgetting`/`parking_lot`/`see_more`/`than_just_you`/`we_need_you`、`mystery_mark` 神秘标识、`flag_quantum_energy`/`flag_quantum_science`/`flag_quantum_lighting`/`flag_quantum_atomic` 四张量子竖旗、`tartarus_gate` 塔塔鲁斯上层入口 logo；索引 24~46 见下两条。
+- **索引 24~40（17 张）**：CCNR 宣传 8 张 `ccnr_main` / `ccnr_logo_horizontal` / `ccnr_logo_vertical` / `ccnr_admin_region` / `ccnr_character` / `ccnr_canteen` / `ccnr_page_8` / `ccnr_page_9`；其他 6 张 `milk_dragon`（奶龙）、`slippery_floor`（小心地滑）、`wear_helmet`（戴安全帽）、`decor_1` ~ `decor_3`（装饰画）；安全标识 3 张 `danger_fall` / `danger_electric` / `danger_radiation`。
+- **索引 41~46（6 张）**：`nuclear_sketch`（核电站简笔画，452×389）、`blue_fish_portrait`（蓝色大肥鱼画像，288×512）、`facility_director_portrait`（设施总监画像，307×512）、`mod_icon`（模组图标，256×256，取自 `src/main/resources/logo.png`）、`water_cycle_diagram`（水循环示意图，512×362，已从选择界面隐藏，改由独立物品 `water_cycle_chart` 提供）、`facility_director_2`（设施总监照片2，512×512）。
+- **索引顺序不可变（重要约定）**：图片索引保存在方块实体 NBT 里，**顺序即存档数据**，一旦发布就不能在中间插入或调换；**注册新海报只能在 `LIST` 末尾追加**，否则所有已放置海报都会变成别的图。`PosterImages.get` 对越界索引回退到索引 0「无材质」，避免旧存档的非法索引导致渲染异常。
+- **贴图处理**：源图放在 `模型/其他物品/海报/新海报`（部分达 12800×4267，直接当方块贴图会占用巨量显存）；导入时用 HighQualityBicubic 按最长边 512 等比缩小，再用 alpha 包围盒（阈值 8）裁掉四周透明留白，裁切后 `top = 0`、`width / height` 记录实际像素（如 `ccnr_main` 404×296、`ccnr_character` 341×512）；文件放在 `textures/block/poster/`，GUI 缩略图与 BER 都按实际像素取 UV。`water_cycle_diagram` 因高清图（5000×3536）已移到 `textures/gui/water_cycle_diagram_hd.png` 仅供独立物品的高清查看界面按需加载，海报条目回退为 512×362 低清并从选择界面隐藏（`PosterImages.HIDDEN_IDS`）。
+- **默认顶端对齐**：`Image.top` 记录内容顶部的透明留白像素，BER 采样 v 从 `v0` 到 1、几何高度按内容高计算，GUI 缩略图同样裁掉留白——`poster_10~16` 为底对齐画布（top=179，`poster_13` 为 150），其余图片 top=0，因此所有图片默认「内容顶端贴方块顶端」。
+- **GUI**：`PosterMenu`（无槽位菜单，把坐标+当前配置写进同步数据）/ `PosterScreen`（自绘面板：**7 列 × 固定 4 行**可见缩略图 + 滚轮翻页 + 右侧滚动条，缩放 / dy / dz 三个输入框 + 应用按钮）/ `PosterConfigPacket`（C2S，服务端校验方块实体类型 + 8 格距离后写入并 `sendBlockUpdated` 同步）。缩略图用 11 参 `GuiGraphics.blit(tex, x, y, w, h, u, v, uW, vH, texW, texH)` 采样整图并拉伸到缩略图框（9 参重载只截左上角同尺寸区域、不支持缩放）。滚动实现：`rebuildGrid()` 按 `gridScroll` 只创建可见行的缩略图按钮，`mouseScrolled` 在网格区域内一次翻一行，`gridScroll` 夹在 `[0, 总行数 - 4]`，`init()` 与滚动共用同一套重建逻辑。界面为**白底**：面板白色，标题 / 提示 / 标签文字用 `0xFF202020` / `0xFF707070` / `0xFF303030`，缩略图格背板 `0xFFF2F2F2`，边框为「选中黑 / 悬停深灰 / 普通浅灰」，滚动条轨道与滑块改浅色系，保证 `mod_icon`、`nuclear_sketch` 这类黑白图在白底上可辨认。注册：`ModBlockEntities.POSTER_BE`、`ModMenuTypes.POSTER`、`ModNetwork` id=6、`CcRc` client setup `MenuScreens.register` + `RegisterRenderers` 注册 BER。
+- **资源**：`blockstates/poster.json`（facing 四向 y=0/90/180/270）、`models/block/poster.json`（仅 particle，无 elements）、`models/item/poster.json`（item/generated + `textures/item/poster.png`）；旧 poster_2~26 的 blockstate / model / item 贴图共 100 个文件已删除。
+- **lang**：zh_cn「海报 / 海报设置 / 缩放倍率 / 垂直 dy（格）/ 水平 dz（格）/ 应用 / 单位：格（可输入 0.5）」及 47 张图片名称，en_us 对应英文。
 - **构建**：gradlew build BUILD SUCCESSFUL。
-
-#### 旧实现（已废弃，仅存档说明）
-
-旧版把每张海报各注册成一个方块 `poster_2 ~ poster_26`（poster_1 因与 poster_2 贴图 MD5 相同已删除），每个方块用独立方块模型元素把图片「顶出」/「拉宽」出格子，未超出 ±16/32 的能正常显示，超出者（2 倍竖旗 `to.y≈59.29`、塔塔鲁斯 `to.x=144`）模型解析失败 → 紫黑块（日志 `JsonParseException: 'from' specifier exceeds the allowed boundaries`）。该方案整体替换为上面的单方块 + BER 方案。以下为旧实现的内容存档。
-
-#### 海报 2~16（批量注册，旧实现）
-
-素材 `模型\其他物品\海报\1~8.png + ask_yourself/energy/forgetting/parking_lot/see_more/than_just_you/we_need_you.png` 共 **15 张**（已确认 `1.png` 与海报1 原图不同）：
-
-- **命名**：按文件名排序 `poster_2` ~ `poster_16`（poster_2~9 方形、poster_10~16 竖版）。
-- **贴图**（保留 alpha，与海报1 相同的双三次缩放 + 透明处理）：
-  - 方形 8 张 → `textures/block/poster/*.png` 256x256 全图；
-  - 竖版（787x1024 六张；1654x2339 的 parking_lot 一张）→ **256x512 画布、内容按比例 256x333 / 256x362 底对齐**（`256*1024/787=333`；`256*2339/1654=362`），保证"底边贴格子底部、顶边超出"且**图片比例不变**；
-  - item 贴图：方形直接复制；竖版单独生成 **256x256 方形画布内容居中**（避免 item/generated 16x16 图标压扁）。
-- **模型**（`models/block/poster/poster_N.json`）：方形同海报1（高 16，UV 0~16）；竖版元素 `to.y = 16*内容高/256`（787x1024 → **20.8125**、1654x2339 → **22.625**），UV `v` 起点 = 内容顶部在画布中的位置（`(512-333)/32 = 5.59375`、`(512-362)/32 = 4.6875`），顶边超出碰撞箱但**碰撞箱保持 16x16x1 不变**（用户明确要求不改变碰撞箱，仅渲染超出）。
-- **注册**：ModBlocks 用循环 `POSTERS` 列表（15 个注册名 poster_2~16，属性同海报1）、ModItems 用 `POSTER_ITEMS` 循环（注册名取方块名）、创造栏 `forEach` 批量加入；CcRc client setup 用 `ModBlocks.POSTERS.forEach` 批量 `setRenderLayer(cutout())`（全部保留透明）。
-- **lang**：zh_cn「海报2~16」、en_us「Poster 2~16」。
-- **构建**：gradlew build BUILD SUCCESSFUL（30s）；开发日志目录 57、三、1 方块 110→**125**、三、2 物品 137→**152**（方块物品 76→**91**）已同步。
-
-#### 海报 17~26（新海报批次 + 重复注册修复，旧实现）
-
-用户要求：①修复此前海报第一张重复注册；②注册 `模型\其他物品\海报\新海报` 下 6 张图。
-
-- **重复修复**：核对 MD5 发现 `poster_1.png` 与 `poster_2.png` 相同（方块与物品贴图均一致），确认第一张被重复注册；**删除 poster_1**（方块/物品/blockstate/两个模型/两张贴图/lang 条目/创造栏条目全部移除），保留 poster_2。
-- **poster_17 神秘标识**（418x631）：沿用竖版方法——宽 1 格、底边贴格子底部、模型按比例向上超出：元素 `from[0,0,15] to[16,24.1531,16]`（16*631/418），方块贴图 256x386 等比缩放，UV 全图 0~16。
-- **poster_18~25 四竖旗**（442x819，比例 0.540）：采用**左右与顶端贴合格子边缘、贴图向下超出格子**的新方法——
-  - 1 倍版（18/20/22/24）：元素 `from[0,-13.6471,15] to[16,16,16]`（高 16*819/442=29.6471，顶端 y=16 对齐、向下超出 13.6471px），贴图 256x474；
-  - 2 倍版（19/21/23/25）：宽高各翻倍，元素 `from[0,-43.2941,15] to[32,16,16]`（宽 32=2 格、高 59.2941），**左上角对齐格子边缘、右下超出**，复用 1 倍版方块贴图（item 图标各自 256x256）；
-  - 对应关系：量子能源公司 18/19、量子科学 20/21、量子灯具 22/23、量子原子能源公司 24/25。
-- **poster_26 塔塔鲁斯上层入口标志**（1530x342 ≈ 9:2）：按用户要求直接 **9 格宽 × 2 格高**——元素 `from[0,-16,15] to[144,16,16]`（左上角对齐格子顶端、向下超出 1 格），方块贴图 512x114。
-- **资源生成**：PowerShell + System.Drawing 双三次缩放（保留 alpha、统一写无 BOM UTF-8），自动生成 blockstate（四向 y=0/90/180/270）、方块模型、item 模型、方块/物品贴图；JSON 全部通过 ConvertFrom-Json 校验。
-- **lang**：zh_cn「神秘标识 / 竖旗·量子能源公司（大）… / 塔塔鲁斯上层入口标志」、en_us 对应英文。
-- **构建**：gradlew build BUILD SUCCESSFUL（34s）。
 
 ---
 
@@ -1256,772 +1238,11 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
   - 结论：之前 up/down 的 flipV 与整体 90°/180° 旋转不匹配，east/west 被改反，均已在最终数据下修正。
 - **UV 归一化基准修正（像素颗粒过大）**（2026-09-21，用户：贴图样子有变化但"uv 大小错误、像素点大于正确样子"）：逐面核对 uv 数据与模型几何尺寸发现精确规律——**所有面 uv 区域（x/z 方向）恰好为模型面像素的一半**（element[1] north 面 6px 宽 ↔ uv 宽 3；element[0] up 面 5×7px ↔ uv 2.5×3.5；east 面 7px ↔ uv 3.5）。即 **gaijin.json 的每面 uv 值基于 16 像素网格**（texture_size=32 是其二倍），此前用 `uv/32` 归一化使采样区域减半 → 贴图像素被放大 2 倍（颗粒大，叠加 1.5 倍模型缩放更明显）。修复：UV 归一化统一改为 `/16.0F`（侧面 v 方向作者未严格按比例，与 Blockbench 预览一致）。**待游戏关闭后构建验证。**
 
-### 41. 多方块控制台（ConsoleBlock / ConsoleBusBlock）
+### 41. 控制柜系统（ConsoleBlock / ConsoleBusBlock / Controller*）
 
-第一期目标：结构成型 + 尺寸 GUI（组件/装饰编辑、CC 外设留待后续期）。
+控制柜是一套多方块结构：用 `controller_block`（另有蓝 / 黑两色变体）拼出长方体，外侧贴一个 `controller_bus` 作为**唯一数据源**——结构状态、表面组件、文字、绘图、变量表、程序行、配置 JSON 全部保存在总线方块实体里。组件物品（仪表、开关、指示灯、按钮、显示器、终端等）贴在结构外表面，由总线统一结算并按 tick 驱动；`controller_aux`（控制柜辅助计算机）右键唯一相邻的总线即可打开程序界面。总线同时提供 CC: Tweaked 外设接口与文本配置的保存 / 加载，整套系统在专用服务器上可直接运行。
 
-- **方块**：`console_block`（完整立方体，无方向，`ConsoleBlock`）+ `console_bus`（水平四向 `FACING`，`ConsoleBusBlock`，右键打开总线界面）。
-- **结构定义与校验**（[ConsoleStructureHelper.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleStructureHelper.java)）：
-  1. 收集总线六邻居中的控制台方块作为种子（无 → `NO_BLOCK`）；
-  2. 首个种子六向 BFS 泛洪（超过 4096 格 → `TOO_LARGE`）；
-  3. 其余种子不在同一连通体 → `MULTIPLE`（总线同时贴着两个结构，无法判断归属）；
-  4. 最小外接长方体体积 `sx*sy*sz` 必须等于泛洪格数，否则 `NOT_RECTANGLE`（有空洞/凸起）。
-  - **关键简化**：不保存成员列表，只记录「最小角 origin + 三边长度」，成员由长方体范围推导。
-- **三态状态机**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`UNFORMED` → `PARTIAL`（成型，组件可编辑）→ `FULL`（锁定、交互生效）；`unlock()` 可回 `PARTIAL`。
-  - `formStructure()` 先清旧成员标记再校验；失败回到 `UNFORMED` 并记录 `Error`；
-  - 服务端主线程每 100 tick 巡检 `stillValid`（爆炸/指令等外部改动自动失效）；
-  - **不在 `setRemoved()` 中做任何事**（见下方「修复（保存世界卡死）」）。
-  - NBT：`FormState / Error / Origin(long) / SizeX / SizeY / SizeZ / Count / Texts / NextTextId`。
-- **成员方块实体**（[ConsoleBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBlockEntity.java)）：只存 `Bus(long) + StructureState`，由总线 `applyMembers` 写入并 `sendBlockUpdated` 同步。
-- **锁定保护**：
-  - [ConsoleBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBlock.java) `onDestroyedByPlayer` 在 `FULL` 时返回 false 并提示 `message.cc_rc.console.locked`（需先在总线解锁）；
-  - `playerWillDestroy` / `onRemove` 通知总线 `invalidateStructure()`（兜底活塞/指令等途径）；
-  - [CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 监听 `ExplosionEvent.Detonate`，把锁定的结构方块从受影响列表剔除（总线不保护）。
-- **总线界面**（[ConsoleMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleMenu.java) / [ConsoleScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleScreen.java)）：
-  - 菜单只同步方块坐标；尺寸/状态/错误每帧从客户端方块实体读取（靠 `sendBlockUpdated` 同步），点完按钮即时刷新；
-  - 三个按钮：检测并成型 / 完全成型 / 解除锁定，`containerTick()` 按状态设置 `active`；
-  - 操作走 C2S [ConsoleStructurePacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleStructurePacket.java)（`registerMessage(7, ...)`，action 0 成型 / 1 锁定 / 2 解锁，服务端校验类型 + 8 格距离）。
-- **表面网格**（[ConsoleBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBER.java)）：仅 `structureState == 1`（部分成型）时为每个外露面（邻居不是控制台方块）用 `RenderType.lines()` 画 16x16 像素网格 + 外轮廓，辅助按一像素精度摆放组件。
-- **资源**：`blockstates/console_block.json`（单变体）、`blockstates/console_bus.json`（水平四向旋转，第二期由六向改为四向）、`models/block/console_block.json`（cube_all）、`models/block/console_bus.json`（cube，north=正面屏幕）、`models/item/*.json`、贴图 `textures/block/console/console_block.png` / `console_bus_front.png` / `console_bus_side.png`（16x16，PowerShell + System.Drawing 生成）、中英 lang 键。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-- **修复（保存世界卡死）**：原实现在 `ConsoleBusBlockEntity.setRemoved()` 中遍历成员并调用 `applyMembers(null, 0)`，而 `setRemoved()` 在区块卸载 / 保存退出时也会被调用，其中的 `setChanged()` / `sendBlockUpdated()` 会让正在保存的区块重新变脏并触发区块系统重入，导致「保存世界中」永久卡死（半成型/完全成型才有成员关联，所以未成型不复现）。现改为**不重写 `setRemoved()`**（不在卸载路径做任何跨方块实体操作），成员标记清理交给 [ConsoleBusBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlock.java) 新增的 `playerWillDestroy` / `onRemove`（世界正常运行时执行，可安全同步）。
-
-**第二期：总线水平四向 + 结构表面文字**
-
-- **总线改为水平四向**：`FACING` 由 `BlockStateProperties.FACING`（六向）改为 `HORIZONTAL_FACING`，放置取 `context.getHorizontalDirection().getOpposite()`；`blockstates/console_bus.json` 只保留 north/south(y=180)/east(y=90)/west(y=270) 四个变体。FACING 即「总线背面」方向，同时决定结构顶面/底面文字的头朝向。
-- **表面坐标系**（[ConsoleSurface.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSurface.java)）：六个外表面各一组 U（右）/V（上）/N（外法线）单位向量（1 格 = 16 像素）。
-  - 四个侧面：`V=(0,1,0)`，`U` 分别为 north(-1,0,0) / south(1,0,0) / west(0,0,1) / east(0,0,-1)；
-  - 顶面：`V=-FACING`、`U=(f.z,0,-f.x)`；底面：`V=-FACING`、`U=(-f.z,0,f.x)`（仰视时左右相反）；
-  - 文字坐标 `(u,v)` 是**相对该表面矩形中心的像素偏移**，可与结构原点/尺寸解耦；提供 `pixelU/pixelV/toWorld/faceCenter/halfWidthPx/halfHeightPx/contains`。
-- **文字存储**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`List<TextEntry> texts` + 自增 `nextTextId`（上限 256 条）。`TextEntry` 保存 `id / face / u / v / text / color / bold / italic / underline / strikethrough`，NBT 键 `Texts`（`ListTag`）+ `NextTextId`，随 `getUpdateTag/getUpdatePacket` 同步到客户端。
-  - `applyTextEdit(id, face, u, v, text, ...)`：`id>=0` 时修改原文（位置不变，文本为空 = 删除）；`id=-1` 时校验点击点在表面矩形内后新建；仅 `PARTIAL` 可编辑，`FULL` 锁定，`UNFORMED` 提示先成型；返回 `TEXT_OK / TEXT_NOT_FORMED / TEXT_LOCKED / TEXT_OUTSIDE / TEXT_LIMIT`。
-  - `getRenderBoundingBox()` 扩到整个结构长方体，避免表面文字被视锥剔除。
-- **文字渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：在总线方块实体注册的 BER 中遍历全部文字，用 `ConsoleSurface` 的 U/V/N 构造仿射矩阵（第 0 列 `U/16`、第 1 列 `-V/16`（原版字体 y 轴向下）、第 2 列 `N/16`、平移为文字中心世界坐标），再 `font.drawInBatch` 以 `(-w/2, -lineHeight/2)` 为中心绘制（`DisplayMode.POLYGON_OFFSET`，沿外法线外推 0.005 防深度冲突）。注意 JOML 的 `Matrix4f` 字段非公开，必须用 16 参数构造函数。
-- **交互链路**（编辑工具右键控制台方块）：
-  1. 客户端 [ConsoleTextClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleTextClient.java) 通过 `ConsoleStructureHelper.findBus` 找总线、读结构范围与朝向，把点击点换算为 `(u,v)`；
-  2. 用 `Font.width` 做命中检测：点击点落在某条文字中心矩形（宽 = 字宽、高 = `font.lineHeight`，各留 1 像素容差）内 → 带该文字 id 请求编辑，否则在该点新建；
-  3. C2S [ConsoleTextRequestPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleTextRequestPacket.java)（`registerMessage(8)`）→ 服务端校验状态/表面/8 格距离后打开复用的 `EditTextMenu`（`target = TARGET_CONSOLE`，附带 textId/face/u/v）；
-  4. 提交走 C2S [ConsoleTextPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleTextPacket.java)（`registerMessage(9)`）→ `applyTextEdit` 写入并同步。
-  - 命中检测必须放在客户端：服务端没有 `Font`，无法计算文字宽度。
-- **修复（文字全黑）**：表面文字一开始把方块实体传入的 `packedLight` 直接传给 `font.drawInBatch`，总线常贴着结构、处在无光位置，光照值为 0 时文字被乘成纯黑（与所选颜色无关）。现固定 `PACKED_LIGHT = 0xF000F0`（全亮），与本模组数字显示器/记录仪的做法一致。
-- **界面复用**：[EditTextMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/EditTextMenu.java) 新增 `TARGET_BLOCK=0 / TARGET_CONSOLE=1` 与 `target/textId/faceOrd/u/v` 字段，并统一为 `write/read` 同步数据格式（先 `target`，控制台目标续读 4 个字段）；`EditTextScreen.submitAndClose()` 按 target 分流发包；`EditToolItem` 新增 `openConsoleEditMenu(...)`。
-- **提示文案**：`message.cc_rc.console.need_form / text_locked / text_outside / text_limit`（中英）。
-- **第三期：表面文字专用 GUI（锚点 + 位置 + 缩放）**
-  - 交互分流：编辑工具右键**普通可显示名称方块**仍打开旧 GUI（`EditTextMenu` + `EditTextScreen`，仅文字/颜色/字体），右键**控制台方块**改走新 GUI；上一版临时塞进 `EditTextMenu` 的 `target` 机制已全部回退清理。
-  - 新增 [ConsoleTextMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleTextMenu.java) + [ConsoleTextScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleTextScreen.java)（菜单类型 `console_text`）：上半部分沿用旧界面布局（输入框 / 完成 / B I U S / 16 染料色块），下半部分为原贴图之外用纯色补齐的扩展区，新增：
-    - 锚点坐标 `X` / `Y`（结构像素，1 格 = 16 像素，点击表面中心为 0，可负值）；
-    - 9 种锚点组合：垂直 `上/中/下` × 水平 `左/中/右`，表示 (X,Y) 对齐文字框的哪条边/中心；
-    - 缩放倍率（默认 `0.25`，即旧版字号的四分之一；范围 0.05~4）。
-  - `TextEntry` 新增 `anchorH / anchorV / scale` 字段与 NBT `AnchorH / AnchorV / Scale`（旧存档缺字段时默认居中锚点 + 0.25）；`applyTextEdit` 增加这三个参数并把锚点坐标夹在表面矩形内。
-  - 渲染：每字体像素 = `scale / 16` 格；按锚点把文字框左上角相对锚点偏移（水平 0 / -w/2 / -w，垂直 0 / -h/2 / -h）后再 `drawInBatch`。
-  - 命中检测：客户端按 `scale` 与锚点把每条文字还原成结构像素矩形再做点选，保证「右键文字覆盖区域任意一点」仍可再次编辑。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第四期：结构表面组件（仅有模型与代号，暂无功能）**
-
-- **组件类型**（[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：5 种 `GAUGE / NUMITRON / INDICATOR / KEYPAD / TERMINAL`，各带 `id`、默认代号前缀（`GAUGE_1` 之类）与表面占位尺寸（像素）：gauge 5×5、numitron 13×5、indicator 7×4、keypad 5×5、terminal 14×14；尺寸由 OBJ 包围盒实测得出，用于重叠判定与命中检测。
-- **模型与贴图资源**：从「模型/控制台类/HBM_RoR_panel_models/hbm_ror_single_block」各目录复制**单件** `*_surface.obj`（不用 `face_layout.obj` 排布模型）到 `models/console_parts/<id>_surface.obj`，贴图复制到 `textures/block/console_parts/<id>.png`（gauge 14x7 / numitron 15x11 / indicator 21x6 / keypad 13x7 / terminal 20x20）。
-- **客户端 OBJ 加载器**（[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java)）：项目无 OBJ 模型加载 API，故自行解析 `v / vt / vn / f`（支持多边形扇形三角化与负数索引，`v` 轴翻转 `1-v`），缓存为 `ObjMesh{tris, minX, centerY, centerZ, texture}`；包围盒自动求出「最内侧 x（贴表面）」与「y/z 中心（对齐锚点）」，避免逐模型硬编码偏移。
-- **组件数据**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`List<CompEntry> comps` + 自增 `nextCompId`（上限 256）；`CompEntry` 保存 `id / type / face / u / v / code / color`，NBT `Comps`（`ListTag`）+ `NextCompId`（旧存档无字段时为空列表）；`color` 仅在真正设置过时写入 `Color`，默认 `NO_COLOR = -1`（保持贴图原样，兼容旧存档）。
-  - `applyCompAdd(type, face, u, v)`：坐标夹在表面内、与已有组件矩形相交则拒绝、代号默认 `类型前缀_序号`、颜色默认未设置；`applyCompEdit(id, code, u, v, color)`：代号格式 `[A-Za-z0-9_]{1,32}`、重复校验、移动时排除自身、颜色只接受 `0xRRGGBB` 或 `-1`；`applyCompDelete(id)`。
-  - 返回码：`COMP_OK / NOT_FORMED / LOCKED / OUTSIDE / LIMIT / DUP_POS / DUP_CODE / BAD_CODE / NOT_FOUND`，仅 `PARTIAL` 可编辑。
-  - `findCompAt(face, u, v)` 用轴对齐矩形（各留 0.5 像素容差）做点选。
-- **渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：先画组件再画文字；每个组件用 `ConsoleSurface` 的基向量构造矩阵（第 0 列 = 法线 / 模型 x、第 1 列 = V / 模型 y、第 2 列 = **-U** / 模型 z，平移把 `(minX, centerY, centerZ)` 对齐到锚点），逐三角形用 `RenderType.entityCutoutNoCull(贴图)` 绘制；光照取组件表面外侧 0.05 格处的 `LevelRenderer.getLightColor`（level 为 null 时回退全亮）。1.20.1 的 `VertexConsumer` 需用 `overlayCoords(int)` 与 `normal(Matrix3f, ...)`。
-  - 第 2 列取 `-U` 的原因：模型空间 `x = 外法线、y = 向上` 是右手系，其 z 轴 = `N × V` = `-U`；若直接用 `+U`，三列构成左手系（行列式 -1），整个模型会被水平镜像（表盘红色指示跑到错误一侧）。
-- **组件物品**（[ConsoleCompItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/ConsoleCompItem.java)，注册 `console_gauge / console_numitron / console_indicator / console_keypad / console_terminal`，`ModItems` + 创造标签 + `models/item/*.json` 使用 `block/console_parts/<id>` 贴图）：
-  - 手持右键 `console_block` → 服务端找总线、校验 `PARTIAL`、把点击点换算为 `(u,v)`；命中已有组件则打开组件界面，否则在点击处新增；
-  - 编辑工具右键控制台方块时，`ConsoleTextClient` 先做组件命中检测，命中则发 `ConsoleCompRequestPacket` 打开组件界面，未命中才走文字编辑。
-- **组件界面**（[ConsoleCompMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompMenu.java) / [ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java)，菜单类型 `console_comp`）：显示组件类型；可编辑**组件代号**（英文/数字/下划线）、**位置 X/Y**（结构像素）、**组件颜色**（16 个染料色块 + 手动 `#RRGGBB` 输入 + 「原色」恢复，带颜色预览块）；底部「完成」提交、「删除组件」移除。
-  - 网络：C2S [ConsoleCompRequestPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleCompRequestPacket.java)（id 10，开界面）与 [ConsoleCompPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleCompPacket.java)（id 11，提交/删除），均用服务端保存的组件位置做 8 格距离校验。
-- **提示文案**：`message.cc_rc.console.comp_locked / comp_outside / comp_limit / comp_dup_pos / comp_dup_code / comp_bad_code / comp_added`，以及 `gui.cc_rc.console.comp.<id>` 五种类型名（中英）。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第四期补充：组件颜色（贴图逐像素重新着色）**
-
-- **为什么不用顶点色**：直接用 `consumer.color()` 相乘会把原贴图的色相也乘进去。改为**逐像素重算贴图**：只处理「亮部或带彩度」的像素（白色/奶白底色、表盘红色区域、按键区、灯面），把色相替换为所选 RGB，亮度按 `luma / 该类型最亮可着色像素 luma` 的比例保留（于是红色区域自然成为所选颜色的加深版）。
-- **着色器**（新建 [ConsoleCompTextures.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompTextures.java)）：读取 `textures/block/console_parts/<id>.png` 作为基准（缓存原始 `NativeImage` 与归一化亮度 `REF_LUMA`），按 `(类型, 颜色)` 生成 `DynamicTexture` 并注册到 `cc_rc:dynamic/console_comp/<type>_<RRGGBB>` 后缓存（上限 96 张，超限整批释放）。
-  - 像素判定 `isTintable`：**亮部或带彩度**才换色 → 深灰外壳（luma≈80）、黑色刻度（luma≈0）、透明像素保持原样；表盘奶白底色与右上角红色区域都会换色。
-  - **指针保持红色**：`gauge_surface.obj` 里指针（`o Needle`）的 11 个面 UV 全部退化为同一点（-0.002146, -0.002232），采样红色区域边角的同一个像素 —— 颜色上与表盘右上角红色区域无法区分。做法：`ConsoleCompModels` 解析时把「三个顶点 UV 完全相同」的三角形标记为 `solidColor`；`ConsoleCompTextures` 在着色贴图里另找一个**不被任何面采样**的像素（用每个三角形 UV 包围盒做保守覆盖判断，优先选透明像素；gauge 得到 (11,5)），把它涂成原指针色（C82525，`NEEDLE` 缓存），渲染时 `ConsoleBusBER` 再把所有 `solidColor` 面的 UV 换成该像素中心 —— 指针保持原红、表盘（含右上角红色区域）整块正常着色，不会在任何位置残留与指针同色的小方块，组件整体仍只用一张贴图。
-  - 归一化：`factor = min(1, luma / REF_LUMA)`，于是同一区域里较暗的像素自动得到「所选颜色加深」的效果。
-  - `NativeImage` 像素为 **ABGR** 打包（`(a<<24)|(b<<16)|(g<<8)|r`），写入时必须按此顺序拼装。
-- **类型开关**（[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：新增 `recolorable` 字段，`GAUGE / INDICATOR / KEYPAD = true`，`NUMITRON / TERMINAL = false`（颜色只保存，后续用于显示文字颜色，暂不改外观）。
-- **渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：`comp.color != NO_COLOR` 时用 `ConsoleCompTextures.get(type, color, mesh)` 得到的贴图替代 `mesh.texture`，取不到则退回原贴图；**整个组件只使用一张 RenderType**（不要在同一个组件的绘制里切换第二张原贴图，实测会导致着色整体不生效）。
-- **实际效果**：gauge 表盘底色 = 所选颜色、右上红色区域 ≈ 0.38 倍变暗、红色指针保持原色；keypad 中间按键区、indicator 灯面 = 所选颜色；外壳与刻度不变。indicator 的「熄灯色 = 亮灯色加深」在灯状态逻辑实现时按同一 `factor` 规则推导。
-- **界面与网络**：`ConsoleCompMenu` / `ConsoleCompPacket` 增加 `color` 字段；`ConsoleCompScreen` 增加 16 个染料色块（选中白框）、`#RRGGBB` 输入框、「原色」按钮与颜色预览块。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**修复：组件模型渲染错乱（条纹花屏 / 镜像）**
-
-> 原则：只改渲染代码，不动 `*_surface.obj` 资源，保证后续新增 OBJ 组件同样生效。
-
-- **左右镜像**：局部矩阵第 2 列由 `+U` 改为 `-U`，平移同步改为 `anchor - N·minX - V·centerY + U·centerZ`。模型空间（x=外法线、y=向上）为右手系，z 轴应等于 `N×V = -U`；原写法三列构成左手系（行列式 -1），导致所有组件被水平镜像（gauge 红色指示偏移到错误一侧）。
-- **共面深度冲突**：新增常量 `COMP_OUTSET = 0.002`（格），组件锚点沿外法线外推后再放置。`_surface` 模型的最内侧 x 恒为 0，而 `console_block` 是 `cube_all` 完整立方体，两者外表面完全共面，插值深度仅差几个 ULP，会互相抢深度 → 密集条纹 / 撕裂花屏。外推量对所有 OBJ 通用，不依赖具体模型尺寸（模型自带的 `minX` 仍由平移抵消）。
-- **顶点模式不匹配（真正的主因）**：`RenderType.entityCutoutNoCull` 的顶点格式是 `VertexFormat.Mode.QUADS`（每个图元 4 个顶点），而组件渲染原来按三角形只提交 3 个顶点。缓冲区于是把「下一个三角形的首顶点」当成当前四边形的第 4 点，相邻三角形被错位缝合成虚假斜面 → 密集斜纹花屏、撕裂折片、悬空平面、X 形风车。修复：每个三角形补一个与第 3 点重合的顶点，构成 `(a,b,c,c)` 四边形（上传时拆成 `(0,1,2)` + `(0,2,3)`，第二个退化不可见）。参照本模组已正常工作的 [BlockbenchJsonModel.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/BlockbenchJsonModel.java#L230-L247)，它对 `entityCutoutNoCull` 同样每面提交 4 个顶点。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第四期补充：组件附带文字**
-
-- **数据**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增嵌套类 `CompText`（内容 + 颜色 + B/I/U/S，`NONE` = 无附带文字）；`CompEntry` 增加 `text` 字段，NBT 仅在有文字时写 `CompText / CompTextColor / CompTextBold / CompTextItalic / CompTextUnderline / CompTextStrike`（旧存档无字段 = 无附带文字）；新增 `applyCompText(id, text, color, bold, italic, underline, strike)`：仅部分成型可改、空文本 = 清除、不保存坐标/缩放。
-- **渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：新增 `renderCompTexts(...)`，在所有组件模型画完后统一绘制（文字用字体着色器，集中放在模型批次之后，避免打断组件贴图批次）；`renderCompText(...)` 按类型固定位置与锚点 —— 指示灯在灯板表面居中（沿外法线外推到模型最厚处 `maxX - minX` 之外）、按钮/仪表在组件右侧垂直居中并左对齐、其他在组件下方水平居中并上对齐；间距常量 `COMP_TEXT_GAP = 1` 结构像素，字号固定 `TextEntry.DEFAULT_SCALE = 0.25`。
-- **模型**（[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java)）：`ObjMesh` 新增 `maxX`（模型最外侧），供指示灯把文字放到灯板外表面之前。
-- **界面与网络**：`EditTextMenu` 增加 `compId`（-1 = 普通方块文字，>= 0 = 组件附带文字），打开界面同步数据追加 `writeVarInt(compId)`；[EditToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/EditToolItem.java) 新增 `openCompTextMenu(...)`；`EditTextScreen.submitAndClose()` 按 `compId` 分流发送 `EditTextPacket` / `ConsoleCompTextPacket`；新增 C2S `ConsoleCompTextRequestPacket`（id 12，开界面）与 `ConsoleCompTextPacket`（id 13，提交），均校验成型状态 / 组件存在 / 8 格距离；[ConsoleTextClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleTextClient.java) 编辑工具命中组件时改发 `ConsoleCompTextRequestPacket`（组件设置界面仍由组件物品右键打开）。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第四期补充：默认字号配置化 + 文字编辑界面加宽**
-
-- **配置**（[Config.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/Config.java)）：新增 `console_text.default_scale`（Double，默认 `0.15`，范围 0.05~4.0）与 `getConsoleTextDefaultScale()`；删除 `TextEntry.DEFAULT_SCALE` 常量，改为从配置读取。
-- **默认值生效点**：新建表面文字（[EditToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/EditToolItem.java)）、旧存档缺 `Scale` 字段的兜底（`TextEntry.load`）、组件附带文字渲染（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）、界面输入非法时的回退（[ConsoleTextScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleTextScreen.java)）。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第四期补充：组件尺寸调整 + 多功能工具拖动**
-
-- **尺寸**（[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：枚举新增 `renderScale` 字段 —— `KEYPAD = 0.5`（按钮缩小到原来一半）、`GAUGE = 1.2`（流量表放大到 1.2 倍）、其余 `1.0`。`halfWidthPx()/halfHeightPx()` 同步乘 `renderScale`，命中检测、重叠校验与附带文字定位自动跟随。
-- **渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：组件局部矩阵三个基向量同乘 `renderScale`，**同时平移量里的 `N·minX / V·centerY / U·centerZ` 也乘 `renderScale`**，使缩放真正以锚点为中心（`anchor + s·(模型点 - 包围盒中心/最内侧面)`）；指示灯附带文字的沿法线外推量改为按缩放后的模型厚度计算。附带文字位置：`case GAUGE, KEYPAD` 拆开，仅 KEYPAD 保持「右侧、左对齐」，GAUGE 落入默认分支「下方、水平居中、上对齐」。
-- **修复：缩放后模型定位偏移**：此前只缩放基向量、平移量仍按 `s=1` 计算，模型等于绕局部原点缩放，额外偏移 `(1-s)·(N·minX + V·centerY - U·centerZ)`（按钮向下偏约 4.5 像素、流量表向上偏约 1.8 像素），而点击判定矩形仍以锚点为中心，表现为「点得到、模型却不在点击处」。平移量同步乘 `s` 后模型包围盒中心与锚点重合；`gradlew build` BUILD SUCCESSFUL。
-- **结构变化后组件/文字位置保持**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：表面坐标以「表面矩形中心」为原点，扩展或缩减控制台后中心会移动，旧坐标会让组件整体平移。新增 `lastOrigin / lastSizeX/Y/Z` 记录「上一次成型范围」（`invalidateStructure()` 失效前也保存，NBT `LastOrigin / LastSizeX/Y/Z` 持久化，旧存档缺失时用当前范围兜底）；`formStructure()` 成型成功后调用 `rebaseSurfaceEntries(...)`，把新旧表面中心的偏移投影到该面的 U/V 轴并从坐标中扣除，组件与表面文字的世界位置保持不变；法线方向不补偿（始终贴在新表面，避免扩展后嵌进方块内部）。参考系本身仍为表面中心相对像素坐标。
-- **拖动（多功能工具）**：新增 [ConsoleDragClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleDragClient.java)（仅客户端）：右键按下时抓取点击点下的组件（优先）或表面文字，记录「目标锚点 - 点击点」偏移；之后每客户端 tick 用准星命中点换算表面像素坐标 + 偏移得到新锚点，按 `SEND_THRESHOLD = 0.25` 像素去抖后发包（组件 → `ConsoleCompPacket`，文字 → `ConsoleTextMovePacket`）；松开右键 / 打开界面 / 准星离开同一表面 / 结构变化时结束；位置先夹在表面内，组件再在客户端预判重叠（重叠时不发包，避免服务端提示刷屏）。允许跨同一结构的相邻方块继续拖动。[MultiToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/MultiToolItem.java) 的 `useOn` 新增控制台方块分支（客户端调用 `begin`，服务端仅消费交互）。
-- **文字拖动**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增 `applyTextMove(id, u, v)` —— 只改锚点位置，内容/样式/锚点方向/缩放保持不变，校验与 `applyTextEdit` 一致；新增 C2S `ConsoleTextMovePacket`（网络 id 14，服务端按自己保存的坐标校验距离 64 格后再写回）。
-- **复用**（[ConsoleTextClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleTextClient.java)）：把文字命中检测抽为公共方法 `findTextAt(bus, face, u, v)`，右键编辑与拖动共用同一套「锚点 + 缩放」矩形判定。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第四期补充：新增旋钮开关 / 拉杆开关 / 立式仪表 / 弧形仪表**
-
-> 模型来源：`模型/控制台类/panel_props_obj/panel_props`（该模型包 1.0 = 1 方块，+Y 向上，正面朝 −Z）；旋钮开关与立式仪表后来改用修订版 `模型/控制台类/panel_props_obj (2)/panel_props` 中同名模型。
-
-- **坐标转换**：源 OBJ 采用 `x∈[0,1] / y∈[0,1] / z∈[-0.44,0]`、正面朝 −Z 的约定，与控制台组件的「x = 外法线、y = 向上、z = 横向（= −U）」不同。转换式 `(x, y, z) → (-z, y, x)`（与源文件顶点一一对应，行列式 +1，纯旋转不改朝向/UV），法线同式转换；转换后包围盒 x 最小为 0（贴表面）、y/z 约 0.034~0.938（≈14 像素），故四种类型统一取 `14.0 × 14.0` 像素占位。
-- **资源**（无 BOM，`mtllib` 行替换为注释）：
-  - `models/console_parts/knob_switch_surface.obj`（源 `(2)/knob_switch_open.obj`：绿灯 + 箭头指向左上）
-  - `models/console_parts/lever_switch_surface.obj`（源 `lever_switch_open.obj`：拉杆左倾 + 绿灯）
-  - `models/console_parts/gauge_v_surface.obj`（源 `(2)/gauge_50.obj`：立式条形仪表，指针取 50，指针在修订版中改为单个三角棱柱 10 个面；同包另有 0 / 100 两种）
-  - `models/console_parts/gauge_arc_surface.obj`（源 `gauge_buttons.obj`：弧形表盘 + 双按钮，指针取 35）
-  - 贴图：`textures/block/console_parts/{knob_switch,lever_switch,gauge_v,gauge_arc}.png`
-  - 物品图标：由 `previews/sheet_front.png` 裁切并按蓝色背景判定抠图，输出到 `textures/item/console_{knob_switch,lever_switch,gauge_v,gauge_arc}.png`。
-- **类型**（[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：新增 `KNOB_SWITCH / LEVER_SWITCH / GAUGE_V / GAUGE_ARC`（代号前缀 `KNOB / LEVER / GAUGE_V / GAUGE_ARC`），追加在枚举末尾以保持既有 ordinal 不变（存档/网络包兼容）；`recolorable = false` —— 避免「纯色面当指针重定向 UV」的着色逻辑误伤新模型里的多个纯色材质面，颜色暂只记录。
-- **注册**：`ModItems` 新增 `console_knob_switch / console_lever_switch / console_gauge_v / console_gauge_arc`（`ConsoleCompItem`）；`ModCreativeTabs` 追加 4 项；`models/item/console_*.json` 使用 `item/console_*` 图标；`lang` 增补 `item.cc_rc.console_*` 与 `gui.cc_rc.console.comp.*`（中英）。
-- **渲染复用**：与既有组件完全相同的加载/渲染路径（`<id>_surface.obj` + `<id>.png`），无需改渲染代码；命中检测、重叠判定、附带文字定位随类型尺寸自动生效。
-- **尺寸**：四种新组件 `renderScale` 统一为 `0.3`（缩到原大小的 30%），命中矩形、重叠判定与附带文字定位随缩放自动跟随。
-- **染色（只染底板）**：
-  - **标记**：模型转换脚本在每个面之前写入 `usemtl tint` / `usemtl prop`，规则为「只有 `Panel` 分组（贴墙的两层长方体）可染色」；[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java) 新增解析 `usemtl`，把面标记为 `Tri.tintable`。
-  - **白块**：四张贴图右上角（480..511, 40..71）预留 32×32 纯白像素（已验证四种模型的面 UV 包围盒均不采样该区域）。
-  - **渲染**：设置颜色后，`tintable` 面的 UV 改为白块中心并用顶点色乘出所选颜色（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)），未设置颜色时仍用原贴图 UV、外观不变；整图重着色（`recolorable=true`）不参与，避免误染功能部件。
-  - **染色范围**：四种组件均只染 `Panel` 分组（贴墙底板的两层长方体）——`knob_switch / gauge_v / lever_switch / gauge_arc` 一致；灯座与灯面、旋钮底座与手柄、拉杆底座与杆体、表框、表盘、指针、按钮外壳全部保持原贴图颜色。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第五期：组件运行功能（开关 / 按钮 / 弧形仪表数值调节）**
-
-> 交互手势：**空手右键**组件即操作（编辑工具右键仍打开文字编辑界面、多功能工具右键仍拖动，原有分支不变）。
-
-- **交互入口**（新建 [ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java)）：`tryUse(level, player, clickedPos, hit)` 统一处理空手右键 —— 找所属总线 → 校验已成型 → 用 `BlockHitResult` 的精确命中点换算表面像素坐标 → `ConsoleSurface.contains` 校验 → `findCompAt` 命中组件。客户端只消费交互（返回 true 即不再触发别的行为），真正的状态变更只在服务端执行。弧形仪表额外分流：点在组件矩形**上半区**（表盘）直接消费但无动作，**下半区**左半 `u < comp.u` 为 `-`（`action = 0`）、右半为 `+`（`action = 1`）。
-- **方块接入**：[ConsoleBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBlock.java) 新增 `use(...)` —— 手持非空物品一律 `PASS`（避免拦住编辑工具 / 多功能工具 / 组件物品的 `useOn`），空手才交给 `ConsoleCompUse`；[ConsoleBusBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlock.java) 的 `use(...)` 先跑同一套空手组件判定，未命中时保持原逻辑（Shift 直通，否则开总线界面）。
-- **状态数据**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`CompEntry` 新增 `public final long state`（含义按类型而定），NBT 仅在「与类型默认值不同」时写 `State`（旧存档缺字段即取默认值）；`defaultState(type)` = `GAUGE_ARC ? 50 : 0`。新增 `applyCompUse(id, action, bigStep)`：未成型拒绝，`PARTIAL / FULL` 均可操作，变化后重建 `CompEntry` 并 `sync()` 同步客户端。
-  - `KNOB_SWITCH / LEVER_SWITCH`：`state` 0 ↔ 1 切换；
-  - `KEYPAD`：`state = level.getGameTime() + Config.getConsoleButtonHoldTicks()`（存「应弹起的游戏时刻」，渲染时比较即可）；`tick` 每 tick 先跑 `releaseExpiredKeypads()`，把到点按钮的 `state` 清回 0 并 `writeBackToVar` 同步绑定变量，实现「按下为 true、弹起后为 false」；
-  - `GAUGE_ARC`：`state ± (bigStep ? 10 : 1)`，夹在 `0..100`；
-  - 其余类型（含立式仪表 `GAUGE_V`）直接返回 `COMP_OK`，不产生无意义同步（功能预留）。
-- **配置**（[Config.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/Config.java)）：新增 `console_button.hold_ticks`（Int，默认 20 tick = 1 秒，范围 1~200）与 `getConsoleButtonHoldTicks()`。
-- **开关两态模型**（[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java)）：缓存改为 `Map<String, ObjMesh>`，新增 `get(type, closed)`（键为 `类型名 + "_close"`，`get(type)` 委托 `closed = false`）；文件名 `<id>_close_surface.obj`。解析新增 `o` 分组记录（`Tri.group`），供按钮/指针的按组动画使用。
-- **新增资源**（由源模型转换、临时脚本已删除，无 BOM）：
-  - `models/console_parts/knob_switch_close_surface.obj`（源 `(2)/knob_switch_close.obj`：红灯 + 箭头指向右下）
-  - `models/console_parts/lever_switch_close_surface.obj`（源 `lever_switch_close.obj`：拉杆右倾 + 红灯）
-  - 转换规则与开启态一致 `(x, y, z) → (-z, y, x)`，`vt` 原样；`o Panel` 写 `usemtl tint`，其余写 `usemtl prop`；贴图仍共用 `<id>.png`（灯色 / 箭头已烘在模型 UV 里）。
-- **渲染动画**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：`meshFor(comp)` 统一取模型 —— 开关类 `state == 0` 时改用关闭态变体，其余用开启态。
-  - **按钮按下**：`KEYPAD` 且 `level.getGameTime() < comp.state` 视为按下，`Button` 分组沿模型 `-x`（外法线向内）平移 `KEYPAD_PRESS_DEPTH = 0.03`；到点后服务端 `releaseExpiredKeypads()` 把 `state` 清 0，按钮复原且绑定变量回到 false。
-  - **弧形仪表指针**：`Needle` 分组绕枢轴 `(ARC_PIVOT_Y = 0.4344, ARC_PIVOT_Z = 0.5)` 旋转，转角 `= ARC_DEG_PER_PERCENT(1.2) × (state − ARC_BAKED_VALUE(35))` 度。模型烘焙在 35%（−18°），故追加角即相对 35% 的差值；源空间绕 +Z 的旋转换算到转换后的模型空间，等价于 `my = dz·sin + dy·cos`、`mz = dz·cos − dy·sin`（法线同式），`mx` 不变。于是 0% → −42°、100% → +78°，与模型自带刻度范围一致。
-  - 顶点提交改用变换后的 `px/py/pz / nx/ny/nz`；附带文字也走 `meshFor`，开关关闭态下文字位置随同一包围盒。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第五期补充：弧形仪表改名「调节器仪表」+ 左右按钮对调**
-
-- **改名**：显示名 `gui.cc_rc.console.comp.gauge_arc` / `item.cc_rc.console_gauge_arc` 由「弧形仪表 / Arc Gauge」改为「调节器仪表 / Regulator Gauge」（[zh_cn.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/lang/zh_cn.json) / [en_us.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/lang/en_us.json)）。注册名 `gauge_arc`、物品 id、贴图与模型文件名**均保持不变**，避免破坏存档与网络包兼容。
-- **左右语义对调**：左按钮 = 减、右按钮 = 加（`applyCompUse` 中 `action 0` 为 `-step`、`action 1` 为 `+step`；`ConsoleCompUse` 仍按 `u < comp.u ? 0 : 1` 判定左右，即「0 = 左 = 减」）。
-- **颜色对调（左红右绿）**：`gauge_arc_surface.obj` 中 `BtnOpen`（模型 z≈0.64，经右手系渲染后位于**观察者左侧**）与 `BtnClose`（z≈0.29，右侧）原本分别为绿、红。两者面结构完全一一对应（各 24 面，顶点 / UV / 法线索引分别相差 32 / 96 / 24），故直接**交换两组 96 条 `vt` 定义块**（`vt 145..240` ↔ `vt 241..336`）：几何、面索引、贴图均不变，左侧按钮变红、右侧按钮变绿。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第五期补充：控制台文字编辑界面改用完整背景贴图**
-
-- **问题**：`ConsoleTextScreen` 原先复用 `edit_tool_gui.png`（面板实际只有 176x158，右侧/底部靠 `graphics.fill` 拼纯色扩展），再在其上叠加 192x228 的扩展区。拼出来的面板会露出原贴图的右边框竖线、上下边框粗细不一致、右下角缺少圆角，视觉上像两块面板叠在一起。
-- **新贴图**：新增 [console_text_gui.png](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/textures/gui/console_text_gui.png)（192x234），样式完全对齐原 `edit_tool_gui.png`：1 像素圆角黑色描边、上/左 2 像素白色高光、下/右 2 像素深灰（0x555555）阴影、内部统一淡灰 198,198,198；四个圆角像素块直接从原贴图复制，保证圆角形状一致。
-- **代码**：`ConsoleTextScreen` 的 `GUI_BG` 指向新贴图，删除 `TEXTURE_WIDTH / TEXTURE_HEIGHT` 常量与 `renderBg` 里的多段 `fill` 拼贴，改为整张 `blit`；`BG_WIDTH / BG_HEIGHT` 与贴图尺寸一致（192x234），控件坐标不变（底部锚点按钮下沿 y=224，留 5 像素底边距）。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第五期补充：GUI 边框裁切修复 + 组件设置界面同风格贴图**
-
-- **右边框/下边框消失的根因**：`GuiGraphics.blit` 的 7 参数重载（不带贴图尺寸）默认按 **256×256** 计算 UV。新贴图只有 192×234，于是右侧约 48 像素、底部约 20 像素的边框被当作贴图外区域裁掉。改用 11 参数重载（显式传 `textureWidth = 192`、`textureHeight = 234`，即 `graphics.blit(tex, x, y, w, h, u, v, uw, vh, texW, texH)`）后恢复正常。
-- **组件设置界面**：[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) 原来用 5 条 `graphics.fill` 手绘灰色面板 + 单像素描边，边框没有圆角与高光/阴影。新增同风格贴图 [console_comp_gui.png](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/textures/gui/console_comp_gui.png)（176×152，与文字编辑界面同一套边框：1px 圆角黑描边 + 上/左 2px 白高光 + 下/右 2px 深灰阴影 + 内部淡灰），`renderBg` 改为整张 blit；标题分隔线与颜色预览块仍用纯色绘制，控件坐标未变。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第五期补充：新增「显示器（graph）」组件 + 组件物品图标改用 RoR 图标**
-
-- **新增类型**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 追加 `GRAPH("graph", "GRAPH", 13×5, recolorable=false, 1.0F, modelId="numitron")`。新增 `modelId` 字段（默认等于 `id`，带重载构造器），[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java) 的 OBJ 路径与贴图路径改用 `type.modelId`，于是显示器直接复用数字显示屏的模型与贴图，不产生重复资源文件。显示功能暂未实现（`applyCompUse` 对其返回成功无事发生）。
-- **注册**：[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) 新增 `console_graph`（`ConsoleCompItem(GRAPH)`），[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 排在 `console_numitron` 之后；新增 item 模型 `models/item/console_graph.json`；中英语言补 `gui.cc_rc.console.comp.graph`（显示器 / Graph Display）与 `item.cc_rc.console_graph`。
-- **组件类型存储兼容**：组件类型在 NBT 中以 `Type` 字符串（`type.id`）保存、网络包不传枚举序号，因此枚举中间插入新成员不影响旧存档。
-- **物品图标替换**：从 `模型/控制台类/HBM_RoR_item_icons/hbm_ror_icons/icons_16` 复制 6 张 16×16 图标到 `textures/item/`，并把这 6 个 item 模型的 `layer0` 由方块贴图（`block/console_parts/*`）改为物品图标（`item/console_*`）：`console_gauge`←rbmk_gauge、`console_graph`←rbmk_graph、`console_indicator`←rbmk_indicator、`console_keypad`←rbmk_key_pad、`console_numitron`←rbmk_numitron、`console_terminal`←rbmk_terminal。方块表面上的模型贴图不变。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第六期：系列改名为「控制柜」（`controller_*`）+ 辅助计算机方块**
-
-- **背景**：旧版已有 `console_lever_* / console_panel* / console_button_*` 等「控制台」方块，多方块系列继续用 `console_*` 会混淆。现将**多方块系列**的注册名统一改为 `controller_` 前缀，中文译名统一为「控制柜」；旧系列注册名与译名保持不变。
-- **方块 / 物品改名**：`console_block → controller_block`、`console_bus → controller_bus`；组件事物 `console_gauge / numitron / graph / indicator / keypad / terminal / knob_switch / lever_switch / gauge_v / gauge_arc → controller_*`。Java 类名（`ConsoleBlock`、`ConsoleBusBlock`、`ConsoleCompType` 等）与内部字段名不变，只改注册 id。
-- **组件后缀统一**：同功能组件在不同系列使用相同后缀 —— `controller_meter`（仪表）、`controller_display`（数字显示屏）、`controller_plotter`（圆盘记录仪）、`controller_lamp`（指示灯）、`controller_button`（按钮）、`controller_terminal`（发信终端）、`controller_switch`（旋钮开关）、`controller_lever`（拉杆开关）、`controller_gauge`（立式仪表）、`controller_knob`（调节器仪表）。表面模型/贴图资源仍按类型 id（gauge / numitron / …）存放，`ConsoleCompType` 新增 `itemSuffix` 字段区分物品注册后缀；物品模型与图标文件同步改名。
-- **资源同步**：`blockstates/`、`models/block/`、`models/item/`、`textures/item/` 下对应文件全部改名；方块贴图目录 `textures/block/console/` 改为 `textures/block/controller/`（`controller_block.png / controller_bus_front.png / controller_bus_side.png`），模型内引用同步。中英文 lang 键 `block.cc_rc.controller_*`、`item.cc_rc.controller_*` 同步，`gui.cc_rc.console.*` / `message.cc_rc.console.*` 键名不变、文案中的「控制台」改为「控制柜」。
-- **方块实体类型 id**：`console_block_be / console_bus_be → controller_block_be / controller_bus_be`。
-- **新增 `controller_aux`（控制柜辅助计算机）**：装饰性完整方块，无方块实体，邻接总线放置；本期仅完成注册与占位贴图（`textures/block/controller/controller_aux.png` 暂由总线侧面图复制，后续替换），程序界面在后续阶段接入总线数据。已加入创造标签。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第七期：程序变量表数据层（第一阶段）**
-
-- **变量表模型**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增 `VarType{BOOL, FLOAT}`、`VarDef{slot, name, type, compId}` 与固定槽位，**槽位下标即地址**，0 号槽位固定为「程序运行间隔」（只读，float，非负整数 tick，0 = 停止）。地址与变量在创建后永久绑定，变量只由玩家手动删除。
-- **槽位数量配置**：`config/cc_rc-common.toml` 新增 `console_program.max_vars`，默认 64，范围 2~256（字节码地址为 1 字节，0~255）；即使手动把配置改到 256 以上，`Config.getConsoleProgramMaxVars()` 也会再次夹紧到 256。数组按硬上限 256 预分配，NBT 只保存到最后一个已定义槽位。
-- **值的归属**：浮点 / 布尔值分别存 `varFloats`、`varBools`（数组按硬上限 256 预分配，实际可用以配置为准），随总线 NBT 持久化；aux 后续只保存变量定义（表），不保存值。`getVarFloat(0)` 直接返回运行间隔，不重复存储。
-- **组件绑定**：`VarDef.compId = 0` 为自定义变量；绑定组件时按类型限制（开关 / 指示灯 / 按钮 → 布尔，仪表 / 显示屏 → 浮点，发信终端与显示器数组不参与），组件删除后变量保留、值冻结，不自动删除。
-- **保存上传**：`applyVarValuesSave(float[], boolean[])` 写入本次编辑值，并对所有绑定组件**强制上传一次**（即使值没变），最后只 `sync()` 一次，供玩家测试「变量 ↔ 组件」对应关系；运算过程不写组件。
-- **组件数值字段**：`CompEntry` 新增 `float value`（旧存档缺省：弧形仪表取 `state`，其余 0）；`Value` 字段仅在非默认值时写入 NBT。弧形仪表写回时原始值保留在 `value`，指针 `state` 夹在 `-5 ~ 105` 的显示范围内，允许看出轻微超量程又不跑出基座；手动左右按钮调节时同步 `value`。
-- **NBT**：`ProgramPeriod`（float）、`Vars`（VarDef 列表）、`VarF`（Float 列表）、`VarB`（int 数组，0/1）。1.20.1 的 `CompoundTag` 无 `FloatArrayTag` 辅助方法，故浮点用 `ListTag<TAG_FLOAT>` 保存。
-- **接口**：`applyProgramPeriod`、`applyVarCreate`、`applyVarDelete`、`applyVarValuesSave`、`getVarDef / getVarFloat / getVarBool / findVarSlot`。GUI、网络包、字节码与执行器留待后续阶段。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第八期：控制柜程序界面（第二阶段：变量表 GUI）**
-
-- **辅助计算机入口**（[ControllerAuxBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ControllerAuxBlock.java)）：把 `controller_aux` 由普通 `Block` 改为专用方块。右键扫描六邻：恰好一个 `controller_bus` 时打开程序界面；没有总线或多于一个时用动作栏提示（`message.cc_rc.controller.need_bus / multi_bus`）。仍无方块实体，所有数据放在总线。
-- **程序界面框架**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java) + [ConsoleProgramMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramMenu.java)）：360×196，左 140 像素为变量表、右侧 220 像素为程序区（本阶段仅占位文字），中间一条分隔线；菜单只同步总线坐标，界面直接读取总线方块实体，变量增删 / 数值同步后自动刷新。新增菜单类型 `console_program`，客户端注册屏幕。背景先用空白贴图 [console_program_gui.png](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/textures/gui/console_program_gui.png)（360×196，纯淡灰 + 1px 描边），后续再替换美化。
-- **变量表（左栏）**：按槽位显示全部地址（`#00`…），**鼠标滚轮上下滚动、不分页**，右侧带滚动条；每行两行文本（地址 + 名称 / 类型 + 当前值），行右侧「×」删除。
-  - **首行固定为 `#00 运行间隔`**（`ConsoleBusBlockEntity.VAR_SLOT_PERIOD`）：只可点击改值（玩家指定计算机每几个 tick 运行一次），不能删除 / 改名 / 改类型，行尾不显示「×」；
-  - 空槽位点击 → 在该地址打开新建表单（名称输入框、类型按钮、创建 / 取消）；
-  - **名称输入框带仿原版指令的自动补全下拉**：深色底板 + 黑色描边，悬停行黄色文字 + 深蓝选中底色；**什么也没输入时点击输入框即展开全部可绑定设备**，输入后按前缀过滤（排除与输入完全一致的代号），候选按代号排序；**鼠标滚轮可在下拉内滚动翻看**（同屏最多 5 行，内容超出时右侧画滚动条），滚轮不在下拉内时仍滚动变量表；**悬停某行时显示 tooltip，用中文名说明这是哪种设备**（`ConsoleCompType.translationKey()`）；点击候选直接填入并收起下拉，Esc 先收起下拉、再按才关闭表单；
-  - 布尔变量点击整行切换开 / 关；浮点变量点击整行就地弹出数值输入框（Enter 或点击别处提交）；
-  - 底部「保存 / 放弃」两个按钮：「保存」把整张变量表提交服务端并由 `applyVarValuesSave` 强制上传一次到绑定组件；「放弃」清空本地待提交值后关闭；
-  - **Esc 关闭界面等同保存**（`onClose` 里默认调用保存，只有点「放弃」时跳过）。
-- **命名与绑定规则**：变量名与设备代号规则一致（`[A-Za-z0-9_]{1,32}`）。**名称与设备代号对上即自动绑定该设备**（不需要设备下拉），绑定后类型由设备决定并锁定（开关 / 指示灯 / 按钮 → 布尔，仪表 / 显示屏 → 浮点，发信终端与圆盘记录仪不参与）；名称属于不支持变量的设备时禁止创建。服务端 `applyVarCreate` 按名称重新匹配组件（不信任客户端 compId），并对不支持变量的设备代号返回 `VAR_NAME_IS_COMP`（10）。
-- **组件 ↔ 变量同步**：新增 `findVarSlotByComp / writeBackToVar / refreshVarsFromComponents`。玩家空手右键开关、调节器仪表后，`applyCompUse` 立即把组件新状态回写到绑定变量；打开程序界面（`ConsoleProgramMenu.open`）前再统一刷新一次，保证 aux 显示的就是设备当前值；新建绑定变量时也以设备当前值作为初值。
-- **网络**：[ConsoleVarPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleVarPacket.java)（id 15）一条包四种动作：创建 / 删除 / 保存数值 / 保存运行间隔（`ACTION_SAVE_PERIOD`，仅 0 号槽位）；服务端校验距离（≤8 格）与成型状态（完全成型时变量表锁定），并把结果码翻译成动作栏提示。新增 `ConsoleCompType.variableType()` 统一给出组件对应的变量类型。
-- **运行间隔（0 号槽位）**：值存在 `programPeriod`，上限 `MAX_PERIOD_TICKS = 72000`；**手动输入浮点自动四舍五入取整、负值按 0 处理**，客户端 `sanitizePeriod` 与服务端 `applyProgramPeriod` 双重保证（`Math.round(Math.max(0, Math.min(上限, 值)))`）；点「保存 / Esc」时单独通过 `ConsoleVarPacket.savePeriod` 提交，`applyVarValuesSave` 明确忽略 0 号槽位。
-- **表单提示区调整**：补全下拉移到 `render()` 最末尾绘制并改为不透明底板；删除底部常驻的名称规则提示（原来会横向超出界面），改为名称框下方 / 类型按钮上方的提示区（`FORM_MSG_Y`），**平常留空，只有报错或已绑定设备时显示**，按宽度自动换行（最多 3 行）；点「创建 / Enter」时先收起下拉，重新输入即清除上次报错。
-- **下拉遮挡文字的处理**：MC 的 GUI 文字与色块分批渲染（文字批次晚于色块），单纯把下拉画在后面只能盖住按钮背景、盖不住按钮文字。改为**下拉展开期间直接隐藏类型按钮（`syncTypeButtonVisibility`）并跳过提示区绘制**，收起后恢复；下拉展开状态在输入、点击、Esc、提交等处统一同步按钮可见性。
-- **变量表加宽 + 名称悬浮提示**：界面由 300×196 加宽到 **360×196**，变量表由 100 加宽到 **140** 像素（右侧程序区仍有 220），背景贴图同步重设为 360×196；变量名仍按可用宽度截断显示，但**鼠标悬停在名称文字上时弹出 tooltip**：第一行完整变量名，第二行「已绑定设备：代号（组件类型中文名）」或「未绑定设备」（新增 `gui.cc_rc.program.unbound`）。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第九期：控制柜程序区（第三阶段 A：程序行 IR + 右侧行编辑 GUI）**
-
-- **程序行数据模型**（[ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java)，新建）：定义不可变表达式树 `Expr`（`FLOAT / BOOL / VAR / NEG / NOT / CAST / ADD / SUB / MUL / DIV / IDIV / MOD / EQ / NE / LT / GT / LE / GE / AND / OR`）、条件 `Cond{ALWAYS, TRUE_VAR, FALSE_VAR}` 与程序行 `Line{enabled, cond, condSlot, targetSlot, expr}`。`Expr.type(Scope)` 做类型推导，只允许变量已定义的类型参与运算；`depth()` 给出嵌套深度。`Line.validate(Scope, slots)` 集中做保存前校验：目标必须是已定义且可写的变量、条件必须是布尔变量、表达式非空且深度 ≤ 16、表达式类型必须与目标类型一致，返回 `OK / BAD_TARGET / BAD_COND / BAD_EXPR / TYPE_MISMATCH / TOO_DEEP`。`Expr` 与 `Line` 各自实现 NBT 与网络序列化，GUI、网络包、NBT、后续编译器共用同一份数据结构。
-- **总线程序存储**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增 `MAX_PROGRAM_LINES = 64` 与 `ProgramIR.Line[] programLines`（**下标即行号**，`null` 为空行）。新增 `getProgramLines / getProgramLine / getProgramScope`（匿名 `Scope`，按 `varDefs` 返回类型与名称）、`applyProgramSave`、`isVarReferenced`。`applyProgramSave` 只在服务端接受，完全成型时拒绝；逐行调用 `validate`，把行错误映射为 `PROG_*` 结果码（20~25），并额外拒绝写入按钮类只读组件；校验通过后整表替换并 `sync()` 一次。
-- **变量删除保护**：`applyVarDelete` 在原有判空之后新增引用检查，只要该槽位被任意程序行的目标、条件或表达式引用即返回新增的 `VAR_IN_USE`（11），避免程序静默失效；[ConsoleVarPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleVarPacket.java) 增加对应提示文案。
-- **NBT**：新增 `ProgLines`（ListTag，每个非空行保存 `Idx` + `Line.save`），读取时按 `Idx` 还原，重复行号以先读到为准；读取前先整表清空，保证旧存档与损坏数据都不会残留脏行。
-- **网络**：[ConsoleProgramPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleProgramPacket.java)（**id 16**，15 已被变量包占用）单动作 `ACTION_SAVE_LINES`，全量快照提交：服务端校验距离（≤8 格）与成型状态，调用 `applyProgramSave`，结果码翻译为 `message.cc_rc.controller.prog_*` 提示。
-- **右侧程序区**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：右侧 220×196 划为**行列表**与**行编辑器**两种视图。
-  - **行列表**：每页 8 行、共 8 页（64 行），行左侧 12 像素为启用开关（点击切换并立即提交），中间显示「条件 目标 = 表达式」，右侧「×」删除该行；空行显示「空行（点击新建）」；底部页码 `x / 8` 与「上一页 / 下一页 / 保存」按钮；行编辑期间列表与翻页按钮不响应点击，避免误触。
-  - **行编辑器**：**不做文本语法解析**（IR 是唯一程序源），依次为「启用 / 条件 / 目标 / 算式 / 追加 / 确定 / 取消」。**除启用按钮、条件三态按钮与「追加」按钮外，其余控件全部改为与变量名称框同样式的输入框**（`EditBox` + `setHint` 占位提示）：
-    - **条件**：左侧三态按钮在 `true → 变量 → !变量` 之间轮换；选后两项时按钮右侧出现变量名输入框，选 `true` 时自动隐藏。
-    - **算式**：改为**纵向多行「算符 + 操作数」**结构（最多 5 行）。第一行左侧固定显示 `=` 并禁止编辑，右侧填起始值；后续每行左侧输入算符、右侧输入操作数，点「追加」增加一行（到 5 行后按钮置灰）。表达式按**书写顺序从左到右**合并，因此 `a+b-c` 即 `(a+b)-c`，无需括号。**「追加 / 确定 / 取消」三个按钮纵向排列在左侧「算式」标签下方**（`EDIT_BTN_Y=88`、行距 20），表达式输入框整体右缩进 48 像素让出按钮列，避免补全下拉展开时压住按钮。
-    - **目标 / 操作数**：直接输入文本。`true` / `false` 解析为布尔常量，数字解析为浮点常量（若目标为布尔变量，`0` / `1` 也按布尔常量）；其余按变量名查找，名称不存在或绑定只读组件时即时提示错误。操作数支持前缀 `!` 取反（如 `A && !B`，也可直接写第一行 `= !A`）。
-    - **算符**：输入框键入 `+ - * / // % == != < > <= >= && || !`，无法识别的符号提示 `err_op`；追加行整行留空时忽略该行。`&&` / `||` 为布尔逻辑与 / 或（操作数必须是布尔，结果布尔）；`!` 为**一元非**，表示把本行以上的累计结果取反，该行右侧操作数框自动禁用。
-  - **即时校验**：所有输入框 `setResponder` → `onEditorChanged` → `refreshLineError`，逐行校验目标/条件/算符/操作数后调用 `Line.validate`，错误直接显示在编辑器底部，无需提交即可发现；打开已有行时用 `loadingLine` 抑制中途报错。载入已有表达式时沿表达式树的左结合链拆回各行（`flattenExpr`），保证打开-保存不改变语义。
-  - **自动补全下拉**：目标、条件、各行算符与操作数输入框都支持仿原版指令的候选下拉（`bindSuggest` 绑定候选来源）：点击输入框即展开全部候选，输入后按前缀过滤（完全一致的项不再列出），支持鼠标滚轮滚动、点击候选填入、Esc 先收下拉；候选来源分别为「可写入变量名」「布尔变量名」「算符表」「true / false + 全部变量名」。GUI 文字批次总是晚于色块提交（`graphics.flush()` 无效），下拉底板压不住已绘制的文字，因此下拉展开期间**直接跳过被遮挡的输入框、标签、报错文字与按钮**（`coveredBySuggest` / `isCoveredBySuggest` / `syncEditorButtons`），底板内没有候选的点击一并吞掉。下拉优先放输入框下方，放不下则翻到上方，两边都放不下才夹取；行数按上下可用空间收缩。操作数框的下拉对齐整行左边界并铺满右侧面板，被遮挡的行整行隐藏，不出现半截输入框。
-  - **行列表悬浮提示**：鼠标悬停在某行的「条件 目标 = 表达式」文字区域（不含右侧删除区）时，弹出 tooltip 显示完整表达式，避免长算式被行宽截断后读不全。
-  - **交互**：`Enter` 确认、`Esc` 关闭行编辑器并返回列表（不关闭整个界面）；完全成型时行列表与编辑器均只读并提示 `prog_locked`。
-- **变量命名与常量语法冲突**：程序行操作数用 `true` / `false` / 数字表示常量，因此新建变量名前缀必须是字母或下划线、且不能与 `true` / `false` 重名（`VAR_NAME_PATTERN` + `equalsIgnoreCase` 判断）。客户端 `confirmCreate` 与服务端 `applyVarCreate` 双重校验；`ConsoleBusBlockEntity` 的 NBT 读取仍沿用旧正则，避免旧存档中数字开头的变量被丢弃。
-- **语言资源**：[zh_cn.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/lang/zh_cn.json) 与 [en_us.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/lang/en_us.json) 新增约 22 个 `gui.cc_rc.program.*`（行标题、空行、启用、条件、目标、左右值、运算符、常量、错误提示等）与 9 个 `message.cc_rc.controller.*`（`var_in_use`、`prog_locked / saved / invalid / limit / bad_target / bad_cond / bad_expr / type / deep`）键，并删除已无用的 `gui.cc_rc.program.code_hint`；文本框化改造后再删除 9 个轮换式旧键（`cond / always / target / no_var / operand_a / operand_b / operator / const / op_none`），新增 `cond_true / cond_var / cond_not / label_cond / label_target / label_expr / add_op / ok / hint_var / hint_operand / hint_operator / err_op`，`name_rule` 文案同步改为「不能数字开头、不能为 true/false」；两个 JSON 均无 BOM。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。字节码编译、VM 执行与 tick 调度留待下一阶段（P3b）。
-
-**第十期：控制柜程序区（第三阶段 B：字节码编译 + 栈式 VM + tick 调度 + 运行警告）**
-
-- **字节码与 VM**（[ProgramVM.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramVM.java)，新建）：
-  - **指令编码**：一条指令打包进一个 `int`——低 8 位操作码、高 24 位操作数（变量槽位或跳转目标）；浮点常量占两条 int（`OP_PUSH_F` 后紧跟 `Float.floatToRawIntBits`）；跳转操作数使用**指令下标**而非字节偏移。指令集为 `NOP / PUSH_F / PUSH_B / LOAD_F / LOAD_B / STORE_F / STORE_B / ADD_F / SUB_F / MUL_F / DIV_F / FLOORDIV_F / MOD_F / NEG_F / NOT_B / AND_B / OR_B / LT_F / LE_F / GT_F / GE_F / EQ_F / NE_F / EQ_B / NE_B / B2F / JMP / JMP_IF_FALSE / HALT`（0x00~0x1C），`BYTECODE_VERSION = 1`。
-  - **编译**（`compile(lines, scope)`）：逐行生成代码，禁用行与空行跳过；条件非「真」时生成 `LOAD_B 条件槽`（`!变量` 再补 `NOT_B`）并记录 `JMP_IF_FALSE` 待回填位置，表达式后按目标类型生成 `STORE_F / STORE_B`，最后回填跳转到「本行之后」并补 `HALT`。算术 / 比较自动为布尔操作数补 `B2F`；`== / !=` 双方均为布尔时走 `EQ_B / NE_B`，否则按浮点 1e-5 容差比较；`//` 为 `floor(a/b)`，`%` 余数符号跟随除数。编译期同步产出**每条指令所属程序行**（`lineOf`），供运行警告定位行号；无有效行或指令数超过 `MAX_CODE = 2048` 时返回 `null`（不执行）。
-  - **执行**（`execute(compiled, floats, bools)`）：浮点 / 布尔双栈 + 共享栈指针，执行期**零分配**；只读写传入的影子数组。除零结果记 0 并记 `DIV_ZERO`；任何非有限结果（NaN / Infinity）置 0 并记 `NON_FINITE`；同一行同一原因去重，最多 `MAX_WARNINGS = 4` 条；非法操作码或超步数直接结束，避免死循环。
-  - **修复（一元运算失效）**：`NEG_F / NOT_B / B2F` 原先写成 `pushB(stackB, sp++, !popB(stackB, --sp))` 这类形式，同一表达式内混用 `sp++` 与 `--sp`，Java 参数从左到右求值使 `sp++` 先自增、`--sp` 只减回自增后的值，读到的是空槽而不是栈顶操作数——结果 `!true` 恒算出 `true`、一元取负恒为 0、布尔转浮点恒为 0.0，且每次取反都让 `sp` 多涨一格污染后续指令。改为先 `float / boolean a = pop(...(--sp))` 取出操作数，再用 `sp++` 压栈；比较与其余二元指令此前已是该写法。
-- **总线调度**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：
-  - 新增 `programCode`（运行时编译缓存，不持久化）、`programDirty`、`programTimer`、`shadowFloats / shadowBools` 影子数组与 `runWarnings` 列表。
-  - `tick()` 改为服务端统一入口：未成型清零计数器；每 100 tick 的结构巡检保持不变；其余情况调用 `tickProgram()`。只有**完全成型且 period > 0** 时按 `programTimer` 累计到 period 执行一次，period = 0 停止但保留上次警告。
-  - `runProgram()` 严格执行**影子数组三步**：① 读取——绑定组件的变量取组件实时状态（开关取 `state != 0`、仪表取 `value`），自定义变量沿用总线值，0 号槽位写入运行间隔；组件来源失效时沿用冻结值并记 `SOURCE_INVALID` 警告；② 执行——只读写影子数组；③ 提交——变量值写回总线，只有值变化的绑定组件才 `uploadVarToComponent`，变量 / 组件 / 警告任一变化才 `sync()` 一次。
-  - `programDirty` 在保存程序、新建变量、删除变量、NBT 读取时置位，下次执行前重新编译；保存程序时同时清零计数器与旧警告。
-- **警告同步与回显**：警告不写存档，`getUpdateTag()` 额外写入 `ProgWarn`（行号 + 原因），客户端 `load()` 解析到 `runWarnings`；[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java) 在行列表底部显示「⚠ 第一条警告（+N）」，鼠标悬停弹出全部警告 tooltip；来源失效没有行号，单独提示。
-- **语言资源**：新增 `gui.cc_rc.program.warn_div_zero / warn_non_finite / warn_source`（中英各 3 条），JSON 无 BOM。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十一期：组件动态显示（流量表 / 立式仪表 / 指示灯）**
-
-- **流量表（GAUGE）**：`value` 驱动物理指针。按刻度圆弧反推出指针枢轴（模型坐标 y = 0.4375、z = -0.125，即刻度圆心），指针在 OBJ 中垂直向上烘焙，对应刻度弧的竖直端（100%）；数值 0~100 映射为 `GAUGE_START_DEG(-90°) + 0.9° × value`，0% 指向刻度弧的水平端（模型 +z，即表面左侧），100% 回到烘焙的竖直端，数值增大时指针顺时针扫动。显示范围夹在 -5~105，轻微超量程可见但不跑出表盘。
-- **修复：流量表指针方向反了**：原实现用 `-0.9° × value`，0% 落在烘焙的竖直端、100% 落到水平端，表现为「数值增大时指针往 0 的方向走」，自加自减程序看上去像算错了。改为 `GAUGE_START_DEG + 0.9° × value`（删除原 `GAUGE_BAKED_VALUE`），并用中文注释写明 0% / 100% 的端点与扫动方向。
-- **立式仪表（GAUGE_V）**：`value` 驱动中央竖槽内的箭头（`Needle` 分组）垂直平移；50% 居中，行程半程 0.26 格（槽体 0.18125~0.81875，箭头高约 0.12），同样夹在 -5~105。
-- **指示灯（INDICATOR）**：熄灯（`state == 0`）时把所选颜色乘以暗化系数 0.38 后走 `ConsoleCompTextures` 整图重新着色，得到同色相下更暗的灯面；亮灯仍使用原色。未设置颜色时保持原贴图。暗化系数与流量表右上角暗部比例接近。
-- **渲染细节**：`effectiveColor` 统一供着色贴图与可染色面顶点色使用；新增 `dimColor`、`clampDisplay` 辅助方法。所有改动只涉及 [ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)，未改动模型与贴图资源。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十二期：程序编辑体验修复（操作数取负 / 目标留空 / 前缀补全 / 行启用点击 / 候选提示）**
-
-- **操作数取负**：`ConsoleProgramScreen.parseOperand` 由「只识别开头一个 `!`」改为循环收集开头的一元前缀 `!`（逻辑非）与 `-`（取负），再从最内侧前缀向外套用 IR 一元节点，因此 `-A`、`A + -B` 均可正确表示，且取负只作用于该操作数本身（先取负再参与二元运算）；`-!A` 解析为对 A 取反后再取负。载入已有行时 `flattenExpr` 会把这些一元节点还原为输入框文本。
-- **目标默认留空**：打开空行编辑器时 `targetBox` 不再预填第一个已定义变量，改为空串，避免误写目标。
-- **前缀补全不再消失**：`refreshFieldSuggest` 对操作数框先剥离开头的 `!` / `-` 前缀再匹配名称，候选文本仍保留前缀；`!` 只列布尔变量（含 `!true` / `!false`），`-` 列全部数值变量（IR 中布尔按 0/1 参与数值运算），点击候选写入带前缀的完整文本。
-- **行启用点击**：新增 `checkMarkX(index, rowX)` 统一绘制与命中坐标，点击行首「✓ / ·」即可切换 `Line.enabled`（原先命中区偏左，点到的是行号）。
-- **候选悬浮提示**：新增 `renderFieldSuggestTooltip`，鼠标悬停在变量候选上时显示完整变量名 + 「已绑定设备：代号（类型中文名）」或「未绑定设备」，与左侧变量表一致；`true / false` 常量不显示。
-- **语言资源**：`gui.cc_rc.program.hint_operand` 中英文案补充 `- 取负`。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十三期：布尔常量显示 / 双栏同时编辑 / 默认设备名 / 整页滚动**
-
-- **布尔常量显示为 1 / 0**：`leafText` 与 `ProgramIR.Expr.toText` 的 BOOL 分支改为输出 `1` / `0`，操作数候选也改为 `1`、`0`（`!` 前缀下为 `!1`、`!0`）；`parseOperand` 仍兼容旧文本 `true` / `false`，布尔目标行输入 `1` / `0` 仍按布尔常量解析。
-- **变量栏与程序栏可同时编辑**：`mouseClicked` 中行编辑器只以 `editingLine >= 0` 为前提、变量行只以 `createSlot < 0` 为前提、程序行只以 `editingLine < 0` 为前提，去掉互相排斥条件；`keyPressed` 改为按焦点判断活动面板（`lineEditorFocused` / `nameBox.isFocused` / `valueBox.isFocused`），`openLineEditor` 结束时把焦点交给目标框，保证 Enter / Esc 作用于刚操作的面板。
-- **设备默认名称同步注册名**：`ConsoleCompType` 移除写死的 `codePrefix` 字段，改由 `codePrefix()` 直接取 `itemSuffix` 大写（与 `controller_` 注册名一致）；新放置设备自动生成的代号变为 `METER_1`、`DISPLAY_1`、`PLOTTER_1`、`LAMP_1`、`BUTTON_1`、`SWITCH_1`、`LEVER_1`、`GAUGE_1`、`KNOB_1` 等，旧存档显式保存的 `Code` 不受影响。
-- **变量表整页翻页**：新增 `VAR_ROWS_PER_PAGE`、`varPage`、`changeVarPage`，`clampScroll` 改为按页对齐像素偏移；滚轮在变量列表内每次翻一整页，`beginValueEdit` 自动跳到目标行所在页；移除像素滚动条。
-- **程序列表滚轮翻页**：`mouseScrolled` 在程序列表区域按整页切换 `page`；变量表左上角新增 `<` / `>` 翻页按钮，与程序列表底部翻页按钮并存。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十四期：程序注释 / 双行列表 / 面板纵向拉伸**
-
-- **注释字段**：[ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java) 的 `Line` 新增 `public final String comment` 与 `MAX_COMMENT = 80`；构造函数改为 6 参数（末位 `comment`，`null` 归一为空串），`withEnabled` 复制注释；NBT 仅在注释非空时写 `Comment` 字段、读取时缺失补空串，旧存档可直接加载；网络序列化 `writeUtf(comment, 80)` / `readUtf(80)`。`ProgramVM.compile` 与执行逻辑完全不读 `comment`，注释不参与编译、校验与运行，仅在客户端与服务端之间随程序行同步。
-- **注释输入框**：[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java) 行编辑器在「目标」之后新增 `commentBox`（`EDIT_COMMENT_Y = 152`，样式与其余输入框一致，`setMaxLength(80)`，占位提示 `hint_comment`）；打开空行时清空、打开已有行时载入 `line.comment`，`buildLine` 提交时 `trim()` 后写入。无格式要求，任何文本都合法，也不参与 `refreshLineError` 校验。
-- **列表双行显示**：行列表每行改为「上方表达式、下方注释」两行（`y + 4` / `y + 14`，注释为空时不绘制），行高 `LINE_H` 由 16 提高到 24，每页仍 8 行；禁用行的表达式与注释均用暗色。悬停 tooltip 由单行表达式改为多行 `List<Component>`：第一行表达式全文、第二行注释（非空时）。
-- **面板纵向拉伸**：`GUI_H` 由 196 提高到 246，`LIST_H` 改为 192，左侧变量表每页 8 行（`VAR_ROWS_PER_PAGE = LIST_H / ROW_H`），右侧程序区 `ROWS_PER_PAGE = 8` × `LINE_H = 24` 与左侧逐行对齐；底部按钮条、运行间隔栏、行编辑器各控件纵坐标随之重排（`BTN_Y`、`PROG_BAR_Y`、`EDIT_*_Y`）。背景贴图仍为 360×196，按新高度整体纵向拉伸绘制，未新增贴图资源。
-- **语言资源**：中英文各新增 `gui.cc_rc.program.label_comment`（注释 / Note）与 `hint_comment`（可选，不参与运行 / Optional, not executed），JSON 无 BOM。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十五期：程序文字语法着色**
-
-- **配色规则**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：固定 GUI 标签（「变量表」「程序」「条件 / 目标 / 算式 / 注释」等）保持原色；语义文字按下表着色：
-  - 布尔变量：蓝色，绑定设备的变量用更深一档；浮点变量：绿色，绑定设备更深一档。
-  - 常量：黄色；算符（含 `=`、括号、`!`、一元 `-`、`float`）：品红；注释：灰色。
-- **两套调色板**：程序列表行是浅灰底（`COLOR_LIST_*` 用深色），编辑框与悬浮提示是深色底（`COLOR_EDIT_*` 用亮色），保证两种背景下都清晰可辨；绑定判定使用 `VarDef.isBound()`。
-- **列表界面**：`renderProgramRows` 不再绘制 `Line.toText` 的整串文字，改为 `lineSegments` 递归生成「条件 + 目标 + 表达式」的彩色分段，再由 `drawSegments` 逐段绘制并在行宽处截断；注释行固定用灰色。
-- **编辑界面**：表达式「算符 / 操作数」框、条件框、目标框在 `EditBox.render` 之后调用 `renderBoxTokenColors` 覆盖绘制彩色文字（位置与 `EditBox` 一致：`x+4`、`y+(h-8)/2`，文字超出可视宽度时不覆盖以避免与横向滚动错位）；操作数开头的 `!` / `-` 按算符着色，其余按常量 / 变量着色；注释框直接 `setTextColor` 灰色。
-- **悬浮提示**：程序行 tooltip 用 `styledLine` 把分段转成带 `TextColor` 的组件，表达式彩色、注释灰色；变量表与补全候选的 tooltip 变量名同样按类型着色；补全下拉候选项按「变量 / 常量 / 算符」分别着色（悬停仍为黄色高亮）。
-- **变量表**：左侧列表的变量名按类型着色（绑定设备更深一档），固定标签与类型文字保持原色。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十六期：着色亮度调整 / 编辑框内置着色**
-
-- **配色调整**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java#L149-L169)）：原来的蓝 / 绿整体偏深，改为「未绑定更浅、绑定设备保留原较浅色」的两档：
-  - 列表（浅灰底）：布尔未绑定 `#4A7FD6`、绑定 `#1E4FA8`；浮点未绑定 `#3F9A4C`、绑定 `#1E6B2A`。
-  - 编辑框 / 悬浮提示（深色底）：布尔未绑定 `#A8CCFF`、绑定 `#7FB4FF`；浮点未绑定 `#A8F0B0`、绑定 `#7FE08A`。
-  - 常量、算符、注释配色不变。
-- **编辑界面着色**：新增 `syncBoxTextColor`，在每帧绘制输入框前根据内容设置 `EditBox` 自身文字颜色（算符框品红并同时设置只读颜色、条件 / 目标按变量类型、操作数按常量 / 变量），使编辑界面即使覆盖绘制失效也能显示语法色；随后 `renderBoxTokenColors` 仍在同位置覆盖绘制，把操作数开头的 `!` / `-` 单独标成品红，并避免与输入框底色出现白边。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十七期：变量表左扩 / 设备图标 / 悬浮提示修正**
-
-- **面板左扩**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java#L51-L57)）：`GUI_W` 360 → 382、`LEFT_W` 140 → 162，新增 `ICON_COL_W = 18` 设备图标列；右侧程序区宽度保持不变（`RIGHT_W` 仍 212），背景贴图按新宽度整体拉伸绘制。
-- **设备图标**：变量行左侧预留 16×16 图标区（`listX + 3`、`top + 4`），绑定设备的变量用 `GuiGraphics.renderItem` 绘制 `CompEntry.type.item()` 的物品贴图，只画图标、不画物品栏底板；行内文字（槽位号 / 名称 / 类型 / 数值）统一右移 `ICON_COL_W`，数值输入框同步右移并收窄。
-- **设备映射**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java#L90-L109) 新增 `item()`（枚举 → 对应 `ModItems` 组件物品）与 `registryName()`（返回 `cc_rc:controller_xxx`）。
-- **悬浮提示**：变量名 tooltip 第一行仍为完整变量名（按类型着色），第二行不再重复变量名，改为「设备中文名（设备注册名）」，例如 `立式仪表（cc_rc:controller_gauge）`；未绑定时仍显示「未绑定设备」。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十八期：GUI 原版风格重做（列表 / 编辑 / 变量注册 + 按钮）**
-
-- **参考素材**：`模型/控制台类/gui` 下的 `recipe_book.png`、`server_selection.png`、`slider.png`，取其「浅灰面板 + 黑白斜面 + 深色凹槽内容区 + 浅灰凸起按钮」的原版界面语言。
-- **斜面绘制工具**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java#L1080-L1145)）：新增 `drawRaised`（外圈黑边 + 左上白高光 + 右下深灰阴影）与 `drawSunken`（外圈黑边 + 左上深灰 + 右下亮边），整块面板补上原版窗口斜面，中间分隔线改为「暗线 + 亮线」。
-- **列表界面**：变量表与程序列表区域改为原版凹陷深色槽（`COLOR_LIST_BG #141414`），行底色同步改为深色系（`#232323` / 悬停 `#2F2F2F` / 空行 `#1B1B1B`），行内文字统一换用亮色（`COLOR_TEXT_LIGHT` / `COLOR_DIM_LIGHT` / `COLOR_ERROR_LIGHT`），删除按钮悬浮时显示亮红；程序行表达式与注释同步改为亮色语法着色（`lineSegments(..., true)`）。
-- **编辑界面**：行编辑时右侧区域改画浅色凸起子面板，所有输入框（条件 / 目标 / 算符 / 操作数 / 注释）统一先画深色凹陷输入框底（`drawFieldBg`），保证亮色语法着色在浅灰面板上可读；标签与报错仍使用浅底深色文字。
-- **变量注册界面**：新建变量时左侧列表区域改画浅色凸起子面板，名称输入框同样使用深色凹陷底，类型 / 创建 / 取消按钮统一为原版样式。
-- **按钮样式**：新增内部类 `VanillaButton`，重写 `renderWidget` 直接绘制原版按钮——浅灰凸起面、禁用时压暗、悬停时内侧一圈深红描边（对应参考图选中态）、白色带阴影文字；全部 15 个按钮（保存 / 放弃 / 变量翻页 `<` `>` / 类型 / 创建 / 取消 / 程序翻页 / 保存程序 / 启用 / 条件模式 / 追加 / 确定 / 取消）改由 `vanillaButton(...)` 工厂创建。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第十九期：GUI 尺寸放宽 + 按钮样式微调**
-
-- **尺寸与留白**：界面由 `382×246` 放大到 `416×260`，左右外边距统一为 14（`PAD_X`），与上下留白接近；变量表与程序栏的间距由 4 拉大到 14，分隔线移到两栏正中。
-- **列表区高度**：左右列表区域高度由 192 增到 206，列表底部形成 14px 内边距，行数仍为每页 8 行。
-- **变量翻页按钮**：从右上角标题栏移到下方按钮栏，位于程序翻页箭头左侧（`VAR_PREV_X` / `VAR_NEXT_X`）；程序翻页箭头相应右移（`PROG_PREV_X` / `PROG_NEXT_X`），页码显示在两枚程序箭头之间。
-- **翻页按钮样式**：新增 `ArrowButton`（透明底 + `drawArrow` 双三角 `« / »`），平时深灰、悬停绿色、不可用时浅灰，对应参考素材 `server_selection.png`。
-- **按钮文字**：`VanillaButton` 文字改为深色（常态 `#303030`、悬停 `#000000`、禁用 `#707070`）。
-- **新建变量表单**：整体放宽（标题 36、标签 58、名称 70、提示 94、类型 140、按钮 186），输入控件左右各留 8px；创建 / 取消按钮居中排列并留 10px 间距。
-- **行编辑界面**：启用 / 条件 / 目标 / 算式 / 注释各行间距拉开（24 / 46 / 68 / 92 起，行距 17），三个操作按钮改到算式行左侧的空白带（112 起、行距 22、间距 4），避开「算式」「注释」标签；底部报错区保留 2 行。
-- **错位修正**：数值输入框宽度补上设备图标列偏移（`LIST_W - 4 - ICON_COL_W`），避免覆盖到右侧边框；补全下拉的锚点与宽度改为跟随新表单位置。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十期：按钮文字去重影 + 翻页箭头贴图化 + 变量翻页归位**
-
-- **按钮文字去阴影**：`VanillaButton.renderWidget` 不再调用 `drawCenteredString`（该方法默认带阴影，深色文字会出现黑色重影），改为 `font.width(...)` 手工居中后用 `graphics.drawString(font, msg, tx, ty, color, false)` 无阴影绘制。
-- **翻页箭头贴图化**：新增 `page_arrows.png`（由素材 `模型/控制台类/gui/按钮.png` 复制而来，64×64，四象限各 32×32：左上 / 左下 = 向前翻页常态 / 悬停，右上 / 右下 = 向后翻页常态 / 悬停）；`ArrowButton` 改为按 `u = 左/右（0 / 32）`、`v = 常态/悬停（0 / 32）` 取象限，再按象限内箭头实际包围盒（14×22，左箭头 x=9 起、右箭头 x=10 起、y=6 起）1:1 裁剪绘制，保持像素清晰；删除自绘 `drawArrow`；禁用时改用 `graphics.setColor(0.42)` 压暗后再 blit（仅影响不透明像素，不会把三角形以外的透明区域染成灰方块），绘制后立即把颜色复位为全白。
-- **变量翻页归位**：`VAR_PREV_X` / `VAR_NEXT_X` 改为跟在左下「保存」「放弃」按钮右侧（14..54、62..102，箭头 118..138 / 142..162），不再位于右侧程序栏下方；程序翻页箭头仍留在右侧底部（190..210 / 244..264），页码显示在其间。
-- **布局回归整行**：左右列表高度由 206 改回 192（8 × 24 正好整行，消除底部半行被裁切），底部按钮栏统一到 `BTN_Y = PROG_BAR_Y = 224`。
-- **翻页可用态**：`containerTick` 中按变量总页数刷新 `varPrevButton` / `varNextButton` 的可用状态（首页禁用向前、末页禁用向后）；新建变量表单打开时隐藏两枚变量箭头，避免误触换页。
-- **行编辑器横向留白**：新增 `EDIT_PAD_X = 7`，行编辑器内所有控件（启用按钮、条件模式按钮 / 变量框、目标框、注释框、算符 / 操作数框、三个操作按钮）左右各内缩 7px，不再贴住右侧面板凹槽边框；标签、报错换行宽度与补全下拉的左右边界同步内缩。
-- **静态背景烘焙进贴图**：`console_program_gui.png` 重制为 `416×260`（与界面 1:1，不再拉伸采样）：灰色底面 `#C6C6C6`、窗口左上白色高光 / 右下 `#555555` 阴影、中间装饰分隔线（`x=176` 暗线 + `x=177` 亮线，`y=4..256`）。`renderBg` 删除原先的 6 条斜面 / 分隔线 `fill`，只保留底板 `blit` 与状态相关的列表凹槽；变量 / 程序列表的深色凹槽及浅色表单子面板因会随状态切换，仍由代码绘制（贴图可直接精修）。
-- **保存即关闭**：左下「保存」按钮改为直接调用 `onClose()`（`onClose` 内部会保存变量表，避免重复提交）；右侧「保存」按钮的 `saveProgram()` 改为返回 `boolean`，保存成功后调用 `onClose()` 关闭界面，被锁定或总线缺失时保持打开。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十一期：圆盘记录仪历史采样 / 数字显示屏小数位与单位**
-
-- **变量绑定能力**（[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：`supportsFloatVariable()` 加入 `GRAPH`（圆盘记录仪），使其与仪表 / 数字显示屏一样按单个浮点值绑定；新增 `supportsHistory()`，仅 `GRAPH` 返回 true，用于区分「每次写入都记录一笔历史」的组件。
-- **CompEntry 扩展**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增 `float[] history`（`HISTORY_LEN = 12`，索引 0 为最新，其它类型为 null）、`int decimals`（`DEFAULT_DECIMALS = 2`、`MAX_DECIMALS = 6`）、`String unit`（`MAX_UNIT_LEN = 8`）；构造函数扩为 13 参，原 10 参版本委托为默认值，避免改动全部旧调用点。
-- **不可变复制工具**：新增 `copyWith(base,state,value)` / `copyWithPos(base,u,v)`，替换 `withFloatValue` / `withBoolValue` / `applyCompUse` / `releaseExpiredKeypads` / `rebaseSurfaceEntries` / `applyCompText` 中 6 处手工 new，确保扩展字段（历史、显示设置）在任何状态下都不会被清空。
-- **历史移位采样**：新增 `withHistorySample(comp, value)`，新建等长数组后 `System.arraycopy(history, 0, copy, 1, len-1)` 整体后移一位、把新值写到索引 0，与独立方块 `DigitalPlotterBlockEntity` 的移位规则一致；非有限值归一为 0。
-- **每轮都记录**：`runProgram` 提交段保留「变量值变化才写回」，但新增 `bindsPlotter(VarDef)` 判定——绑定组件为圆盘记录仪时，无论返回值是否变化，每轮程序执行结束都调用 `uploadVarToComponent`，因此每个计算周期都会产生一个新的历史采样点（先移位再填入返回值）。
-- **显示设置同步**：`applyCompEdit` 签名扩展为 `(id, code, u, v, color, decimals, unit)`，仅 `NUMITRON` 采用新的小数位 / 单位（夹取 0~6、`trim`、截断 8 字符），其它类型沿用原值并保留 `history`；`ConsoleCompMenu`、`ConsoleCompItem`、`ConsoleCompPacket`、`ConsoleDragClient` 全线补传 `decimals` / `unit`。
-- **NBT 持久化**：`CompEntry.save()` 用 `ListTag + FloatTag` 保存 `History`（1.20.1 无 `putFloatArray`），非默认时才写 `Decimals`、非空时才写 `Unit`；`load()` 中 `GRAPH` 固定新建 12 长度数组并按 `Tag.TAG_FLOAT` 读回，缺字段走默认值，兼容旧存档。
-- **组件设置界面**（[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java)）：背景高度 152 → 174、按钮行下移到 148，仅当类型为 `NUMITRON` 时新增「小数位」（1 字符）与「单位」（8 字符，可留空）两个输入框；提交时解析并随包发送，删除组件时也带上原值。
-- **读数渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleBusBER.java)）：渲染顺序改为「组件模型 → 组件读数 → 附带文字」，读数在模型批次之后统一绘制以免打断贴图批次导致染色失效；`drawText` 末尾新增颜色参数。
-  - 数字显示屏：`String.format("%.<decimals>f", value) + unit`，按 `font.width` 自动缩小（上限 0.25、可用宽 11.5 结构像素），颜色取组件染色，未设置时白色。
-  - 圆盘记录仪：以「█」字符按列画柱状趋势，`history[0]` 放最右列，柱高按 0~100 映射 4 结构像素、每列宽 1 像素，默认红色，最新值自然从右侧滚入。
-- **GUI 贴图**：`console_comp_gui.png` 由 176×152 纵向延长到 176×174（复制原边框行，保持 1px 描边、左上百高光、右下 `#555555` 阴影与圆角透明），不重绘整图。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十二期：圆盘记录仪曲线细化（50 点 / 亚像素）**
-
-- **采样点数**：`CompEntry.HISTORY_LEN` 由 12 改为 50，与单独实现的数字圆盘记录仪（`DigitalPlotterBlockEntity.DATA_LENGTH = 50`）的宽度方向点数一致；旧存档的 12 点历史读取时自动补齐到 50 点（缺失位置为 0）。
-- **像素变细**：`renderPlotHistory` 不再按整像素堆叠方块，改为一个采样点画一条细柱——列宽 `PLOT_WIDTH(11.8) / 50 ≈ 0.236` 结构像素，整条曲线铺满屏幕内宽（12 像素）。
-- **高度连续**：柱高按 `value / 100 * PLOT_MAX_HEIGHT(3.8)` 连续计算（亚像素），不再用 `Math.round` 分档成 0~4 像素，因此数值变化能被平滑表现出来；最大高度 3.8 像素比单独记录仪的约 7.7 像素略压缩，仍完整落在 4 像素高的屏幕内。
-- **非等比缩放**：`ConsoleBusBER` 新增 `drawTextScaled(...)`（水平 / 垂直可分别给缩放），`drawText` 改为等比例委托；圆盘记录仪用 `scaleU = 列宽 / 8`、`scaleV = 柱高 / 8` 把「█」字形拉伸成细柱。
-- **基线对齐**：垂直下对齐时原版按 `lineHeight(9)` 而非字形高(8) 偏移，字形底边会比锚点高 1 个字体像素，绘制时把锚点下移同样的 `scaleV`，使柱底正好压在 `PLOT_BASE_V` 基线上、柱顶不越过屏幕上沿。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十三期：记录仪曲线位置 / 单线样式 / 读数贴合凹面**
-
-- **位置修正**：第二十二期改写时漏加组件锚点，导致曲线画到了控制台结构中心；`renderPlotHistory` 的 `u` / `v` 恢复为 `comp.u + ...` / `comp.v + ...`，曲线重新落在组件屏幕上。
-- **单线趋势**：不再从基线堆满到数值的实心柱，改为每列只画一个点（`PLOT_LINE_THICK = 0.4` 结构像素高），50 个点横向相连成一条细趋势线，线下方保持屏幕底色。
-- **读数外推减半**：显示器 / 记录仪的屏幕在模型中间是凹进去的（内屏约在模型厚度一半处），`screenOutset` 由「最外框厚度」改为「一半厚度 + 极小偏移」，读数与数码管文字不再悬浮在组件最外侧之前，而是贴近凹陷的内屏表面。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十四期：立式仪表刻度标定 / 指示灯默认熄灯 / 仪表放大 / 按钮弹起时间**
-
-- **立式仪表刻度对齐**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：按截图逐刻度测量（100→0 在模型中约占 0.64 格），`GAUGE_V_HALF_TRAVEL` 由 0.26 改为 0.32，数值 0 / 100 时箭头正好落在刻度弧两端；居中点仍为 50%，无需额外偏移。
-- **指示灯默认模型熄灯**：未设置颜色时直接用原贴图，无法像着色贴图那样通过 `dimColor` 变暗，导致看起来永远开灯；新增 `INDICATOR_OFF_GRAY = 97`（255 × `INDICATOR_OFF_FACTOR`），`state == 0` 且未设置颜色时只把灯面（OBJ 的 `Light` 分组）的顶点色压暗，外壳 `Base` 保持原样。
-- **仪表放大**（[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：`GAUGE_V` 与 `GAUGE_ARC` 的 `renderScale` 0.3 → 0.45（约 1.5 倍）；命中检测、重叠判定与附带文字定位随 `halfWidthPx / halfHeightPx` 自动跟随。
-- **按钮弹起时间可配置**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`CompEntry` 新增 `holdTicks`（`DEFAULT_HOLD_TICKS = -1` 跟随配置文件、`MAX_HOLD_TICKS = 200`），构造函数扩为 14 参、13 参版本委托默认值；`copyWith` / `copyWithPos` / `withHistorySample` / `applyCompText` 均保留该字段；NBT 仅在非默认时写 `HoldTicks`，`load()` 夹取 0~200 并兼容旧存档。
-- **按下逻辑**：`applyCompUse` 的 `KEYPAD` 分支改为「组件单独设置优先、-1 时取 `Config.getConsoleButtonHoldTicks()`」，并用 `Math.max(1, hold)` 保证设为 0 时也能产生一次可见的按下（下一 tick 由 `releaseExpiredKeypads` 清零，即松手立刻弹起）；`applyCompEdit` 签名扩展为 `(id, code, u, v, color, decimals, unit, holdTicks)`，仅 `KEYPAD` 采用新值。
-- **同步链路**：`ConsoleCompMenu`（写入 / 读取）、`ConsoleCompPacket`（编解码）、`ConsoleCompItem.openCompMenu`、`ConsoleDragClient` 全线补传 `holdTicks`。
-- **组件设置界面**（[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java)）：仅 `KEYPAD` 在原有「小数位 / 单位」那一行显示「弹起时间」标签与输入框（复用 `DISPLAY_Y`），默认展示有效值（`-1` 时取配置文件值），输入 0 表示松手立刻弹起，提交时夹取 0~200。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十五期：按钮「按住直到松手」语义**
-
-- **问题**：弹起时间设为 0 时，按住右键原版每 4 tick 重复触发一次 use，每次按下只维持 1 tick，表现为「不断弹起又按下」。
-- **服务端状态**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增 `CompEntry.HOLD_UNTIL_RELEASE = -1L`，`applyCompUse` 的 `KEYPAD` 分支在 `effectiveHoldTicks() <= 0` 时把 state 置为该标记（不再记录弹起时刻），重复 use 因 `newState == existing.state` 直接返回，天然幂等、不再抖动；定时模式仍记录 `gameTime + hold`。
-- **按下判定集中**：新增 `CompEntry.effectiveHoldTicks()`（-1 跟随配置）与 `isKeypadPressed(gameTime)`（state 0 = 未按下、-1 = 按住直到松手、其它为弹起时刻），`writeBackToVar` 与 `ConsoleBusBER` 的按下动画统一改用它。
-- **到点弹起**：`releaseExpiredKeypads` 跳过 `HOLD_UNTIL_RELEASE`（不计时），只处理定时模式；新增 `releaseKeypad(id)` 供客户端松手时清零 state 并回写变量。
-- **客户端释放**：新增 [ConsoleKeypadClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleKeypadClient.java)（CLIENT 事件订阅）——`ConsoleCompUse` 在客户端命中「弹起时间为 0」的按钮时经 `DistExecutor` 记录该按钮；每 tick 检测右键是否松开 / 打开界面 / 离开世界，满足即发释放包并清本地状态；切换到另一个按钮时先释放上一个。
-- **网络**：新增 [ConsoleKeypadReleasePacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleKeypadReleasePacket.java)（busPos + compId，服务端做 64 格距离校验），在 `ModNetwork` 注册为 id 17。
-- **界面提示**：组件设置界面的「弹起时间」tooltip 改为「0 = 按住期间一直按下、松开右键才弹起」。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十六期：组件可变大小（组件缩放）**
-
-- **语义**：实际大小 = 「组件缩放」×「模型默认缩放」。`ConsoleCompType.renderScale` 从此定位为**模型默认缩放**（以后调「默认大小」只改它）；玩家可编辑的 `CompEntry.scale` 所有组件放置时默认 `1.0`。
-- **数据**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`CompEntry` 新增常量 `DEFAULT_SCALE = 1.0F` / `MIN_SCALE = 0.25F` / `MAX_SCALE = 4.0F` 与 `public final float scale`；构造函数扩为 15 参（14 参版本委托默认 1.0）；`copyWith` / `copyWithPos` / `withHistorySample` / `applyCompText` 全部保留该字段（修掉了历史采样时缩放被重置为 1.0 的问题）。
-- **辅助方法**：新增 `effectiveScale()`（= `type.renderScale × scale`）、`halfWidthPx()` / `halfHeightPx()`（结构像素半宽/半高），交互与渲染统一走这里，保证「看到多大就能点多大」。
-- **交互判定**：`findCompAt` 用 `halfWidthPx / halfHeightPx` 判定命中；`overlapsOtherComp` 增加 `float scale` 参数，按双方实际半宽/半高判重叠（`applyCompAdd` 传默认 1.0，`applyCompEdit` 传新值）；拖动端的 `ConsoleDragClient.overlapsOtherComp` 同步改为组件实际半宽/半高。
-- **渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：OBJ 矩阵缩放由 `type.renderScale` 改为 `comp.effectiveScale()`；附带文字定位（按钮右侧 / 默认下方 / 指示灯外推）改用 `halfWidthPx / halfHeightPx / effectiveScale`；`screenOutset` 随实际缩放；数码管读数与圆盘记录仪趋势线额外乘 `comp.scale`（横向步长、线宽、高度、字号同步缩放）。
-- **服务端校验**：`applyCompEdit` 签名扩展 `float scale`，非有限值回退 1.0 并夹取 0.25~4.0，用 safeScale 做重叠判定；NBT 仅在非默认时写 `Scale`，`load()` 读取后夹取，旧存档缺失按 1.0 处理。
-- **同步链路**：`ConsoleCompMenu`（写入 / 读取）、`ConsoleCompPacket`（编解码）、`ConsoleCompItem.openCompMenu`、`ConsoleDragClient` 全线补传 `scale`。
-- **组件设置界面**（[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java)）：位置行收窄（X 22..58 / Y 68..104），右侧新增「缩放」标签与输入框（124..160），默认 `1.0`，范围 0.25~4.0，tooltip 说明「实际大小 = 该值 × 模型默认缩放」；提交与删除均带上该值。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十七期：拖动组件吸附完整像素**
-
-- **吸附取整**（[ConsoleDragClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleDragClient.java)）：多功能工具拖动组件时，目标锚点 `nu / nv` 先按 `Math.round` 取整，组件只会落在整数结构像素坐标上；表面文字拖动保持原有的亚像素跟随，不受影响。
-- **边界同步取整**：组件取整后再按 `ceil(-halfW) ~ floor(halfW)`（垂直同理）做范围夹取，避免夹取把取值又拉回小数、出现半像素位置。
-- **首发判定**：`begin()` 抓取时把 `sentU / sentV` 记录为目标当前锚点（而非点击点），吸附取整后位置一有变化就会发包，不会因为点击点与锚点存在抓取偏移而漏发第一次更新。
-- **精细调节**：仍通过组件设置界面直接输入 X / Y 坐标（支持小数）。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十八期：组件附带文字随组件缩放**
-
-- **字号跟随**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：`renderCompText` 传入的字体缩放由「配置默认文字大小」改为「配置默认文字大小 × `comp.scale`」，组件放大 / 缩小时附带文字一起变大变小。
-- **间距跟随**：按钮右侧、默认下方的 `COMP_TEXT_GAP` 同样乘以 `comp.scale`，避免组件放大后文字紧贴、缩小后文字离得过远。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第二十九期：控制柜辅助计算机支持水平四向放置**
-
-- **状态属性**（[ControllerAuxBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ControllerAuxBlock.java)）：由普通 `Block` 增加 `FACING = BlockStateProperties.HORIZONTAL_FACING`（默认 NORTH），`createBlockStateDefinition` 注册该属性，`getStateForPlacement` 取 `context.getHorizontalDirection().getOpposite()`，即正面朝向玩家、只允许 x± / z± 四个水平朝向。
-- **模型旋转**（[controller_aux.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/blockstates/controller_aux.json)）：blockstate 由单一 variant 改为 `facing=north / south(180) / east(90) / west(270)` 四个变体，与 controller_bus 的写法一致；模型默认正面为 north，因此旋转后屏幕面始终朝外。
-- **兼容性**：辅助计算机没有方块实体，朝向只影响模型显示；总线六邻扫描与程序界面逻辑完全不变。旧存档缺少 `facing` 时自动取默认 NORTH。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第三十期：控制柜总线 CC 接口（变量 / 组件值读写，批量结算）**
-
-- **外设注册**（[CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java)）：在 `ForgeComputerCraftAPI.registerPeripheralProvider` 中新增 `ConsoleBusBlockEntity → ConsoleBusPeripheral`，外设类型 `controller_bus`；电脑用调制解调器接到控制柜总线即可调用。
-- **线程模型**（[ConsoleCcBridge.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCcBridge.java)）：所有 Lua 方法均**不标注 mainThread**。Lua 线程只读写 volatile 快照与加锁的待处理队列，零 Level 访问、0 tick；主线程每 tick `drain()` 一次，按调用顺序批量应用并最多同步一次，因此连续多次读写不会每个调用消耗 1 tick。
-- **读己之写**：写操作同时记录到 overlay，读取优先返回 overlay；overlay 与待处理队列在同一把锁内随 `drain()` 一起清空，既能看到刚写入的值，又不会永久遮蔽程序或玩家的修改。
-- **执行顺序**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`tick` 中依次执行「按钮弹起 → 辅助计算机 `tickProgram()` → `applyCcOps()` → `publishCcSnapshot()`」。程序与 CC 同时写同一变量时，CC 的写入在程序之后结算；变量写入后立即上传绑定组件（圆盘记录仪记一笔），组件直接写入最后生效，全部操作结算完最多同步一次。结构未成型时仍可 CC 读写已有变量 / 组件，只是程序不运行。
-- **变量接口**（[ConsoleBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusPeripheral.java)）：`listVars()`（name / type / address / component）、`getVar(name)`、`setVar(name, value)`（bool / number 类型校验，0 号运行间隔不可写）、`getPeriod()`（只读）。
-- **组件接口**：`listComponents()`（code / type / id / kind）、`getComponent(code)`（value / state / decimals / unit）、`getComponentValue(code)`、`setComponentValue(code, value)`；按钮面板为只读按压状态，写入返回 false。代号不区分大小写。
-- **组件接口支持附带变量名**（[ConsoleCcBridge.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCcBridge.java#L263-L310)）：`getComponentValue` / `setComponentValue` 的 `code` 不是组件代号时，回退到变量名（`findAttachedVar` 仅放行快照 `compCode` 非空的「已绑定组件变量」），因此可直接用 `getComponentValue("SYNCHROSCOPE_1_s")` 读转速、`setComponentValue("SYNCHROSCOPE_1_s", 5)` 写转速、`getComponentValue("SYNCHROSCOPE_1_b")` 读灯状态；组件代号优先，灯状态等只读输出仍会在下一 tick 被实际判断覆盖；未绑定的普通变量不会被组件接口暴露（仍需 `getVar` / `setVar`）。
-- **圆盘记录仪**（组件类型 `graph`，参考数字圆盘记录仪）：`pushPoint(code, value)`（0~100 钳制、整体移位、返回写入值）、`setPoint(code, index, value)`（Lua 索引 1~50，1 = 最新）、`getPoint(code, index)`、`getPoints(code)`（长度 50）；历史数组只换引用不原地修改，快照与 Lua 读取共享安全。
-- **说明书**（[InstructionBook2Item.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/InstructionBook2Item.java)）：目录新增「6. 控制柜总线」，补充 4 页 Lua 方法说明与示例。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第三十一期：圆盘记录仪双名称与条件推送**
-
-- **组件第二名称**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`CompEntry` 新增 `code2`，仅圆盘记录仪（`supportsHistory()`）使用；新建组件时自动生成 `<主代号>_T`（重名时追加序号），可清空。NBT 仅在非空时写 `Code2`，旧存档按空处理；所有复制 / 编辑路径（`copyWith` / `copyWithPos` / `withHistorySample` / `withPoint` / `applyCompText`）均保留该字段。
-- **触发变量**：`VarDef` 新增 `trigger`。玩家注册变量时若名称等于某记录仪的第二名称，则强制绑定该组件的 `trigger` 布尔变量（NBT `Trigger`）；主代号仍绑定原有浮点变量。代号判重（`codeUsed`）同时比较主代号与第二名称，新增 `nameTakenByOtherVar` 防止与其它设备的绑定变量重名。
-- **tick 顺序**（`tick`）：`releaseExpiredKeypads()` → **`clearPlotTriggers()`** → `tickProgram()` → `applyCcOps()` → **`flushPlotters()`** → `publishCcSnapshot()`；未成型 / 结构失效分支同样先清零再结算，避免残留 true 误推送。
-- **推送语义**：触发变量每 tick 开始清零；程序本 tick 赋 true 或 CC 显式 `pushPoint` 时，`flushPlotters()` 才按该记录仪的数值变量补记一笔。程序 / CC 的普通变量写入不再无条件给记录仪记点（`runProgram`、`applyCcOps` 去掉 `bindsPlotter` 分支）。
-- **角色隔离**：`uploadVarToComponent` 跳过触发变量；`findVarSlotByComp(compId, trigger)` 按角色过滤，组件状态回写（`writeBackToVar`）只作用于数值变量。
-- **组件编辑界面**（[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) / [ConsoleCompMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompMenu.java) / [ConsoleCompPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleCompPacket.java)）：记录仪新增「第二名称」输入框，菜单与网络包同步 `code2`；拖动组件时原样回传，不会清空。
-- **变量注册界面**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：补全候选用 `DeviceOption(设备, 名称, 类型, 是否触发)` 表示，记录仪同时列出主代号（浮点）与第二名称（布尔），悬停提示标注「推送触发」。
-- **删除组件后的名称回收**：删除组件时 `unbindVarsFromComp` 将其变量解除绑定（变量名 / 类型保留、`trigger` 清除）；再次注册同名设备时，`nameBlocked` 只把「仍绑定在其它现存组件」或「同名变量类型不符」视为冲突，随后 `relinkVarToComp` 把同名同类型变量自动重连到新组件。`applyCompAdd`（自动代号）与 `applyCompEdit`（改名）都走同一套回收逻辑，类型不同则返回 `COMP_DUP_CODE` 阻止创建。
-- **修正记录仪误推送**：`uploadVarToComponent` 对圆盘记录仪只镜像「当前值」（`withFloatValue`），不再移位历史；历史采样只由 `flushPlotters`（触发变量为 true）或 CC `pushPoint` 写入。`runProgram` 读取阶段也不再从记录仪回读组件值（数值变量为唯一数据源），避免变量与组件值来回覆盖触发假推送。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第三十二期：控制柜配置保存 / 加载（JSON 文本文件）**
-
-- **入口**（[ConsoleScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleScreen.java)）：总线界面由 150 加高到 172，新增一个通栏「保存/加载配置」按钮（未成型时禁用）；打开 [ConsoleConfigScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleConfigScreen.java) 后，界面内再分「保存配置」「加载配置」两个按钮（Esc 返回总线界面）。
-- **文件格式**（[ConsoleConfigJson.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleConfigJson.java)）：`format = "cc_rc_console_config"`、`version = 1`，Gson `setPrettyPrinting` 输出可直接用记事本编辑的 JSON。内容包含：`size`（x/y/z）、`facing`（总线相对结构的朝向，`Direction.getName()`）、`components`（type/face/u/v/code/code2/color/text/decimals/unit/holdTicks/scale）、`texts`（face/u/v/content/color/粗斜下删线/anchor/scale）、`variables`（name/type/trigger/component/value/bool）、`program`（period + lines：row/enabled/cond/condition/target/expr/comment）。表达式以结构化节点保存（`op` + `number`/`flag`/`var`/`left`/`right`），变量与组件统一用**名称/代号**引用，不写内部槽位与组件 id，因此可由人手改文件。
-- **客户端读写**（[ConsoleConfigStore.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleConfigStore.java)）：保存到游戏目录 `cc_rc_configs/<名称>.json`（UTF-8，自动建目录）；文件名过滤 `\ / : * ? " < > |`，限制 48 字符，列表按名称排序。
-- **导出**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增 `hasConfigData()` / `exportConfigJson()`，客户端依赖 `getUpdateTag()` 的完整同步数据直接组装 JSON；不写 state/value/历史点，程序只导出非空行并记录原行号。
-- **服务端校验应用**：新增 `applyConfigJson(String)`，校验顺序为——方块实体类型与距离（包内 256 格）→ 结构与总线交汇点存在且为「部分成型」→ JSON 解析（异常返回 `CFG_BAD_JSON`）→ `format` + `version`（缺 format 视为非法，避免误加载任意 JSON）→ 朝向合法性 + 旋转角计算（竖直朝向返回 `CFG_FACING_MISMATCH`）→ `size` 按旋转后（奇数次 90° 时 X/Z 互换）与当前结构比对（`CFG_SIZE_MISMATCH`）→ 变量数不超过槽位上限（`CFG_LIMIT`）→ 逐项构建组件/文字/变量/程序（任何非法返回 `CFG_INVALID`）。全部通过后才整体替换现有数据并 `sync()`，避免「改到一半失败」留下半套配置。组件按现有规则校验代号格式、代号/第二名称共用命名空间去重、坐标按该面实际像素范围夹紧、同面重叠检测；变量按名称重新分配槽位、`trigger` 必须绑定圆盘记录仪第二名称且变量名必须等于该代号、类型强制跟随所绑组件、未绑定变量不得占用设备名称；程序行号 0~63 且不重复、条件/目标/表达式按变量名解析后 `line.validate()` 必须通过、按钮面板不可作为写入目标。
-- **网络**（[ConsoleConfigUploadPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleConfigUploadPacket.java) / [ConsoleConfigResultPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleConfigResultPacket.java)）：C2S 上传 JSON（上限 1 MiB，按 UTF-8 字节串 + int 长度直写，绕开 `writeUtf` 编码后 32 KiB 的限制），服务端处理后用 S2C 回传结果码；结果包不在网络包内直接引用客户端 GUI，沿用 `PENDING` + `DistExecutor.unsafeRunWhenOn` + [ConsoleConfigClientHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleConfigClientHandler.java) 的模式。两者在 [ModNetwork.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ModNetwork.java) 注册为 id 18 / 19。
-- **旋转加载**：新增 `rotationSteps()` / `rotateFace()`。保存朝向与当前总线朝向的差值按顺时针 90° 步数计算；结构尺寸互换由该差值决定（奇数次交换 X/Z），组件与文字的 `face` 随之旋转，局部 `u/v` 因为随表面坐标系一起旋转而保持不变（顶/底面在绕 Y 旋转时朝向不变）。
-- **覆盖确认**：加载时若总线已有组件 / 文字 / 变量 / 程序（`hasConfigData()`），界面先切到「确认覆盖 / 取消」；保存时若同名 `.json` 已存在（`ConsoleConfigStore.exists()`）也先确认，避免误覆盖手工编辑过的文件。确认按钮按待处理动作（保存文件名 / 待上传 JSON）分派。
-- **文案**：两份 lang 新增 `gui.cc_rc.console.config`（保存/加载配置）以及 `gui.cc_rc.console.config.save` / `gui.cc_rc.console.config.load`。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第三十三期：RGB 颜色控制器（控制柜组件）**
-
-- **注册**（[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) / [ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：新增 `controller_rgb`（`ConsoleCompItem(RGB_COLOR)`）与枚举 `RGB_COLOR("rgb_color", "rgb", 14×14, recolorable=false, renderScale=0.5)`（默认模型缩到线性 1/2、面积约 1/4，命中框与附带文字定位随缩放同步缩小）；中英 lang 补 `gui.cc_rc.console.comp.rgb_color` / `item.cc_rc.controller_rgb`；新增物品模型 `models/item/controller_rgb.json`、表面模型 `console_parts/rgb_color_surface.obj`（源自 `模型/控制台类/RGB颜色控制器/RGB颜色控制器.obj`，坐标按 `(x,y,z)→(-z,y,x)` 变换保持绕序，`Lamp` 分组标 `usemtl tint`，因此**只有灯面随颜色变化，背板保持原色**）与贴图 `console_parts/rgb_color.png`。
-- **数据字段**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`CompEntry` 新增 `links`（连接的组件代号，`;` 分隔）、`rgbR/rgbG/rgbB`（三个通道变量名）、`showOriginal`（显示原色 = 停用）；NBT 仅在非空 / true 时写 `Links/RgbR/RgbG/RgbB/ShowOriginal`，复制 / 编辑 / 历史采样等路径全部保留新字段。
-- **变量绑定**：放置时自动生成默认代号（`RGB_1`、`RGB_2`…，与其它组件一致，代号只用于注册与变量绑定，不参与显示）；主名称对应 **BOOL**「启用」变量（`supportsBoolVariable` 已含 RGB），三个通道名各对应一个 **FLOAT** 变量。`applyCompEdit` 规范化连接串（按 `;` / `；` 拆分，去空 / 自身 / 重复，最多 32 个）与通道名（格式合法、互不相同、不与主代号冲突），随后 `syncRgbVars` 解除不再使用的绑定并为通道名自动占用空槽创建 FLOAT 变量；`applyVarCreate` 按名称识别 RGB 通道名并强制浮点类型。
-- **结算**（`tick` 成型路径，`flushPlotters` 之后）：**仅完全成型（FULL）时**执行 `applyRgbControllers()`——部分成型（PARTIAL，可编辑）保留手动设置的颜色 / 显示原色开关，不再被 tick 覆盖。逐个判定启用：存在同名 BOOL 变量时以变量值为准，否则用 `!showOriginal`；启用且至少一个通道变量有值时按 `R<<16|G<<8|B` 计算颜色写入自身 `color`（仅灯面染色），并把同色写入 `links` 中能按代号找到的组件；停用（显示原色）时 `color` 写为 `NO_COLOR`，连接组件保持当前颜色（**不会**强制变回原色）；启用但没有任何通道变量时保留当前颜色（手动设置的灯色）。有变化时 `sync()`。
-- **渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：RGB 控制器**配置了附带文字**（文本编辑器点击组件设置）时跳过模型渲染，改在组件位置按当前灯色绘制该附带文字（只保留粗/斜/下划线/删除线样式，颜色统一取灯色；未着色时白色）；**没有附带文字时正常显示模型**（与是否填写代号无关）。`recolorable=false` 使整图不重新着色，仅 `usemtl tint` 的灯面按顶点颜色着色。成型前（PARTIAL）「显示原色」开关直接决定是否着色，成型后只看服务端结算写入的 `color`。命中检测仍按组件矩形。
-- **界面**（[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) / [ConsoleCompMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompMenu.java) / [ConsoleCompPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleCompPacket.java)）：RGB 使用专用加高布局（176×212，背景 `textures/gui/console_comp_gui_tall.png`，由标准背景纵向拉伸中部得到）——保留「代号（组件注册名 = 默认 BOOL 变量名）/ X / Y / 缩放 / 染料色块 / HEX / 预览块」这些标准选项（用于设置组件名称与当前灯色），下方追加「连接」输入框、R / G / B 三个输入框、「显示原色：是/否」切换按钮；RGB **不提供单独的「原色」重置按钮**（颜色值需保留，只由「显示原色」决定是否着色）。完成 / 删除按钮随界面下移。菜单与网络包增加 `links/rgbR/rgbG/rgbB/showOriginal` 字段并全线传递。
-- **容错**：通道名格式非法 / 与主代号相同 / 三通道重名时**只丢弃该通道**（不再拒绝整次编辑，颜色与「显示原色」照常保存）；客户端提交前会先校验并在聊天栏提示（避免填错名字后"变量没出现"却无任何反馈）。`ensureChannelVar` 会把未绑定 / 本组件名下的同名变量重新登记为 FLOAT（可把此前误建成布尔的同名变量改成浮点）；完全成型 tick 时若发现通道名对应的浮点变量缺失会自动补建。
-- **变量候选**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：AUX 程序界面的「新建变量」补全下拉增加 RGB 控制器的通道名候选（FLOAT），`matchedDevice` 同样识别通道名；主名称仍按 BOOL 候选显示，未命名的控制器不产生空名候选。
-- **创造栏 / 物品贴图**（[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java)）：把 `controller_rgb` 加入本模组创造物品栏（弧形仪表之后）；物品贴图 `textures/item/controller_rgb.png` 换用 `模型/控制台类/RGB颜色控制器/sheet_front.png`（原贴图误用了旋钮开关的截图）。
-- **配置 JSON**（[ConsoleConfigJson.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleConfigJson.java) 与 `exportConfigJson` / `applyConfigJson`）：Component 增加 `links/rgbR/rgbG/rgbB/showOriginal`；导出 / 加载支持 RGB 空代号，加载时校验通道名互不相同、不与组件代号冲突，并按名称把变量补绑到控制器（控制器无名称时也能接上通道变量）。
-- **手动保存回写变量**：`applyCompEdit` 在 RGB 分支内 `syncRgbVars` 之后调用新增的 `writeRgbCompToVars`——把设置界面选定的灯色按 `(color>>16)&0xFF / (color>>8)&0xFF / color&0xFF` 写入 R/G/B 三个已注册 FLOAT 变量，并把 `!showOriginal` 写入启用 BOOL 变量。因此部分成型时手动配置颜色 / 开关并点「完成」，变量表里立刻就是该颜色（未着色时不覆盖通道变量），计算机读到的与界面显示完全一致。
-- **CC 接口**（[ConsoleCcBridge.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCcBridge.java) / [ConsoleBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusPeripheral.java)）：新增 `OP_RGB_COLOR`（key = 组件代号，number = 0xRRGGBB）与 `CompInfo.color/enabled` 快照字段、`rgbColorOverlay`（读己之写）；外设新增 `getColor / setColor`（直接 0xRRGGBB，与 CC `colors` 表兼容）、`getChannels / setChannels`（0~255 三通道）、`setChannel`（单独改 r/g/b/red/green/blue）、`getEnabled / setEnabled`（启用 = 不显示原色，复用 BOOL 通道）；`applyCcOps` 中 RGB 的 `OP_COMP_BOOL` 特判为启用开关（`setRgbEnabled`），`OP_RGB_COLOR` 经 `applyRgbColor` 同时写通道变量与组件灯色；`getComponent(code)` 对 RGB 额外返回 `color` 与 `enabled`。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第三十四期：阀门拉杆（lever_f）与旋转按钮（button_x）**
-
-- **注册**（[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) / [ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) / [ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java)）：新增 `controller_lever_f`（`LEVER_F("lever_f", 10.5×14, recolorable=false, renderScale=0.3)`）与 `controller_button_x`（`BUTTON_X("button_x", 14×14, recolorable=false, renderScale=0.3)`），均加入本模组创造栏；中英 lang 补 `gui.cc_rc.console.comp.lever_f`（阀门拉杆 / Valve Lever）、`gui.cc_rc.console.comp.button_x`（旋转按钮 / Rotary Button）与 `item.cc_rc.controller_lever_f` / `item.cc_rc.controller_button_x`；物品模型 `models/item/controller_lever_f.json`、`controller_button_x.json`，物品贴图 `textures/item/controller_lever_f.png`、`controller_button_x.png`（取自 `模型/控制台类/…/物品贴图.png`）。
-- **模型资源**（`models/console_parts/`）：`lever_f_surface.obj`（开）/ `lever_f_close_surface.obj`（关）——两组 `o Panel`（背板）+ `o Handle`（把手），把手的 y/z 区间不同即两档角度，`Panel`/`Handle` 上的红色面标 `usemtl tint`；`button_x_surface.obj`——`o Body`（背板）+ `o Rotate`（可旋转中间件，烘焙为「按下」态），背板黄色面标 `usemtl tint`。三张贴图 `textures/block/console_parts/lever_f.png` / `lever_f_close.png` / `button_x.png` 为 64×64，右下预留 4×4 纯白块供染色采样。
-- **动态染色采样点**（[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java)）：`ObjMesh` 新增 `tintU/tintV`，由 `findTintUv()` 在加载时用 `NativeImage` 读贴图，按全部 `usemtl tint` 面的 UV 包围盒建占用表，自右下向左上扫描 4×4→2×2 的全白未占用块，取块中心 UV；找不到（或读图异常）回退旧常量 `495.5/512, 55.5/512`。因此旧的 512×512 贴图（旋钮开关 / 拉杆开关 / 立式仪表 / 弧形仪表）行为完全不变，新 64×64 贴图也能正确定位白块。[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java) 删掉写死的 `TINT_U/TINT_V`，改用 `mesh.tintU/tintV`。
-- **关态模型 / 贴图回退**：`ConsoleCompModels.load()` 对 `closed` 状态优先尝试 `<id>_close_surface.obj` 与 `<id>_close.png`（存在才用，否则退回默认），`meshFor()` 的关态判定加入 `LEVER_F`（`state == 0` → 关）。阀门拉杆因此直接切换两套把手角度，不需要运行时旋转。
-- **旋转按钮复位动画**：`Rotate` 分组在**未按下**时绕面板法线轴（枢轴 `y = z = 0.5`）顺时针旋转 90°，顶点 `(y, z) → 枢轴 + (z_rel, -y_rel)`、法线同步 `(ny, nz) → (nz, -ny)`（渲染矩阵第 2 列取 `-U`，观察者视角的「右」为 `-z`，故该式即视角顺时针）；按下期间保持模型烘焙的「按下」态，松手 / 定时弹起后自动复位。只在模型坐标系内变换，与缩放、外推、光照矩阵无关。
-- **逻辑接入**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java) / [ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java) / [ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java)）：`LEVER_F` 完全等同开关（`state` 0/1 右键翻转、可写变量、`supportsBoolVariable`）；`BUTTON_X` 完全等同按钮（`state` 为弹起时刻或 `HOLD_UNTIL_RELEASE`，`effectiveHoldTicks()` / `isKeypadPressed()` / `releaseExpiredKeypads()` / `releaseKeypad()` / CC 快照 / 组件编辑弹起时间 / GUI 弹起输入框全部按 `KEYPAD` 同路径处理），但 `supportsVariableWrite()` 排除（与按钮一致，程序不可直写）。附带文字定位复用按钮分支（`renderCompText` 的 `case KEYPAD, BUTTON_X`）。
-- **修正（指示灯误染色 / 按钮默认尺寸）**：拉杆背板上的红色指示灯（源贴图中偏亮的 `169,25,17` 与高光 `244,134,134`）此前按「红色」一起标了 `usemtl tint`，改为背板（`object_1`）只认纯深红 `136,0,21`（`IsPanelRed`：R 110~160、G ≤ 20、B ≤ 40）才染色，把手（`object_2`）仍用宽松红色判定，于是背板 19 面 + 把手 15 面染色、指示灯与绿色指示灯保留原色；两套模型与贴图已按新规则重新生成。`BUTTON_X` 默认 `renderScale` 由 0.3 改为 0.15（再缩小一半），已放置的旧组件保留各自存档里的缩放。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅保留既有过时 API 警告）。
-
-**第三十五期：三状态开关（t_switch / t_lever）、双色指示灯（lamp_d）与 RGB 控制器换型**
-
-- **注册**（[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) / [ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) / [ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java)）：新增 `controller_t_switch`（`T_SWITCH("t_switch", 14×14, renderScale=0.3)`）、`controller_t_lever`（`T_LEVER("t_lever", 14×14, 0.3)`）、`controller_lamp_d`（`LAMP_D("lamp_d", 14×14, 0.3)`），均加入本模组创造栏；中英 lang 补组件名与物品名；物品模型 `controller_t_switch.json` / `controller_t_lever.json` / `controller_lamp_d.json` 使用专属图标 `textures/item/controller_t_switch.png`（三档旋钮）/ `controller_t_lever.png`（三档拉杆）/ `controller_lamp_d.png`（双色指示灯），取自 `模型/控制台类/panel_props/物品贴图-三档旋钮.png`、`物品贴图-三档拉杆.png`、`物品贴图-双色指示灯.png`（均 16×16）。
-- **模型资源**（`models/console_parts/`，由 `build/tmp/convert_panel_props.ps1` 从 `模型/控制台类/panel_props` 转换，坐标变换 `(x,y,z)→(-z,y,x)`、法线 `(-nz,ny,nx)`，与既有旋钮开关资源同一约定、不做缩放）：`t_switch_surface.obj` / `_1_` / `_2_` ← `knob_switch3_green/orange/red.obj`（对应档位 0/1/2）；`t_lever_surface.obj` / `_1_` / `_2_` ← `lever_switch3_green/orange/red.obj`；`lamp_d_surface.obj`（红亮绿灭）← `indicator2_red.obj`、`lamp_d_1_surface.obj`（绿亮红灭）← `indicator2_green.obj`。所有新模型只把 `o Panel`（背板）标 `usemtl tint`，其余分组（Knob / Base / Lever / LampGreen / LampOrange / LampRed）保持原贴图，因此**染色只作用在背板**。
-- **RGB 颜色控制器换型**：`rgb_color_surface.obj` 改用 panel_props 的 `indicator_orange_on.obj`（单灯居中的「点亮」态），分组 `Panel` 保持 `prop`、`Lamp` 标 `usemtl tint`（沿用 RGB「只给灯面上色」的语义）。
-- **贴图共用与修正**：新模型全部来自 panel_props，而 UV 是按该目录的调色板贴图排布的（所有 indicator* / knob_switch* 共用 `knob_switch.mtl → knob_switch.png`，lever_switch* 共用 `lever_switch.mtl → lever_switch.png`）。此前误用了本模组旧版 `knob_switch.png`（调色板顺序不同、且大面积透明），导致 `entityCutout` 把旋钮 / 拉杆主体整片裁掉（表现为「中间部分缺失」、灯色发黑）。现将 `t_switch.png` / `t_lever.png` 改为 panel_props 源图的副本，并在右下角 (508,64) 补 4×4 不透明白块供 tint 采样；`ConsoleCompType.textureId()` 让 `LAMP_D` / `RGB_COLOR` 与 `T_SWITCH` 共用 `t_switch.png`（三者的源模型共用同一 mtl），删除重复的 `lamp_d.png` / `rgb_color.png`；[ConsoleCompTextures.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompTextures.java) 的 `base()` 也改用 `textureId()` 取图，避免按已删除的 id 贴图名告警「贴图缺失」。
-- **多状态模型加载**（[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java)）：新增 `get(type, int variant)`——`0` 基础模型、`1/2` 对应 `<modelId>_1_surface.obj` / `<modelId>_2_surface.obj`；内部统一为 `getInternal(type, suffix)` / `load(type, suffix)`，后缀同时用于缓存 key、OBJ 文件名，贴图按 `textureId()` 取名并在存在 `<textureId><后缀>.png` 时优先使用（三档开关 / 双色灯 / RGB 共用基础贴图，自动回退）。原 `get(type, boolean closed)` 行为不变。
-- **渲染选择**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：`meshFor()` 对三状态开关按 `state`（夹紧 0~2）取三个档位模型，对 `LAMP_D` 按 `state` 0/1 取红亮 / 绿亮模型；两态开关的 `_close` 逻辑保持原样。
-- **逻辑**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`applyCompUse` 新增 `T_SWITCH / T_LEVER` 分支，右键按 `floorMod(state+1, 3)` 循环 0→1→2→0，并同步 `value = state`；`writeBackToVar` 把三状态开关写回 **FLOAT**（0/1/2），`LAMP_D` 并入 BOOL 分支；`withFloatValue` 把写入值四舍五入并夹紧到 0~2 后同时更新 `state`（程序 / CC 写浮点即选档）。`ConsoleCompType` 中 `supportsFloatVariable()` 加入 T_SWITCH / T_LEVER、`supportsBoolVariable()` 加入 LAMP_D，并新增 `isThreeState()`。
-- **RGB 控制器尺寸**：`RGB_COLOR` 默认 `renderScale` 由 0.5 改为 0.25（面积缩到原来的 1/4，14×14 模型显示约 3.5×3.5 结构像素），命中框按 `renderScale` 计算因而同步缩小；已放置的旧组件保留各自存档里的缩放。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第三十六期：程序列表「移动」与行编辑器「复制」**
-
-- **移动**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：程序行右侧新增 14px 宽的「移」热区（删除行按钮已从列表中移除，见第三十八期），点击后进入移动模式：源行底色改为暗黄高亮、所有空行显示「空行（点击移动到此）」；此时点击任一空行即执行 `moveLine(from, to)`（`snapshot[to] = line; snapshot[from] = null`）并整表提交，随后自动翻到目标行所在页并用动作栏提示「已移动到程序行 #xx」。点其它行的「移」可换源行，点别处或按 Esc 取消；已完全成型（`prog_locked`）时不可移动。行的表达式文字可用宽度相应减去 `LINE_MOVE_W`。
-- **复制**：行编辑器顶部「启用」开关右侧新增「复制」按钮（宽度收窄给按钮让位），点击执行 `copyLineForward()`——把当前行整行（条件 / 目标 / 算式 / 注释 / 启用状态）收进 `pendingCopy` 并关闭编辑器，进入与「移动」相同的放置模式（空行显示「空行（点击放置副本）」），由玩家点击任意空行放置，点别处或 Esc 取消；空行则提示无可复制内容。
-- **文案**：`gui.cc_rc.program.move_short / move_target / copy / copy_empty / paste_target / delete` 与 `message.cc_rc.controller.prog_moved / prog_copy_ready / prog_pasted` 中英双语补齐；`localHint` 支持格式化参数。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第三十七期：组件附带文字缩放基准修正**
-
-- **文字大小**：[ConsoleBusBER.renderCompText](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java#L549-L586) 与 [renderRgbText](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java#L511-L536) 的文字缩放系数取 `comp.scale`（玩家组件缩放），间距 `COMP_TEXT_GAP` 同样按它的比例缩放：缩放比 1 时就是以前各组件默认的附带文字大小，不再乘类型的 `renderScale`（否则旋钮 / RGB 等本来就渲染得小的组件文字会小到看不清）。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第三十八期：程序列表删除按钮移入行编辑器**
-
-- **删除**：程序行右侧的「×」删除热区整体移除（`LINE_DELETE_W` 随之删除），表达式可用宽度只扣除「移」热区。
-- **编辑器新增删除**：行编辑器顶部「启用」右侧并排「复制」「删除」两个按钮（启用按钮宽度相应收窄）；`deleteEditingLine()` 提交 `snapshot[editingLine] = null` 后关闭编辑器，完全成型锁定状态下提示不可修改。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第三十九期：三状态组件档位与模型对齐**
-
-- **问题**：`t_lever_*_surface.obj` / `t_switch_*_surface.obj` 的模型档位顺序是「0 = 左 + 绿灯、1 = 中 + 橙灯、2 = 右 + 红灯」（分别由 `lever_switch3_*` / `knob_switch3_*` 转换；模型 z 轴 = -U，故绿灯在屏幕左侧、红灯在右侧），与逻辑约定（state 0 = 右 + 红灯、2 = 左 + 绿灯）相反。
-- **修正**（[ConsoleBusBER.meshFor](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java#L463-L471)）：`T_LEVER` 与 `T_SWITCH` 统一取 `2 - state` 作为模型档位，反转首尾档位；中间档位（竖直 / 竖直指针、橙灯）不变，`state` 数值与程序 / CC 写入口径不变。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第四十期：控制柜颜色变体（蓝 / 黑）**
-
-- **颜色枚举**（[ConsoleColor.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleColor.java)）：新增 `DEFAULT / BLUE / BLACK`，实现 `StringRepresentable`（`EnumProperty` 必需），提供 `textureSuffix()`（默认色返回空串，其余返回 `_blue` / `_black`）用于贴图名后缀。
-- **新增结构方块**（[ModBlocks.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModBlocks.java) / [ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) / [ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java)）：`controller_block_blue`（`MapColor.COLOR_BLUE`）、`controller_block_black`（`MapColor.COLOR_BLACK`），强度 / 音效 / 工具要求与原 `controller_block` 一致，均带 `BlockItem` 并入创造栏；[ConsoleBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBlock.java) 增加 `public final ConsoleColor color` 字段与携带颜色的构造器（旧构造器保留，默认色）。[ModBlockEntities.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModBlockEntities.java) 的 `controller_block_be` 合法方块列表补上两者。
-- **同色才连通**（[ConsoleStructureHelper.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleStructureHelper.java)）：泛洪以种子方块的颜色为准，遇 `colorOf(nextState) != color` 直接跳过（不连通、不记入成员）；第 3 步「相邻控制柜方块但未访问」仍判 MULTIPLE，因此总线同时贴到异色连通体时照常报错。`Result` 增加 `color` 字段，`stillValid(..., count, color)` 逐格校验颜色；新增 `isConsole(BlockState)` / `colorOf(BlockState)` 工具方法（移除不再需要的 `ModBlocks` 依赖）。异色方块因此可以相邻摆放，但不会并入同一结构、也不会互相影响功能。
-- **总线换贴图（不新增方块）**（[ConsoleBusBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlock.java) / [ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：总线新增 `COLOR` 方块状态（默认 DEFAULT），成型时把识别到的颜色写入方块实体字段 `structureColor`，再由 `applyBusColor()` 用 `flag 3` 写回方块状态（触发邻居更新，让相邻 aux 跟随）；失效 / 溃散时复位为 DEFAULT。`stillValid` 巡检带颜色，颜色不符即视为结构破损。NBT 新增 `Color`（enum ordinal，缺省 DEFAULT，旧存档保持原样）。
-- **aux 跟随**（[ControllerAuxBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ControllerAuxBlock.java)）：新增 `COLOR` 方块状态，`onPlace` / `neighborChanged` 时扫描六邻——先取相邻总线颜色，再退回相邻结构方块颜色，都没有则默认色；写入用 `flag 2`（不触发邻居更新，避免连锁刷新）。
-- **方块状态与模型**：`blockstates/controller_bus.json`、`controller_aux.json` 重写为 `color=default/blue/black × facing=north/east/south/west` 共 12 个变体；新增 `blockstates/controller_block_blue|black.json`、`models/block/controller_block_blue|black.json`（cube_all）、`models/item/controller_block_blue|black.json`，以及 `models/block/controller_bus_blue|black.json`、`models/block/controller_aux_blue|black.json`（正面 north 用 front / aux 变体，其余四面用 side 变体）。
-- **贴图**：`textures/block/controller/` 新增 `controller_block_blue.png`、`controller_block_black.png`、`controller_aux_blue.png`、`controller_aux_black.png`、`controller_bus_front_blue.png`、`controller_bus_side_blue.png`、`controller_bus_front_black.png`、`controller_bus_side_black.png`（源自 `模型/控制台类/贴图/蓝色|黑色`；黑色源文件名误拼 `controller_bus_frount.png` 已按规范名复制）。
-- **判定替换**：[CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java)（爆炸保护）、[MultiToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/MultiToolItem.java)、[ConsoleCompItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/ConsoleCompItem.java)、[EditToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/EditToolItem.java)、[ConsoleDragClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleDragClient.java)、[ConsoleBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBER.java) 中原先写死的 `state.is(ModBlocks.CONSOLE_BLOCK)` 全部改为 `ConsoleStructureHelper.isConsole(state)`，使新色方块与原方块行为完全一致。
-- **文案**：中英 lang 补 `block.cc_rc.controller_block_blue` / `controller_block_black`。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第四十一期：画图工具（draw_tool）**
-
-- **数据模型**（`block/console/draw/`）：[ConsoleShapeType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/draw/ConsoleShapeType.java) 枚举 `RECT`（实心矩形）/ `RECT_OUTLINE`（空心矩形）/ `LINE`（线段）/ `ARROW`（箭头）/ `PRESET`（预设图案），`usesWidth()` 标出可设线宽的类型；[ConsoleShape.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/draw/ConsoleShape.java) 为不可变图形（`id / face / layer / type / color(0xRRGGBB) / width / u1,v1,u2,v2 / preset / rotation / scale`），`width`、`rotation`（角度 0~359.9）、`scale` 均为 `float`，常量 `MIN_WIDTH=0.1F`、`MAX_WIDTH=4.0F`、`LAYERS=8`、`MIN_SCALE=0.1F`、`MAX_SCALE=3.0F`，并提供 `quantize(v)`（四舍五入到 0.1，避免浮点噪声在界面 / 网络 / 存档之间累积），`save()/load()` 用 `putFloat/getFloat`（线宽 / 缩放的旧 int 值可被 `getFloat` 兼容读取；旋转旧存档是 0~3 的 int 枚举，`load()` 检测到 int 时 ×90 迁移为角度）；[ConsoleDrawPresets.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/draw/ConsoleDrawPresets.java) 登记预设图案（`id / 贴图 / 像素尺寸 / 最大缩放倍数(float)`），默认 `sample`（`textures/gui/draw_presets/sample.png`，32×32，缩放 1.0~3.0）；贴图显示时先乘 `DISPLAY_SCALE=0.5` 再乘玩家缩放（32 像素贴图默认占 16 表面像素，与旧 16×16 观感一致）；预设贴图以顶点色相乘染色，灰度值越深显示越暗。
-- **存储与同步**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：图形按面存在总线方块实体的 `Map<Direction, List<ConsoleShape>> drawShapes`（上限 `MAX_DRAW_SHAPES=512`），随总线 NBT 一起保存（`Draws` 列表 + `NextDrawId`）并通过 `getUpdateTag` 同步客户端，因此 GUI 直接读本地方块实体即可，无需把图形塞进菜单包；新增服务端 API `getDrawShapes(face) / countDrawShapes() / findDrawShape(id) / findDrawShapeAt(face,u,v) / applyDrawAdd(...) / applyDrawEdit(...) / applyDrawSetAnchor(id,u,v) / applyDrawDelete(id)`，返回 `DRAW_OK / NOT_FORMED / LOCKED / OUTSIDE / LIMIT / NOT_FOUND / BAD_DATA` 状态码；整体平移 `shiftDrawShape` 按包围盒夹紧（避免逐点 clamp 变形），`rebaseSurfaceEntries` 中结构基准变动时同步平移图形；`hasConfigData()` 计入图形数量。
-- **渲染**（[ConsoleDrawRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleDrawRenderer.java)）：按 `ConsoleSurface` 的 U/V/N 基向量构造矩阵（列 = U/16、V/16、N/16），外推 `OUTSET_BASE=0.001 + layer*0.0001`（最大 0.0017，小于组件 `COMP_OUTSET=0.002`，保证图案位于组件下方且减少与方块表面的深度冲突）；实心图形统一用 1×1 白贴图 `textures/block/console_parts/white.png` + 顶点色（`RenderType.entitySolid`），预设用 `entityCutoutNoCull` 直接贴单色 PNG；预设按 `rotation` 角度（任意角度，不限 90° 倍数）以中心旋转四角、UV 固定为 0..1（`rotateOffset` 辅助方法）。箭头头部长度 `min(len, 4*width)`、头半宽 `1.5*width`（完全随线宽等比缩放，不再有 6 / 3 的固定下限），[ConsoleShape.bounds](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/draw/ConsoleShape.java) 的箭头留边同步为 `1.5*width`。所有顶点统一传入固定的「视空间向上」法线 `FLAT_NORMAL`（单位矩阵 + `(0,1,0)`）：实体类着色器会对顶点做 `minecraft_mix_light` 漫反射，平面图案法线正对玩家时系数仅约 0.74，会把白色压成浅灰、所有颜色整体发灰；固定法线后系数恒为 1，图案始终显示为所选颜色。接入 [ConsoleBusBER.render](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java) 的最前面（组件之前绘制）。
-- **网络**（[ConsoleDrawPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleDrawPacket.java)）：id 21，`OP_EDIT`（整体改写类型 / 颜色 / 线宽 / 图层 / 两端点 / 预设）、`OP_MOVE`（按绝对锚点整体移动）、`OP_DELETE`、`OP_CREATE`（首次创建，成功后回 `ConsoleDrawCreatedPacket`）；服务端距离 100 校验后调用总线方法并按状态码提示。新增 [ConsoleDrawCreatedPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleDrawCreatedPacket.java)（id 22，S2C 回执 `pos + shapeId`，-1 = 创建失败），界面据此从「未创建」切换到编辑状态。
-- **界面**（[ConsoleDrawMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleDrawMenu.java) / [ConsoleDrawScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleDrawScreen.java)）：**单个图案的属性界面**（320×220），不再在 GUI 内画布绘图。菜单携带图形全部参数、表面半宽高以及 `shapeId / pending`（-1 + pending = 尚未创建）；界面控件：5 个类型按钮（矩形 / 空心矩形 / 线段 / 箭头 / 预设）、16 色色块 + `#RRGGBB`、线宽输入框（0.1~4.0，支持一位小数）、图层 0~7、位置 X/Y（图案左下角，表面像素）、尺寸（矩形宽/高；线段箭头长度/角度）、右侧**贴图样式列表**（2 列 24×24 缩略图，直接点选预设图案）、选中预设时的**旋转角度输入框**（任意角度 0~359.9）与缩放输入框（0.1~3.0，支持一位小数）、保存 / 删除 / 关闭；未创建状态下选线段或箭头时默认长度 8、角度 0。切换类型时按当前几何换算端点并重建该行控件，绘制与命中统一使用绝对坐标（`leftPos/topPos`），避免错位。`pending` 时保存 / 删除禁用，点击任一类型或贴图才发 `OP_CREATE`；回执轮询放在 `containerTick()`（`AbstractContainerScreen.tick()` 是 final 不能覆盖）。
-- **物品**（[DrawToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/DrawToolItem.java)）：工具用 NBT 记住玩家最近选择的颜色 / 线宽 / 缩放 / 图层，另外记录类型、预设、快速绘画、吸附整数、平直线优先（`DrawColor / DrawWidth / DrawScale / DrawLayer / DrawType / DrawPreset / DrawQuick / DrawSnap / DrawStraight`），属性界面保存或创建成功后由 `ConsoleDrawPacket` 回写 `remember(...)`。`useOn`——普通模式：命中已有图案打开其属性界面，否则以点击点为**图案左下角**、以「未创建」状态打开界面（点选类型或贴图才创建，直接关闭不留图案）；非面板方块 / 空气会取消快速绘画已记录的第一点。`use`（右键空气）：shift 打开设置界面 `DrawQuickScreen`，否则取消第一点。悬停青色粗体说明并附带当前设置摘要。
-- **快速绘画**（[DrawToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/DrawToolItem.java)）：设置界面里开启后右键面板不再打开属性界面。shift+右键只用于编辑命中的已有图案（未命中提示 shift_edit_only）；当前类型为 PRESET 时右键直接以点击点为中心生成图案；为矩形 / 线段 / 箭头时，第一次右键记录第一点（`PENDING`，按玩家 UUID 存服务端静态 Map，含 `busPos + face + u,v`），第二次右键同一总线同一面生成图形（以第一点为原点、第二点为目标），右键非面板位置或空气取消第一点。`吸附整数` 开启时点击坐标 `Math.round` 到整像素；`平直线优先` 开启且类型为线段 / 箭头时，若 `|dx| > 2|dy|` 或 `|dy| > 2|dx|` 则把第二点对应轴对齐第一点，直接画出水平或垂直线 / 箭头。
-- **设置界面**（[DrawQuickScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/DrawQuickScreen.java)）：shift+右键空气打开（340×200 普通 `Screen`），可切换 5 种类型、快速绘画 / 吸附整数 / 平直线优先三个开关、16 色色块与 `#RRGGBB`、线宽与缩放输入框、图层 0~7、右侧 3 列预设贴图缩略图、关闭；任何改动立即写回工具 NBT 并同步服务端。
-- **工具设置同步**（[DrawToolSettingsPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/DrawToolSettingsPacket.java)）：id 23，C2S 携带颜色 / 线宽 / 缩放 / 图层 / 类型 / 预设 / 三个开关；服务端找到手持工具后校验预设白名单再写入 NBT（[ModNetwork.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ModNetwork.java) 注册）。
-- **拖动**（[ConsoleDragClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleDragClient.java)）：多功能工具右键拖动新增 `KIND_SHAPE`，抓取优先级 组件 → 文字 → 图案；图案以 `u1,v1` 为锚点、吸附整数像素跟随准星，发 `OP_MOVE` 绝对锚点，服务端 `applyDrawSetAnchor` 按包围盒夹紧。
-- **服务端 API**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：新增 `findDrawShapeAt(face,u,v)`（图层高优先、同层后加优先；线段按点到线段距离）、`applyDrawEdit(...)`（夹紧图层 / 线宽 / 端点，预设白名单）、`applyDrawSetAnchor(id,u,v)`；`applyDrawAdd` 改为返回新建的 `ConsoleShape`（含 id）；移除 `applyDrawMove` 与 `applyDrawClearLayer`。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第四十二期：扇形仪表（gauge_f）**
-
-- **模型转换**：源 `模型/控制台类/panel_props/11_gauge_f/gauge_fan.obj` 按既有约定 `(x,y,z) → (-z,y,x)`（法线同式）一次性转为 [gauge_f_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/gauge_f_surface.obj)，保留 `vt/o/f`，`mtllib` 换成注释头，全部面写 `usemtl prop`（`recolorable=true` 走整图着色，不需要 tint 白块）；转换后包围盒 x 0.090625~0.2075（贴表面）、y/z 0.1~0.9，分组 `o Frame / o Face / o Hub / o Needle`。
-- **贴图与图标**：`11_gauge_f/gauge_fan.png`（512×512）复制为 `textures/block/console_parts/gauge_f.png`；`物品贴图.png`（16×16）复制为 `textures/item/controller_gauge_f.png`，物品模型 `models/item/controller_gauge_f.json` 用 `item/generated` + `cc_rc:item/controller_gauge_f`。
-- **注册**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 末尾追加 `GAUGE_F("gauge_f", "gauge_f", 14×14, recolorable=true, renderScale=0.45F)`，`item()` 返回新物品、`supportsFloatVariable()` 加入 `GAUGE_F`；[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) 新增 `controller_gauge_f`（`ConsoleCompItem`）；[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入创造栏；中英 lang 补 `gui.cc_rc.console.comp.gauge_f` / `item.cc_rc.controller_gauge_f`。
-- **逻辑**：[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java) 的 `writeBackToVar` 浮点分支加入 `GAUGE_F`，与流量表完全同路径（`value` 默认 0、范围夹 -5~105、程序 / CC 写浮点即驱动指针），无需新增字段。
-- **指针动画**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：新增常量 `GAUGE_F_BAKED_DEG = -17`（实测模型指针在 (z,y) 平面指向右下约 17°，源 README 的 197° 不可用）、`GAUGE_F_START_DEG = -30`（0 值 = 左下 30°）、`GAUGE_F_DEG_PER_PERCENT = 2.4`（全程 240°）、枢轴 `(y=0.5, z=0.5)`（源 0.5, 0.5, -0.1875 转换而来）；渲染时 `Needle` 分组绕模型 X 轴旋转，角度 = `(-30 + 2.4×value) - (-17)` 转弧度，数值 0 指向左下 30°、100 指向右下 30°、顺时针扫 240°，指针与法线同步旋转。
-- **着色**：沿用流量表 `recolorable=true` 的整图重着色，`ConsoleCompTextures` 跳过深色/透明像素，黑色指针与刻度保持原色，颜色只作用在表盘亮部。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-
-**第四十三期：同步指示器（synchroscope）**
-
-- **模型转换**：源 `模型/控制台类/panel_props_models/panel_props/12_synchroscope/gauge_fan_lamp.obj`（灯亮）与 `gauge_fan_lamp_off.obj`（灯灭）按 `(x,y,z) → (-z,y,x)`（法线同式）转为 [synchroscope_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/synchroscope_surface.obj)（variant 0，灯亮）与 [synchroscope_1_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/synchroscope_1_surface.obj)（variant 1，灯灭），保留 `vt/o/f`，`mtllib` 换成注释头，全部面写 `usemtl prop`；分组 `o Frame / o Face / o Hub / o Needle / o Lamp`，两个模型共用贴图。
-- **贴图与图标**：`12_synchroscope/gauge_fan_lamp.png` 复制为 `textures/block/console_parts/synchroscope.png`；`物品贴图-synchroscope-同步指示器.png`（16×16）复制为 `textures/item/controller_synchroscope.png`，物品模型 `models/item/controller_synchroscope.json` 用 `item/generated` + `cc_rc:item/controller_synchroscope`。
-- **注册**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 末尾追加 `SYNCHROSCOPE("synchroscope", "synchroscope", 14×14, recolorable=false, renderScale=0.45F)`，`item()` 返回新物品、`supportsFloatVariable()` 加入 `SYNCHROSCOPE`，新增 `hasSpeedVariable()`（仅同步指示器为 true）；[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) 新增 `controller_synchroscope`（`ConsoleCompItem`）；[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入创造栏；中英 lang 补 `gui.cc_rc.console.comp.synchroscope` / `item.cc_rc.controller_synchroscope`。
-- **配置**（[Config.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/Config.java)）：新增 `console_synchroscope.lamp_speed`（默认 15，范围 0~180，单位 度/tick）与 `getSynchroscopeLampSpeed()`。
-- **变量绑定**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：附加变量名 = 组件代号 + `_s`，绑定到该组件（`syncSynchroVars / ensureSynchroSpeedVar / isSynchroSpeedName`）；放置组件时只重连已存在的变量，创建发生在设置界面点「完成」；改名 / 设置时重新确保绑定，改名时解绑旧速度变量。速度变量只作为输入：`findVarSlotByComp` 跳过、`uploadVarToComponent` 不写回、`runProgram` 读取阶段跳过、`buildVars`（配置 JSON）按名称补绑为 `FLOAT`，类型或组件不符则 `CFG_INVALID`。
-- **服务端 tick**（`applySynchroscopes()`，FULL 状态每 tick）：读取 `<代号>_s` 作为 `speed`，角度先 `wrapAngle180(comp.value)` 再叠加 `speed` 并再次环绕（185° → -175°）；`|speed| < lamp_speed` 且 `|angle| ≤ 15°` 时 state=1（灯亮），否则 state=0（灯灭）；值或状态变化才 `copyWith` 写回变量并 `sync()`。`writeBackToVar` 浮点分支加入 `SYNCHROSCOPE`（程序 / CC 写浮点即设定指针位置）。
-- **指针渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：新增常量 `SYNCHRO_BAKED_DEG`（烘焙角，0 位校准值见下方修复）、枢轴 `(y=0.5, z=0.5)`；`o Needle` 分组绕模型 X 轴绕枢轴旋转，角度 = `wrapAngle180(value) - SYNCHRO_BAKED_DEG`，value=0 时指针指向正上方，正角度在屏幕上为顺时针，法线同步旋转。`meshFor` 中 state 1 用基础模型（灯亮），state 0 用 variant 1（灯灭，`_1_surface`）。
-- **构建**：gradlew build BUILD SUCCESSFUL（EXIT=0，仅既有过时 API 警告）。
-- **修复（转速变量名可编辑）**：`CompEntry` 新增 `speedVar`（空 = 自动 `代号 + "_s"`，`speedVarName()` 统一取名），构造 / 四个 `copyWith*` / NBT（`SpeedVar`，空时不写）/ `applyCompEdit`（新参数 + `[A-Za-z0-9_]{1,32}`、不得等于主代号、重名检查）全部贯通；`isSynchroSpeedName / ensureSynchroSpeedVar / applySynchroscopes / buildVars` 改读 `speedVarName()`；`ConsoleCompPacket`、`ConsoleCompMenu`、`ConsoleCompItem.openCompMenu` 同步增加 `speedVar` 字段与编解码；[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) 为同步指示器在 `DISPLAY_Y` 行新增「转速变量」输入框（初值 = 自定义名，未自定义时显示 `代号_s`），提交时若等于 `代号_s` 或留空则发送空串（改代号后自动跟随），并补 render / keyPressed / 回车提交。
-- **修复（背板染色）**：同步指示器原先全部面 `usemtl prop` 且贴图无纯白像素，染色链路拿不到 `tintable` 面、`findTintUv` 回退到透明像素导致完全无效。两个 OBJ 的 `o Frame`（背面大板，即背板）12 个面改为 `usemtl tint`，`o Face` 前恢复 `usemtl prop`；贴图 `synchroscope.png` 在未被任何面采样的区域 (500,196)-(507,203) 写入 8×8 纯白块供 `findTintUv` 采样。现在与其它 panel_props 组件一致：背板随所选颜色染色，表盘 / 指针 / 灯面保持原色。
-- **修复（转速变量不再在放置时自动创建）**：`applyCompAdd` 不再调用 `syncSynchroSpeedVar`，改为只调用 `ensureSynchroSpeedVar(comp, false)` 重连已存在的同名浮点变量，不会凭空多出 `<代号>_s`；变量改在设置界面点「完成」（`applyCompEdit → syncSynchroVars → ensureSynchroSpeedVar(comp, true)`）时创建，与 RGB 控制器三通道变量的行为一致。同时 `isSynchroSpeedName` 改用 `comp.speedVarName()`，自定义转速变量名也能被识别为转速输入量（此前只认 `代号_s`，改自定义名会残留旧绑定）。
-- **修复（0 位指针偏左）**：按指针几何反算烘焙角——针根中点 (y=0.5, z=0.5)、针尖中点 (y≈0.4251, z≈0.7451)，指针实际指向 +Z 偏下约 107°，`SYNCHRO_BAKED_DEG` 由 -102.5 改为 -107.0，0 位时指针正好竖直向上（居中）。
-- **新增（灯状态布尔附加变量）**：同步指示器增加 `<代号>_b`（如 `SYNCHROSCOPE_1_b`），布尔，只读输出：`applySynchroscopes` 每 tick 用 `lamp = |速度| < 阈值 && |角度| ≤ 15°` 的实际判断值覆盖；放置组件时只重连、不创建，设置界面点「完成」时由 `ensureSynchroLampVar` 创建；`applyVarCreate` / 配置 JSON 导入按名称绑为 BOOL；`findVarSlotByComp`、`uploadVarToComponent` 均跳过该变量，避免抢占主变量槽位或被变量反向写入。CC 侧经 `getVar("代号_b")` 读取。
-- **修复（灯状态变量名可编辑 + 出现在变量创建候选）**：`CompEntry` 新增 `lampVar`（空 = 自动 `代号 + "_b"`，`lampVarName()` 自定义优先），构造链 / 四个 `copyWith*` / `withValue` / `withPoint` / `applyCompText` / NBT（`LampVar`，空时不写）/ `applyCompEdit`（新参数 + 格式校验 + 不得等于主代号与转速名 + 重名检查）全部贯通；`ConsoleCompPacket`、`ConsoleCompMenu`、`ConsoleCompItem.openCompMenu` 增加 `lampVar` 编解码；[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) 为同步指示器新增 `LAMP_Y` 行的「灯状态变量」输入框，同步指示器改用加高背景（`tallLayout()`：RGB 控制器或带灯变量时用 `GUI_BG_TALL` / `RGB_BG_HEIGHT` / `RGB_BUTTON_Y`）；[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java) 的 `devices()` / `matchedDevice()` 补上同步指示器的 `speedVarName()`（FLOAT）与 `lampVarName()`（BOOL）候选与匹配，创建变量下拉里可直接选到两个附加变量。
-- **修复（染色位置错误）**：原先用 `usemtl tint` 标记 `o Frame`（外框）导致颜色只染外框。改为与扇形仪表一致的整图重新着色：`SYNCHROSCOPE` 的 `recolorable` 改为 `true`，两个模型的 `o Frame` 恢复 `usemtl prop`。表盘中间背景（亮米色）被染色，外框 / 刻度 / 深色指针的贴图像素为深色，重新着色时被跳过。
-
-**第四十四期：安全按钮（button_s）**
-
-- **模型转换**：源 `模型/控制台类/panel_props_models/panel_props/09_cover_button` 的三个 OBJ 按 `(x,y,z) → (-z,y,x)`（法线同式）转为 [button_s_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/button_s_surface.obj)（variant 0，合盖）、[button_s_1_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/button_s_1_surface.obj)（variant 1，开盖弹起）、[button_s_2_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/button_s_2_surface.obj)（variant 2，开盖按下）；分组 `Panel / Base / Button / Cover`，玻璃罩面写 `usemtl glass`，其余 `usemtl prop`。
-- **贴图与图标**：`button_s.png`（模型贴图）与 `button_s_glass.png`（玻璃罩，供半透明批次使用）放入 `textures/block/console_parts/`，物品图标 `textures/item/controller_button_s.png` + 物品模型 `models/item/controller_button_s.json`（`item/generated`）。
-- **注册**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 追加 `BUTTON_S("button_s", "button_s", 14×14, recolorable=false, renderScale=0.3F)`，`item()` 返回新物品、`supportsBoolVariable()` 加入 `BUTTON_S`（布尔语义与按钮面板一致，表示是否按下）；[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) 新增 `controller_button_s`，[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入创造栏；中英 lang 补 `gui.cc_rc.console.comp.button_s` / `item.cc_rc.controller_button_s`。
-- **状态编码**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：复用 `state` long —— `0` 合盖、`OPEN_COVER(-2)` 开盖弹起、`HOLD_UNTIL_RELEASE(-1)` 按住到松手、`>0` 弹起时刻；`CompEntry` 新增 `coverTicks`（默认 `DEFAULT_COVER_TICKS = 100`，`0` = 不自动关，上限 `MAX_COVER_TICKS`），构造链 / 四个 `copyWith*` / `withValue` / `withPoint` / `applyCompText` / NBT（`CoverTicks`，等于默认值时不写，兼容旧存档）/ `applyCompEdit`（新参数 + 仅对 BUTTON_S 生效并夹紧）全部贯通，并新增 `effectiveCoverTicks()`。
-- **盖子计时**：新增运行期映射 `Map<Integer,Long> coverDeadlines`（组件 id → 自动关盖时刻，不写 NBT）：`openCover` / `closeCover` 播放开 / 关盖音效（`WOODEN_TRAPDOOR_OPEN` / `_CLOSE`），`refreshCoverDeadline` 按 `now + coverTicks` 记录（0 则移除）；`releaseExpiredCovers()` 在 `tick` 中于 `releaseExpiredKeypads()` 后调用，到点把 `OPEN_COVER` 合回 `0` 并 `sync()`；删除组件时清理映射；读档时对 `state == OPEN_COVER && coverTicks > 0` 的组件按 `当前时间 + coverTicks` 重建，避免存档关闭期间时间流逝导致重进世界立刻关盖。
-- **交互**：`applyCompUse` 新增 `case BUTTON_S` —— `bigStep`（Shift）在 `0 ↔ OPEN_COVER` 间切换，按钮按下期间（`-1` 或 `>0`）Shift 无效；非 Shift 仅在 `OPEN_COVER` 时按下（`holdTicks<=0` 为按住到松手，否则 `now + holdTicks`），按下期间暂停自动关盖计时，播放 `STONE_BUTTON_CLICK_ON`；`releaseExpiredKeypads` / `releaseKeypad` 到点或松手时回到 `OPEN_COVER` 并重新计时；[ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java) 的客户端按住判断加入 BUTTON_S，且非开盖状态不进入按住流程。
-- **渲染**：`ConsoleCompModels` 识别 `usemtl glass`，标记 `Tri.glass` 并在 `ObjMesh` 记录 `glassTexture`（`<modelId>_glass.png`）；[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java) 为玻璃面单独用一个 `entityTranslucentCull(button_s_glass.png)` 半透明批次绘制（见下方修复）；`meshFor` 对 BUTTON_S 按状态取模型（`OPEN_COVER` → variant 1，按下 → variant 2，否则 variant 0），按下状态已烘焙在 `_2` 模型里，故 `pressGroup` 位移排除 BUTTON_S。
-- **设置界面**：[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) 为安全按钮在第二行新增「盖子自动关闭」输入框（0~`MAX_COVER_TICKS`，默认 100，`0` = 不自动关），并改用加高背景（`tallLayout()` 加入 BUTTON_S）；`ConsoleCompPacket` / `ConsoleCompMenu` / `ConsoleCompItem` 全链路增加 `coverTicks` 字段与编解码。
-- **修复（玻璃罩不透明 / 整个按钮发蓝）**：玻璃面一度改成 `RenderType.entityCutoutNoCull(button_s_glass.png)`，但裁切批次只丢弃 alpha < 0.1 的像素，`button_s_glass.png` 全部像素的 alpha 都约 0.23，于是整片玻璃被当成不透明绘制——盖子变成一块浅蓝实体，把后面的面板 / 底座 / 按钮全部挡住。现改为 `RenderType.entityTranslucentCull(button_s_glass.png)`：半透明批次按贴图 alpha 真正混色，罩子透明可见内部按钮；批次创建顺序在不透明批次之后，先画不透明再画玻璃。
-- **修复（玻璃罩整体发雾 / 全部半透明）**：玻璃罩由 5 块「薄板盒」（每块 = 两面 0.015 间隔的板）拼成，若用无剔除的 `entityTranslucent`，每块板正反两面各叠一层 alpha（约 0.23×2），整个罩子累积到 40% 以上的雾状遮盖，表现为「整个按钮半透明」。改用带背面剔除的 `entityTranslucentCull`：每块板只画朝向观察者的一面，只贡献一层 alpha。
-- **修复（整个组件被玻璃贴图/半透明状态污染）**：`renderComponents` 原先是「一个组件一次遍历、内部交替写入裁切批次与半透明批次」。同一个 `MultiBufferSource` 里先创建裁切批次、再创建半透明批次后，先创建的批次贴图/状态会被破坏（与「组件绘制中切换 RenderType 导致贴图整体失效」同一根因），表现为整个模型都套上 `button_s_glass.png`、整体半透明。现改为**两遍绘制**：第一遍只画所有组件的不透明面（只创建 `entityCutoutNoCull` 批次），第二遍只画所有玻璃面（只创建 `entityTranslucentCull` 批次），两遍互不干扰；批次创建顺序保证玻璃在不透明之后绘制。
-- **修复（盖子永不自动关闭）**：`releaseExpiredKeypads()` 原先的跳过条件只排除 `state == 0` / `HOLD_UNTIL_RELEASE`，而合盖外的 `OPEN_COVER(-2)` 会落到「`now >= state` 已到点」分支，于是每个 tick 都被当成一次弹起、并调用 `refreshCoverDeadline` 把自动关盖时刻重设为 `now + coverTicks`，截止时刻永远推后、`releaseExpiredCovers()` 永远等不到。现跳过条件改为 `state <= 0L`（只有正数弹起时刻才参与计时弹起），开盖后 `coverTicks` 到点即自动合盖。
-- **染色（按钮本体可着色）**：三个 OBJ 的 `o Button` 分组（按钮本体 + 薄板共 12 面）在分组后加 `usemtl tint`，即按钮本体为逐面染色面（`Tri.tintable`）；面板 / 底座 / 金属框仍是 `usemtl prop`，玻璃罩 `usemtl glass`，均不参与染色。`button_s.png` 是调色板贴图、没有可挪用的纯白采样块，故 `ConsoleCompModels.findTintUv` 找不到白块时返回 `null`，`ObjMesh.tintU/tintV` 记为 `-1`；[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java#L532-L537) 渲染时用 `useTintUv = tinted && mesh.tintU >= 0` 判断，为 `-1` 时**保留原 UV、只用顶点色乘出所选颜色**，避免采样到透明像素被裁切丢弃。效果：设置颜色后只有中间按钮的白色本体变色，其余部分保持原色。
-- **修复（开盖后变量直接变 true）**：`runProgram()` 读组件时对布尔变量一律用 `comp.state != 0L`，而安全按钮的 `state` 在开盖时是 `OPEN_COVER(-2)`、计时按下时是弹起时刻，都会被判成 true，于是程序运行时变量表/程序读数显示「按下了」。现对 `KEYPAD / BUTTON_X / BUTTON_S` 改用 `comp.isKeypadPressed(gameTime)` 判断：合盖与开盖都是 false，按住到松手（-1）或计时未到点才是 true，松手/到点后回到 false。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅既有过时 API 警告）。
-
-**第四十五期：钥匙开关（switch_k）**
-
-- **模型转换**：源 `模型/控制台类/panel_props_models/panel_props/10_key_switch` 的四个 OBJ 按 `(x,y,z) → (-z,y,x)`（法线同式）转为 [switch_k_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/switch_k_surface.obj)（variant 0，合盖无钥匙）、[switch_k_1_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/switch_k_1_surface.obj)（variant 1，开盖无钥匙）、[switch_k_2_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/switch_k_2_surface.obj)（variant 2，合盖有钥匙）、[switch_k_3_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/switch_k_3_surface.obj)（variant 3，开盖有钥匙）；分组 `o Panel` 写 `usemtl tint`（背板可染色），`o Knob` / `o Key` 写 `usemtl prop`。
-- **贴图与图标**：`knob_switch.png` 复制为 `textures/block/console_parts/switch_k.png`；物品图标 `textures/item/controller_switch_k.png`（钥匙开关）与 `textures/item/console_key.png`（钥匙）；物品模型 `models/item/controller_switch_k.json`、`models/item/console_key.json`（`item/generated`）。
-- **注册**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 追加 `SWITCH_K("switch_k", "switch_k", 14×14, recolorable=false, renderScale=0.3F)`，`item()` 返回新物品、`supportsBoolVariable()` 加入 `SWITCH_K`，新增 `hasKeyMode()`；[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) 新增 `controller_switch_k`（`ConsoleCompItem`）与 `console_key`（`ConsoleKeyItem`，`stacksTo(1)`）；[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入创造栏；中英 lang 补组件名 / 物品名 / `item.cc_rc.console_key.bound` / 钥匙提示文案。
-- **钥匙物品**（[ConsoleKeyItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/ConsoleKeyItem.java)）：NBT 键 `CompCode` 记录组件代号；`createKey(code, label)` 生成物品并设置名字「控制柜钥匙：<组件附带文字，空则用代号>」；`keyCode(stack)` 读取代号；`useOn` 定位总线与点击面上的组件，仅对钥匙开关调用 `applyKeyInsert`。
-- **组件字段**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`CompEntry` 新增 `hasKey`（是否有钥匙）与 `keyMode`（0 开闭 / 1 常开 / 2 常闭，常量 `KEY_MODE_*`）；完整构造器末尾追加两参（旧 24 参构造委托「无钥匙 + 开闭」），`copyWith / copyWithPos / copyWithColor / copyWithShowOriginal / copyWithKey / withHistorySample / withPoint / applyCompText / applyCompEdit` 与 NBT（`HasKey` 为 true 才写、`KeyMode` 非默认才写，读档夹紧 0~2）全部贯通；`writeBackToVar` 布尔分支加入 `SWITCH_K`（变量只取 `state != 0`）。
-- **交互**：`applyCompUse` 新增 `Player` 参数（[ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java) 传入），`case SWITCH_K`：无钥匙时部分成型 + Shift 右键取出一把钥匙（`giveKeyItem`，进入背包或掉落）；有钥匙时 Shift 右键拔钥匙（常开仅开时可拔、常闭仅关时可拔、开闭都可），拔下后 `hasKey=false` 并给玩家钥匙；普通右键在有钥匙时切换 0/1。新增 `applyKeyInsert(id, stack, player)`：校验组件类型 / 尚无钥匙 / 钥匙代号 `equalsIgnoreCase` 组件代号，通过后非创造模式消耗 1 个并把 `hasKey` 置 true。新增 `COMP_INVALID(9)` 返回码。
-- **交互拦截**：[ConsoleBusBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlock.java) 的 `use` 在手持 `ConsoleKeyItem` 时返回 `PASS`，避免打开总线界面拦截物品的 `useOn`（结构方块走 [ConsoleBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBlock.java) 的「手持物品即 PASS」）。
-- **渲染**：[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java) 的 `meshFor` 新增 SWITCH_K 分支：`variant = (hasKey ? 2 : 0) + (state != 0 ? 1 : 0)`。
-- **设置界面**：`ConsoleCompScreen` 的 `tallLayout()` 加入 `hasKeyMode()`（加高背景），在 `SHOW_ORIGINAL_Y` 行新增「钥匙模式」循环按钮（开闭 → 常开 → 常闭）；`ConsoleCompMenu` / `ConsoleCompPacket` / `ConsoleCompItem.openCompMenu` 全链路增加 `keyMode` 字段与编解码，提交时随编辑包发送。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅既有过时 API 警告）。
-
-**第四十六期：圆盘记录仪 L（graph_l）**
-
-- **模型转换**：源 `模型/控制台类/圆盘记录仪/recorder/recorder.obj` 按 `(x,y,z) → (-z,y,x)`（法线同式）转为 [plotter_l_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/plotter_l_surface.obj)（包围盒 16×13×3 设计单位 = 1×0.8125×0.1875 格），保留两个分组 `o Body`（框 + 纸 + 刻度板，静止）与 `o Pen`（右侧的笔，只纵向平移）；材质统一 `usemtl prop`，配套 [plotter_l.mtl](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/plotter_l.mtl)。
-- **贴图与图标**：`recorder.png` 复制为 `textures/block/console_parts/plotter_l.png`；物品图标 `textures/item/controller_plotter_l.png`（源 `物品贴图.png`）；物品模型 `models/item/controller_plotter_l.json`（`item/generated`）。
-- **注册**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 追加 `GRAPH_L("graph_l", "plotter_l", 16×13, recolorable=false, renderScale=1.0F)`，`item()` 返回新物品，`supportsFloatVariable()` / `supportsHistory()` 加入 `GRAPH_L`（变量、历史采样、推送触发名称 `Code2` 全部与圆盘记录仪一致）；[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) 新增 `controller_plotter_l`，[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入创造栏；中英 lang 补 `gui.cc_rc.console.comp.graph_l` / `item.cc_rc.controller_plotter_l`。
-- **笔的动画**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：新增 `penTravel(comp)`，取历史序列最前面的采样 `history[0]`（最近一次 push 进入的值；无历史时退回 `value`），按模型设计 `y = 2.836 + 0.07276 × 值`（设计单位，0~100）映射，并减去模型中烘焙的位置 `6.4743`（源模型按 50 建模）得到纵向偏移，再除以 16 换算成格；渲染时对 `Pen` 分组的顶点只做 `py += penOffsetY`（横向、法线不变）。
-- **曲线**：`renderPlotHistory` 按 `GRAPH_L` 切换一套新几何——绘制区左边界 `-5.78`、宽度 `9.7682`（纸面设计单位 4.0118…13.78，右端正好接笔尖）、数值 0 / 100 对应纵向 `-3.664` / `+3.612`（与笔行程 7.276 一致）、线宽 `0.5`，50 个采样点仍按「最新在最右列」排列；曲线用 `penPlaneOutset`（模型 x = 2.815 设计单位）外推，位于纸面（2.800）之前、笔尖背面（2.828）之后，不穿模。
-- **染色**：`recolorable = false`，模型保持原贴图；组件颜色只作为曲线颜色（与圆盘记录仪相同，未设置颜色时默认红色）。
-- **踩坑修复（组件完全不渲染）**：`modelId` 默认取 `id`，若只写 6 参构造，加载器会去找 `graph_l_surface.obj / graph_l.png` 而资源实际叫 `plotter_l`，`ConsoleCompModels.load` 返回 null → 模型与曲线一起被跳过。改为显式传第 7 参 `modelId = "plotter_l"`；同时把 `GRAPH_L` 常量追加到枚举末尾，避免改变已有类型序号（NBT 按 `id` 字符串存类型，不影响旧存档）。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅既有过时 API 警告）。
-
-**第四十七期：警报器（alarm）**
-
-- **模型转换**：源 `模型/控制台类/警报器/lamp_buttons` 的 OBJ 按 `(x,y,z) → (-z,y,x)`（法线同式）转为 6 个变体 [alarm_surface.obj](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/alarm_surface.obj)（灯灭）与 `alarm_1..5_surface.obj`（`_1` 灯亮、`_2` 静音按钮按下、`_3` 灯亮 + 静音按下、`_4` 重置按下、`_5` 灯亮 + 重置按下），配套 [alarm.mtl](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/models/console_parts/alarm.mtl)；面板从左到右为方形灯 / 静音按钮 / 重置按钮。
-- **贴图与图标**：`lamp_buttons.png` 复制为 `textures/block/console_parts/alarm.png`；物品图标 `textures/item/controller_alarm.png`；物品模型 `models/item/controller_alarm.json`（`item/generated`）。
-- **注册**：[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 追加 `ALARM("alarm", "alarm", 16×16, recolorable=false, renderScale=0.45F)`，`item()` 返回新物品，`supportsBoolVariable()` 加入 `ALARM`，新增 `hasMuteVariable()`（仅 ALARM 为 true）；[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) 新增 `controller_alarm`，[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入创造栏；中英 lang 补 `gui.cc_rc.console.comp.alarm` / `item.cc_rc.controller_alarm`。
-- **组件字段**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`CompEntry` 新增 `muted`（静音）、`pressButton`（0 无 / 1 静音 / 2 重置）与 `pressUntil`（按下反馈结束的游戏时间）；原完整构造器改为委托 `false / 0 / 0L`，新增 29 参完整构造器，仅 ALARM 保留这三个值；`copyWith / copyWithPos / copyWithColor / copyWithShowOriginal / copyWithKey`、`withValue`、`withPoint`、`withHistorySample`、`applyCompText / applyCompEdit` 全部贯通，新增 `copyWithMuted / copyWithPress` 与 `muteVarName()`（`<代号>_Q`）；NBT 写 `Muted`（仅 true 时）与 `PressButton` / `PressUntil`（非 0 时）。
-- **`_Q` 附加变量**：`applyVarAdd` 按 `isAlarmMuteName` 绑定为只读 `BOOL`（初值取 `muted`）；`uploadVarToComponent` / `findVarSlotByComp` 跳过该名称，避免抢占主变量槽位或被变量反向写入；`ensureAlarmMuteVar(comp, create)` 只重连已存在的同名变量（不自动创建），设置界面改名时由 `syncAlarmVars` 解绑旧名并重绑新名（模仿同步指示器灯变量的做法）；`writeBackToVar` 布尔分支加入 `ALARM`（只写 `state != 0`）。
-- **报警结算**（新增 `applyAlarms()`，在 `tick` 的 `State.FULL` 分支 `applySynchroscopes()` 之后调用）：清除到期的 `pressUntil` 按下反馈；报警解除（`state == 0`）时自动把 `muted` 清为 false —— 保证下一次「false → true」上升沿一定是未静音状态；静音状态每 tick 镜像到 `<代号>_Q`；报警中且未静音时每 `ALARM_SOUND_INTERVAL`（10 tick）用 `ConsoleSurface.toWorld(...)` 算出组件所在位置并 `playSound` 播放占位音效 `SoundEvents.BELL_BLOCK`（多个警报器按 `comp.id` 错开），之后替换为专用音频。
-- **交互**：`applyCompUse` 新增 `case ALARM` —— `action 2`（静音）把 `muted` 置 true、记录 `pressButton = 1`，灯常亮且停止发声（`_Q` 由下一 tick 的 `applyAlarms` 镜像）；`action 3`（重置）把组件值置 0 并 `writeBackToVar` 写回主变量、记录 `pressButton = 2`，灯熄灭（静音随报警解除一并清除）；灯区域不处理。[ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java) 按模型实测比例把点击位置分为三段：`rel < -0.33`（灯，只消费不响应）、`-0.33~0.32`（静音，action 2）、`> 0.32`（重置，action 3）。
-- **渲染**：[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java) 的 `meshFor` 新增 ALARM 分支：`lampOn = 报警中 && (已静音 || gameTime/10 偶数)`（闪烁只在客户端按游戏时间计算，不逐 tick 同步），`variant = (lampOn ? 1 : 0) + (静音按下 ? 2 : 0) + (重置按下 ? 4 : 0)`，覆盖 0~5 六个模型。
-- **修复（变量表里自动多出变量 + 界面缺少改名栏）**：放置组件时不再自动创建 `<代号>_Q`（`applyCompAdd` 改为 `ensureAlarmMuteVar(added, false)`，只重连已存在的同名变量）；随后又发现「移动组件（设置界面改坐标 → `applyCompEdit → syncAlarmVars`）」仍会自动创建，于是把 `syncAlarmVars` 也改为只重连（`create = false`），同步指示器的 `syncSynchroVars`（`_s` / `_b`）一并改为不创建——现在任何组件放置 / 移动 / 改名都不会修改变量表，附加变量只能由玩家在变量表里按同名新增后自动绑定。`CompEntry` 新增 `muteVar`（空 = 自动 `代号 + "_Q"`）并贯通完整构造器（30 参）、全部 `copyWith*`、`applyCompText`、NBT（`MuteVar`，空时不写）；`applyCompEdit` 增加 `muteVar` 参数（格式校验 / 不得等于代号 / 重名检查 / 等于自动名时按空保存）；`ConsoleCompMenu` / `ConsoleCompPacket` / `ConsoleCompItem` 全链路增加 `muteVar` 编解码；[ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) 为警报器新增「静音变量」输入框（加高界面），[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java) 的 `devices()` / `matchedDevice()` 补上 `muteVarName()`（BOOL）候选与匹配；配置 JSON 导入按名称补绑静音变量。此外 `runProgram()` 读布尔变量时跳过 `_Q`（只读变量自身，不从「是否报警」回读），避免程序轮询把它覆盖成报警状态。
-- **染色（只染背板红色面板）**：`lamp_buttons.png` 的背板由三个盒子组成——奶油色边框 `#e2d7bd`（整块底板）、红色面板 `#b23a2b`、顶部黑条 `#202024`；六个变体的 `o Panel` 分组中每 6 个面为一盒，因此只在第 7~12 面（红色面板）插入 `usemtl tint`，第 13 面前恢复 `usemtl prop`（6 个 OBJ 各 1 处，已 grep 校验）。`ConsoleCompModels` 解析时把这些面标记为 `Tri.tintable`，`findTintUv` 在本贴图中找到未被任何变体三角形 UV 覆盖的纯白 4×4 块（位于 18,18），渲染时染色面的 UV 指到该白块、再乘顶点色，于是显示为准确的所选颜色（无需改 PNG）；未设置颜色时仍用原 UV 显示原红色面板。[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) 的 `ALARM` 保持 `recolorable = false` 并注释原因：`recolorable = true` 会走 `ConsoleCompTextures` 整张贴图重新着色，把灯、红色重置按钮等有色像素一并改色，违背「只染红色背板」。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅既有过时 API 警告）。
-
-**第四十八期：程序表达式一元运算（取整 / 取小数部分 / 绝对值）**
-
-- **IR**（[ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java)）：`Op` 末尾追加 `FLOOR` / `FRAC` / `ABS`（网络包按 `ordinal` 传输，只能追加）；`isUnary()` 纳入三者；`type()` 为「数值（布尔可隐式拓宽）→ FLOAT」；`symbol()` 返回 `#` / `~` / `@`；`toText()` 输出前缀形式（子表达式为二元时自动加括号，与 `NEG` 规则一致）；NBT 的 `save / load` 与网络包的 `write / read` 四个一元分支同步补全。
-- **VM**（[ProgramVM.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramVM.java)）：新增 `OP_FLOOR_F(0x1D)` / `OP_FRAC_F(0x1E)` / `OP_ABS_F(0x1F)`，`BYTECODE_VERSION` 由 1 升为 2；`compileValue` 对三者先用 `compileAsFloat` 编译操作数（布尔自动 `B2F`），执行时分别为 `Math.floor`、`x - Math.floor(x)`、`Math.abs`。
-- **行编辑器**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：`parseOperand` 允许任意组合的一元前缀 `! - # ~ @`（新增 `isUnaryPrefix` / `unaryOpOf`，离操作数最近的最先生效，如 `-@A` 为 `-(|A|)`）；`appendExprSegments` 与 `appendWrappedSegments` 补三个显示分支；操作数着色、候选下拉的前缀扫描统一改为调用 `isUnaryPrefix`。
-- **配置导入**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`buildConfigExpr` 的一元分支补 `FLOOR / FRAC / ABS`（JSON 的 `op` 用枚举名，导出 / 导入天然一致）。
-- **方案文档**：新增 [表达式文本化改造方案.md](file:///e:/trae/program/CC_RC/表达式文本化改造方案.md)，记录 P0~P5 分阶段计划、原版 `MultilineTextField` 复用结论、算符优先级表与一元糖对照表。
-- **构建**：gradlew build BUILD SUCCESSFUL（附加 `-Dnet.minecraftforge.gradle.check.certs=false` 关闭 ForgeGradle 的联网证书检查，否则离线环境下会卡在 `EnvironmentChecks.testServerConnection`；仅既有过时 API 警告）。
-
-**第四十九期：表达式文本解析器 ProgramExprParser（P1）**
-
-- **新类**（[ProgramExprParser.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramExprParser.java)）：P1 阶段的纯后端解析器，不接界面。`parse(source, vars, targetType)` 返回 `Result`（`expr` / `error` / `tokens`），失败时 `expr` 为 null 且 `error` 带 `code`、`[start, end)` 与中文提示，`tokens` 始终可用供后续着色。
-- **词法**：`NAME`（变量名，`[A-Za-z0-9_]`，经 `Vars.findSlot` 解析槽位，未定义记 -1）、`NUMBER`（支持小数与科学计数法）、`BOOL`（true/false，忽略大小写）、`OP`、`LPAREN`、`RPAREN`、`EOF`；空白与换行只作分隔符，换行不产生任何语义。双字符运算符优先识别（`&& || == != <= >= //`），单 `&`、`|` 与其它字符记为 `bad_char`。
-- **语法**：Pratt 优先级爬升，优先级 `||` < `&&` < 比较 < `+ -` < `* / // %` < 一元 < 原子，全部左结合；减号在操作数位置按取负处理，一元可连续叠用（`-@A`）。
-- **类型**：解析时携带「期望类型」上下文——`&&`、`||`、`!` 的操作数期望布尔，算术与比较的操作数期望数值，顶层用目标变量类型；布尔位置上的 `0 / 1` 解释为布尔常量（与旧行编辑器 `isBoolTarget` 行为一致）。解析完成后用 `Expr.type(vars)` 复核，并要求结果类型与目标变量完全一致（沿用 `Line.validate` 的严格规则），另做 `MAX_DEPTH` 深度检查，超过即报 `too_deep`（同时限制递归，避免恶意长括号串爆栈）。
-- **保留写法**：一元只用符号 `!  -  #  ~  @`，**不提供** `floor() / frac() / abs()` 之类函数写法；仅保留历史数据里的 `float(x)`（显式布尔转浮点），因为 `Expr.toText` 仍这样输出，需要能读回。
-- **自检**：临时程序 `build/parsercheck/ParserCheck.java`（不属于源码，检查后删除）对 28 个用例全部通过——含优先级、左结合、一元叠用、`0/1` 布尔上下文、多行输入、`toText` 往返同构，以及空表达式 / 未知变量 / 缺右括号 / 多余符号 / 非法字符 / 类型不符的错误码与区间定位。
-- **构建**：gradlew compileJava BUILD SUCCESSFUL。
-
-**第五十期：表达式原文 exprSource 的存储与同步（P2）**
-
-- **IR**（[ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java#L441-L490)）：`Line` 新增 `exprSource`（玩家书写的原文，可含换行）与 `MAX_SOURCE = 1024`；新增 7 参构造器，保留 6 参构造器（原文默认空串），`withEnabled` 一并保留原文。
-- **NBT**：`save` / `load` 增加 `Src` 键，空串不写入，旧存档读不到即视为无原文（界面继续按 `Expr.toText` 回显）。
-- **网络包**：`write` / `read` 末尾追加 `writeUtf/readUtf(..., MAX_SOURCE)`，客户端与服务端包结构同步变更（同版本内自洽）。
-- **配置 JSON**（[ConsoleConfigJson.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleConfigJson.java#L151-L167)）：`Line` 增加 `source` 字段；导出写入 `line.exprSource`，导入经 `clipSource`（空转空串 + 截断到上限，不 trim 以保留缩进换行）。
-- **说明**：本阶段只做存储与同步，不改任何界面行为；原文与 `expr` 树暂时可能不一致（由后续 P3 文本编辑器负责保证一致）。
-- **构建**：gradlew build BUILD SUCCESSFUL。
-
-**第五十一期：表达式文本框编辑器 ExprEditBox（P3）**
-
-- **新控件**（[ExprEditBox.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ExprEditBox.java)）：以公共类 `MultilineTextField` 为内核，外包一层绘制与键鼠转发。构造时按控件宽度算出可用文本宽度 `wrapWidth = width - PAD * 2 - SCROLL_W`，并通过 `font.getSplitter().splitLines(value, wrapWidth, Style.EMPTY, false, consumer)` 自行缓存每个显示行的原文区间 `lineRanges`（`List<int[]>`）；空串补 `{0,0}`、结尾换行补 `{len,len}`，与原版 `reflowDisplayLines` 行为一致。原因：`MultilineTextField.StringView` 是 protected 嵌套 record，外部既不能引用类型也不能调用其 `beginIndex()/endIndex()`（`var` 同样报错），只能自算一份区间。
-- **绘制**：逐显示行「先按 Token 区间分段着色 → 错误区间整段改红 → 画选区底色 → 画光标」，`scissor` 裁剪，右侧自绘滚动条（滑块位置按 `scrollOffset / 总行数` 计算）；行数统计改用 `lineRanges.size()`，滚动与 `scrollToCursor` 同步替换（`getLineAtCursor()` 仍用原版）。选区区间用「光标 ± `getSelectedText().length()`」反推 `[begin,end)`：先试光标在选区末尾（`value.startsWith(text, cursor - length)`），再试开头，兜底 `[max(0, cursor-length), min(len, cursor)]`。
-- **交互**：`keyPressed` 直接转发 `MultilineTextField.keyPressed`（Enter 插入真实 `\n`，Esc 在补全展开时只收补全）；鼠标点击 `seekCursorToPoint` 定位并收起补全，候选下拉的点击由屏幕在 `mouseClicked` 最前处理；滚轮仅在鼠标位于控件内时生效。
-- **界面替换**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：删除旧 5 行「算符 + 操作数」控件及其全部辅助方法（`resetExprRows`、`addExprRow`、`loadExpr`、`flattenExpr`、`operandText`、`leafText`、`buildExpr`、`parseOperand`、`isUnaryPrefix`、`unaryOpOf`、`parseOperator`、`isBoolTarget`、`operandNames`、`operatorNames`、`operandBaseColor`、`operandSegments`）、`exprOpBoxes / exprValueBoxes / exprRows / addOpButton` 及 `EDIT_EXPR_ROWS / EDIT_EXPR_STEP / EDIT_OP_W` 常量；行编辑器表达式区改为单个多行框（`EDIT_EXPR_Y = 88`、`EDIT_EXPR_H = 76`），注释框、按钮列、错误提示行随之下移。
-- **校验联动**：新增 `analyzeExpr(bus)`（调用 `ProgramExprParser.parse(原文, exprVars(bus), targetType(bus))`）、`exprVars`（匿名 `Vars`：`findSlot → bus.findVarSlot`、`typeOf → VarDef.type`、`nameOf → def.name` 或 `#槽位`）、`targetType`（行目标变量的类型，只读或未定义返回 null）、`exprNameColor`、`exprCandidates`（`true/false` + 全部可读变量）、`exprErrorText`（错误码 → `err_name / err_type / err_deep / err_expr`）。`refreshLineError` 先解析再给 `exprBox.setDiagnostics(result)`，目标与条件错误次之，解析失败立即显示表达式错误并禁止提交；`buildLine` 失败返回 null，保存时把原文写入 `Line.exprSource`，`openLineEditor` 回显优先原文、缺失时用 `Expr.toText(scope)` 生成。
-- **提交与焦点**：表达式框内 Enter 换行、Ctrl+Enter 提交（`Screen.hasControlDown()` + 257/335），无候选时 Esc 关闭行编辑器；焦点与拖拽交给 `AbstractContainerScreen` 的默认派发，`lineEditorFocused()` 纳入 `exprBox.isFocused()`。补全下拉绘制在框外，由屏幕 `render` 末尾调用 `renderSuggestions`、`mouseClicked` 最前调用 `mouseClickedSuggestion`。
-- **文案**：中英 lang 的 `hint_operand` 改为表达式示例与新一元符号说明，新增 `err_name`（未定义的变量），删除已无引用的 `add_op / hint_operator / err_op`。
-- **方案文档**：[表达式文本化改造方案.md](file:///e:/trae/program/CC_RC/表达式文本化改造方案.md) 的「六、编辑器控件」按实际实现重写（自算行区间、选区反推、自绘滚动条），阶段表 P3 标为已完成。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅既有过时 API 警告）。
-
-**第五十二期：条件表达式化 condExpr（P4）**
-
-- **IR**（[ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java)）：`Line` 新增 `Expr condExpr`（`null` = 沿用旧三态，兼容旧存档）与 `String condSource`（条件原文）；新增 9 参完整构造器，7 参 / 6 参构造器委托 `null / ""`；`withEnabled`、`validate`、`toText`、NBT（`CondExpr` 复合标签 + `CondSrc`）、网络包（存在标记 + 树 + 原文）全部贯通。`validate` 对新条件要求 `condExpr.type(scope) == BOOL` 且深度不超 `MAX_DEPTH`。
-- **VM**（[ProgramVM.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramVM.java)）：`compile` 优先编译 `condExpr` 再 `OP_JMP_IF_FALSE`；`condExpr == null` 时保持旧的 `LOAD_B / NOT_B` 三态路径，新旧字节码语义一致。
-- **配置 JSON**（[ConsoleConfigJson.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleConfigJson.java)）：新增 `condition_expr` 与 `condition_source`；[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java) 导出时双写（旧 `cond / condition` 保留），导入时 `condition_expr` 优先，并用 `clipSource` 截断原文；`isVarReferenced` 同时检查 `condExpr`，避免删除仅被条件引用的变量。
-- **控件**（[ExprEditBox.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ExprEditBox.java)）：新增 `singleLine` 模式，`keyPressed` 遇到 Enter（257/335）直接返回 `false`，把提交交还界面。
-- **行编辑器**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：删除条件三态按钮与 `cycleCondMode`、`editCond`、`COND_MODE_W`；`condBox` 改为单行 `ExprEditBox`，接入 `setNameColor / setCandidates / setOnChanged`，共享着色、标红、补全。新增 `analyzeCond`（`ProgramExprParser.parse(条件原文, vars, BOOL)`）与 `condErrorText`；`refreshLineError` / `confirmLine` / `buildLine` 都会解析条件（留空视为总是执行），失败即禁止提交；`openLineEditor` 回显优先 `condSource`，其次 `condExpr.toText`，最后旧三态；`lineSegments`、`setLineEditorVisible`、`mouseClicked`、`keyPressed`、`renderSuggestions`、`lineEditorFocused` 均已纳入条件框。
-- **文案**：中英 lang 删除 `cond_true / cond_var / cond_not`，新增 `hint_cond`（「条件，留空表示总是执行；例如 A > 3 && B」），`err_cond` 改为「条件必须是布尔表达式」。
-- **方案文档**：[表达式文本化改造方案.md](file:///e:/trae/program/CC_RC/表达式文本化改造方案.md) 阶段表 P4 标为已完成，§四补 `condSource` 与网络包字段，§六补单行模式，§八补旧三态回落说明。
-- **过时文档修正**：[控制柜程序系统实现方案.md](file:///e:/trae/program/CC_RC/控制柜程序系统实现方案.md) 的状态、§4.1 条件、§4.2 `&& ||`、§6.1 IR、§6.2 行编辑器、§9 标题、§13 阶段状态（P2~P6 全部已完成）、§14 文件路径（改为 `block/console` 实际类，删不存在的 `program/*` 与 aux 方块实体）、§16 待定项同步为现状。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅既有过时 API 警告）。
-
-**第五十三期：表达式框空白 / 算符后自动列出变量候选**
-
-- **控件**（[ExprEditBox.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ExprEditBox.java)）：`refreshSuggestions` 增加空前缀分支——光标位于文本开头、空白之后，或算符 / `(` 之后（`isSuggestPosition` 跳过空格向前看）时，直接列出全部候选（`true` / `false` + 全部可读变量），替换区间为光标处的空区间。
-- **不打扰已有文字**：聚焦或点击时只走「自动」分支（`refreshSuggestions(true)`），已有名字中间不弹过滤列表；新增 `setFocused` 覆盖，聚焦即按空白 / 算符位置自动弹出，失焦收起。
-- **回车不抢占**：自动弹出的列表标记 `autoOpened`，此时回车（257/335）只收起列表，继续换行（表达式框）或提交（单行条件框）；Tab 仍直接应用候选，上下键导航后视为主动选择，回车可确认。
-- **构建**：gradlew build BUILD SUCCESSFUL（仅既有过时 API 警告）。
-
-**第五十四期：控制柜子系统系统性审查（健壮性 + 注释 + 文档）**
-
-- **网络包**（[ConsoleProgramPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleProgramPacket.java)）：`decode` 遇到负行数先归零，避免 `Math.min` 结果为负导致 `new ProgramIR.Line[负数]` 抛 `NegativeArraySizeException`。
-- **IR 反序列化深度上限**（[ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java)）：`Expr.load` / `Expr.read` 拆出带剩余深度余量的私有重载，递归每层减一，余量耗尽即返回 `null`（上限取 `Line.MAX_DEPTH`）。异常存档或恶意包不再能构造超深树触发 `StackOverflowError`；`Line.load` 的 `condExpr` 也因此同样受控。
-- **过时注释**：`ProgramIR` 类头由「不做文本语法解析 / 后续阶段实现」改为实际的「文本入口 + 旧数据入口」两条来源；`ExprEditBox` 键盘分支注释「上下键换行」改为「上下键在候选间导航」。
-- **方案文档**：[控制柜程序系统实现方案.md](file:///e:/trae/program/CC_RC/控制柜程序系统实现方案.md) 的 §1.2 数据流、§1.3 权威源、§2.2 `controller_aux` 去掉「aux 有方块实体 / 保存 IR 快照 / 双向 version+hash 比对 / 未成型拒绝打开」的旧设计；§3.5 NBT 表按 `saveAdditional` / `load` 的实际键重写（补结构、文字、图形、组件、`ProgLines` 与行内键），并注明字节码与 `ProgWarn` 不写盘。
-- **审查未改（第五十五期已全部修复）**：`ProgramVM` 栈下溢无显式检查（仅损坏字节码可达）、`OP_JMP` 为死指令、解析器单 `=` 等同 `==` 且名为 `float` 的变量后接 `(` 会被当作 CAST、`refreshLineError` 经 `buildLine` 重复解析条件（轻微性能）。
-- **构建**：gradlew build BUILD SUCCESSFUL（28s，11 个既有过时 API 警告）。
-
-**第五十五期：审查遗留问题修复（VM 栈防御 / 解析器歧义 / 界面重复解析）**
-
-- **VM 栈下溢防御**（[ProgramVM.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramVM.java)）：执行循环取出指令后先按 `requiredStack(op)` 检查栈深（一元 / 写变量 1，二元 2），不足立即结束本轮，避免 `--sp` 变负后 pop / push 落到错误下标、静默写坏影子数组。
-- **删除死指令 `OP_JMP`**：编译期从不生成，删掉常量与执行分支；其后操作码顺延（`JMP_IF_FALSE` 0x1A、`HALT` 0x1B、`FLOOR_F/FRAC_F/ABS_F` 0x1C~0x1E）。字节码不写存档，无需版本迁移。
-- **解析器歧义**（[ProgramExprParser.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramExprParser.java)）：单个 `=` 不再是相等运算符，词法阶段直接报错并提示改写成 `==`；`float` 优先按变量解析，只有 `float` 未定义时 `float(` 才当作历史拓宽写法，且该分支计入 `nesting`，不能再绕过 `MAX_DEPTH`。
-- **界面解析次数**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）：`buildLine` 改为接收调用方已解析的 `result / condResult`，`refreshLineError` 与 `confirmLine` 不再重复解析表达式与条件（每次按键少解析两次）。
-- **文档**：[控制柜程序系统实现方案.md](file:///e:/trae/program/CC_RC/控制柜程序系统实现方案.md) §4.2 补「相等必须写 `==`」「`float` 变量优先」两条规则，§7.1 改为字节码不写盘，§7.2 指令表删 `JMP`、顺延编号并补 `FLOOR_F / FRAC_F / ABS_F`；[表达式文本化改造方案.md](file:///e:/trae/program/CC_RC/表达式文本化改造方案.md) §五同步。
-- **构建**：gradlew build BUILD SUCCESSFUL（28s，10 个既有过时 API 警告）。
-
-**控制柜系统总览（历期索引与现状）**
-
-> 第二期 ~ 第五十五期中与控制柜（`controller_*` / `Console*`）有关的条目按模块归拢如下，便于查阅；详细实现仍见对应期号。
-
-**1. 模块与职责**
+**模块与职责**
 
 | 文件 | 职责 |
 | --- | --- |
@@ -2031,6 +1252,8 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | [ControllerAuxBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ControllerAuxBlock.java) | 辅助计算机：右键找唯一相邻总线并打开程序 GUI（不存数据） |
 | [ConsoleStructureHelper.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleStructureHelper.java) | 同色连通泛洪、长方体完整性、每 100 tick 巡检 |
 | [ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java) / [ConsoleSurface.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSurface.java) | 表面坐标系、组件模型、读数、文字、绘图渲染 |
+| [ConsoleFrame.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleFrame.java) | 通用绘制坐标系：普通面与斜面共用同一套 `(u, v)` 换算 |
+| [ConsoleSlopeBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSlopeBlock.java) / [ConsoleSlopeBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSlopeBlockEntity.java) / [ConsoleSlopeGeometry.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSlopeGeometry.java) / [ConsoleSlopeBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSlopeBER.java) | 斜面控制台：宿主格映射、命中换算、按斜面重画该格内容 |
 | [ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java) / [ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java) | 组件类型与变量能力、命中与点击动作 |
 | [ConsoleBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusPeripheral.java) / [ConsoleCcBridge.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCcBridge.java) | CC:Tweaked 外设与取数 / 写值排队 |
 | [ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java) / [ProgramExprParser.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramExprParser.java) | 程序 IR、校验、NBT / 包序列化；文本表达式 → 树 |
@@ -2038,34 +1261,304 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | [ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java) / [ExprEditBox.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ExprEditBox.java) / [ConsoleProgramMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramMenu.java) | 变量表与程序行编辑、表达式输入控件、菜单 |
 | [ConsoleConfigJson.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleConfigJson.java) + `ConsoleConfigScreen / ConsoleConfigStore` | 配置 JSON 结构与保存 / 加载界面 |
 
-**2. 历期索引**
+#### 41.1 结构与成型
 
-| 分组 | 期号 |
-| --- | --- |
-| 结构与方块 | 第二期（四向总线 + 表面文字）、第六期（改名 `controller_*` + 辅助计算机）、第二十九期（辅助计算机四向）、第四十期（蓝 / 黑变体） |
-| 组件模型与交互 | 第四期及补充（组件 / 颜色 / 文字 / 尺寸）、第五期及补充（开关 / 按钮 / 调节器仪表）、第二十五期（按住语义）、第二十六 ~ 二十八期（缩放 / 吸附 / 文字随缩放）、第三十三 ~ 三十五期（RGB / 阀门 / 三状态 / 双色灯）、第三十九期（三状态档位）、第四十二 ~ 四十七期（扇形仪表 / 同步指示器 / 安全按钮 / 钥匙开关 / 圆盘记录仪 L / 警报器） |
-| 显示与渲染 | 第十一期（动态读数）、第二十一 ~ 二十四期（历史采样 / 曲线 / 刻度 / 按钮弹起）、第四十六期（记录仪 L） |
-| 程序系统 | 第七 ~ 十期（变量表 / GUI / IR / 字节码 VM）、第十二 ~ 二十期（编辑体验 / 着色 / 原版风格 GUI）、第三十 ~ 三十二期（CC 接口 / 配置 JSON）、第三十六 / 三十八期（移动 / 复制 / 删除）、第四十八 ~ 五十三期（一元算符 / 文本解析 / 原文 / 文本框 / 条件表达式 / 自动补全） |
-| 工具 | 第四十一期（画图工具） |
+- **方块**：`controller_block`（完整立方体、无方向）+ `controller_block_blue` / `controller_block_black`（`MapColor.COLOR_BLUE / COLOR_BLACK`，强度与音效同默认色）；`controller_bus` 水平四向 `HORIZONTAL_FACING`，FACING 即总线背面，同时决定结构顶 / 底面文字的头朝向；总线方块状态另带 `COLOR = default/blue/black`。
+- **校验流程**（[ConsoleStructureHelper.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleStructureHelper.java)）：
+  1. 收集总线六邻居中的控制柜方块作为种子，无种子返回 `NO_BLOCK`；
+  2. 首个种子六向 BFS 泛洪，超过 4096 格返回 `TOO_LARGE`；
+  3. 其余种子不在同一连通体返回 `MULTIPLE`（总线同时贴着两个结构）；
+  4. 最小外接长方体体积 `sx*sy*sz` 必须等于泛洪格数，否则 `NOT_RECTANGLE`（空洞 / 凸起）。
+  - 只记录「最小角 origin + 三边长度」，成员由长方体范围推导，不保存成员列表；`Result` 带 `color`，`stillValid(..., count, color)` 逐格校验颜色，`isConsole(BlockState) / colorOf(BlockState)` 统一判定。
+- **同色才连通**：泛洪以种子颜色为准，`colorOf(next) != color` 直接跳过；异色方块可相邻摆放但不并入同一结构，总线同时贴到异色连通体时仍报 `MULTIPLE`。总线成型时把颜色写入 `structureColor` 并用 `flag 3` 写回方块状态，溃散时复位 DEFAULT；`controller_aux` 的 `onPlace / neighborChanged` 先取相邻总线颜色、再退回相邻结构方块颜色（`flag 2` 写入，不连锁刷新）。
+- **三态状态机**（[ConsoleBusBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBlockEntity.java)）：`UNFORMED → PARTIAL`（成型，组件可编辑）`→ FULL`（锁定、程序与结算生效），`unlock()` 回 PARTIAL。`formStructure()` 先清旧成员标记再校验，失败回 `UNFORMED` 并记录 `Error`；服务端每 100 tick 巡检 `stillValid`（爆炸 / 指令等外部改动自动失效）。成员方块实体 [ConsoleBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBlockEntity.java) 只存 `Bus(long) + StructureState`，由总线 `applyMembers` 写入并 `sendBlockUpdated` 同步。
+- **卸载安全**：总线**不重写 `setRemoved()`**（该路径在区块卸载 / 保存退出时也会执行，跨方块实体的 `setChanged()` / `sendBlockUpdated()` 会让保存中的区块重入而卡死「保存世界中」）；成员标记清理交给 `ConsoleBusBlock` 的 `playerWillDestroy / onRemove`。
+- **锁定保护**：`ConsoleBlock.onDestroyedByPlayer` 在 FULL 时返回 false 并提示 `message.cc_rc.console.locked`；`playerWillDestroy / onRemove` 通知总线 `invalidateStructure()`；[CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 监听 `ExplosionEvent.Detonate`，把锁定的结构方块从受影响列表剔除（总线不受保护）。
+- **总线界面**（[ConsoleMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleMenu.java) / [ConsoleScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleScreen.java)）：菜单只同步方块坐标，尺寸 / 状态 / 错误每帧从客户端方块实体读取；三个按钮「检测并成型 / 完全成型 / 解除锁定」按状态启用，另有一条通栏「保存/加载配置」按钮（未成型时禁用）。操作走 C2S [ConsoleStructurePacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleStructurePacket.java)（`registerMessage(7)`，action 0 成型 / 1 锁定 / 2 解锁，服务端校验类型 + 8 格距离）。
+- **表面网格**（[ConsoleBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBER.java)）：仅 `PARTIAL` 时为每个外露面（邻居不是控制柜方块）用 `RenderType.lines()` 画 16×16 像素网格 + 外轮廓，便于按像素摆放组件。
+- **斜面不参与泛洪**：`controller_slope` 是独立方块，只通过 `SlopeLinks` 登记到相邻结构（见 41.9）。
 
-**3. 关键数据格式**
+#### 41.2 表面坐标系与渲染
 
-- 总线 NBT：`FormState / Error / Origin / SizeX~Z / Count / Color / LastOrigin~LastSizeZ / Texts / NextTextId / Draws / NextDrawId / Comps / NextCompId / ProgramPeriod / Vars / VarF / VarB / ProgLines / ProgWarn`。
+- **六面坐标系**（[ConsoleSurface.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSurface.java)）：每个外表面一组 U（右）/ V（上）/ N（外法线）单位向量，1 格 = 16 像素。四个侧面 `V=(0,1,0)`，`U` 分别为 north(-1,0,0) / south(1,0,0) / west(0,0,1) / east(0,0,-1)；顶面 `V=-FACING、U=(f.z,0,-f.x)`；底面 `V=-FACING、U=(-f.z,0,f.x)`（仰视时左右相反）。文字 / 组件坐标 `(u, v)` 是**相对该表面矩形中心的像素偏移**，与结构原点、尺寸解耦，结构扩缩不改变内容的世界位置；提供 `pixelU/pixelV/toWorld/faceCenter/halfWidthPx/halfHeightPx/contains`。
+- **统一坐标帧**：[ConsoleFrame.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleFrame.java) 提供 `ofFace / toWorld / toLocal`，斜面帧把 origin 平移回「宿主表面像素 (0,0)」，因此普通面与斜面对组件 / 文字 / 绘图使用同一套 `(u, v)`，无需任何数据迁移。
+- **文字渲染**（[ConsoleBusBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusBER.java)）：用 U/V/N 构造仿射矩阵（第 0 列 `U/16`、第 1 列 `-V/16`、第 2 列 `N/16`，平移为文字中心世界坐标），`font.drawInBatch` 以 `(-w/2, -lineHeight/2)` 为中心、`DisplayMode.POLYGON_OFFSET` 沿法线外推 0.005 绘制；JOML `Matrix4f` 字段非公开，只能走 16 参数构造。光照固定 `PACKED_LIGHT = 0xF000F0`（总线常处在无光位置，沿用方块光照会把文字乘成纯黑）。
+- **文字条目**：`TextEntry{ id / face / u / v / text / color / bold / italic / underline / strikethrough / anchorH / anchorV / scale }`。锚点 9 种（垂直上/中/下 × 水平左/中/右）表示 (u,v) 对齐文字框哪条边或中心；缩放为「每字体像素 = scale/16 格」，默认取配置 `console_text.default_scale`（默认 0.15，范围 0.05~4.0），旧存档缺字段时按居中锚点 + 配置默认值。命中检测在客户端用 `Font.width` 按 scale 与锚点还原成表面像素矩形（各留 1 像素容差）判断（服务端没有 `Font`，无法算字宽）。
+- **组件矩阵与顶点格式**：组件局部矩阵第 0 列 = 外法线 N（模型 x）、第 1 列 = V（模型 y）、第 2 列 = **-U**（模型 z），平移把 `(minX, centerY, centerZ)` 对齐到锚点。模型空间为右手系，其 z 轴 = `N×V = -U`；若用 `+U` 三列构成左手系，整个模型会被水平镜像。`RenderType.entityCutoutNoCull` 是 QUADS 格式，每个三角形必须补一个与第 3 点重合的顶点构成 `(a,b,c,c)` 四边形。锚点沿法线外推 `COMP_OUTSET = 0.002` 格，避免与 `cube_all` 方块表面共面抢深度；光照取组件表面外侧 0.05 格处的 `LevelRenderer.getLightColor`（level 为 null 时回退全亮）。
+- **绘制顺序**：绘图图案 → 组件不透明模型 → 组件读数 → 组件附带文字；玻璃面单独占第二遍（所有组件的不透明面先画完，再统一画玻璃），避免同一 `MultiBufferSource` 内切换 RenderType 破坏先创建的批次。指示灯附带文字沿法线外推到模型最厚处之外，按钮 / 仪表在右侧左对齐、其余在下方居中，间距 `COMP_TEXT_GAP = 1` 结构像素。
+- **渲染包围盒**：总线方块实体的 `getRenderBoundingBox()` 扩到整个结构长方体，避免表面文字 / 组件被视锥剔除。
+
+#### 41.3 组件通用机制（放置 / 颜色 / 附带文字 / 缩放 / 拖动）
+
+- **类型表**（[ConsoleCompType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompType.java)）：每个枚举带 `id`、`itemSuffix`（物品注册后缀，默认代号前缀取其大写，如 `METER_1`）、表面占位尺寸（像素，来自 OBJ 包围盒实测）、`recolorable`、`renderScale`（模型默认缩放）、`modelId / textureId`（默认等于 id，可复用其它模型资源），以及能力判定 `supportsFloatVariable / supportsBoolVariable / variableType / supportsHistory / isThreeState / hasSpeedVariable / hasMuteVariable / hasKeyMode`。组件类型在 NBT 里以 `Type` 字符串（`type.id`）保存、网络包不传枚举序号，枚举末尾追加新成员不影响旧存档。
+- **模型加载**（[ConsoleCompModels.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java)）：自行解析 OBJ 的 `v / vt / vn / f`（多边形扇形三角化、支持负数索引、`v` 轴翻转 `1-v`），记录 `o` 分组（`Tri.group`）与 `usemtl` 标记（`tint / prop / glass`），缓存为 `ObjMesh{tris, minX, maxX, centerY, centerZ, texture, tintU, tintV, glassTexture}`；包围盒自动给出「最内侧 x（贴表面）」与 y/z 中心，避免逐模型硬编码偏移。多状态模型用 `get(type, variant)`：`0` 基础 `<modelId>_surface.obj`、`1/2/3` 对应 `_1_ / _2_ / _3_`，双态开关另用 `get(type, closed)` 取 `_close_surface.obj`；贴图在存在 `<textureId><后缀>.png` 时优先，否则回退基础贴图。
+- **放置 / 编辑 / 删除**：组件物品右键 `controller_block` → 服务端找总线、校验 PARTIAL、把点击点换算为 `(u,v)`，命中已有组件则打开组件界面，否则在点击处新增；`applyCompAdd` 把坐标夹在表面内、与已有组件矩形相交则拒绝、代号默认「类型前缀_序号」；`applyCompEdit(id, code, u, v, color, decimals, unit, holdTicks, scale, speedVar, lampVar, muteVar, keyMode, coverTicks, code2, links, rgbR, rgbG, rgbB, showOriginal)` 按类型采用对应字段（代号 `[A-Za-z0-9_]{1,32}` 且同结构内不与主代号 / 第二名称冲突，位置移动时排除自身，颜色只接受 `0xRRGGBB` 或 `-1`）；`applyCompDelete` 移除组件。返回码 `COMP_OK / NOT_FORMED / LOCKED / OUTSIDE / LIMIT / DUP_POS / DUP_CODE / BAD_CODE / NOT_FOUND / COMP_INVALID`，上限 256 个组件，仅 PARTIAL 可编辑。所有编辑走 C2S [ConsoleCompRequestPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleCompRequestPacket.java)（id 10，开界面）与 [ConsoleCompPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleCompPacket.java)（id 11，提交 / 删除），服务端按保存的组件位置做 8 格距离校验。
+- **交互路由**：空手右键 → [ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java) `tryUse`（找总线 → 校验成型 → `BlockHitResult` 精确命中点换算表面像素 → `contains` → `findCompAt`），客户端只消费交互、状态变更只在服务端；编辑工具右键控制台 → 表面文字 / 组件附带文字编辑界面；多功能工具右键 → 拖动；组件物品 / 画图工具 / 钥匙走各自 `useOn` 分支；背包手持非空物品时方块 `use` 一律 PASS，避免拦住这些分支。
+- **颜色（两种机制）**：
+  - **整图重新着色**（`recolorable = true`，[ConsoleCompTextures.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompTextures.java)）：以 `textures/block/console_parts/<textureId>.png` 为基准，只处理「亮部或带彩度」的像素，色相替换为所选 RGB、亮度按 `luma / 该类型最亮可着色像素 luma` 保留；生成 `cc_rc:dynamic/console_comp/<type>_<RRGGBB>` 的 `DynamicTexture` 并缓存（上限 96 张，超限整批释放）。`NativeImage` 像素为 **ABGR** 打包 `(a<<24)|(b<<16)|(g<<8)|r`。gauge 的指针面 UV 全部退化为同一点，因此把「三顶点 UV 相同」的三角形标记为 `solidColor`，另找一块不被任何面采样的像素涂成指针色 `C82525`，渲染时把 `solidColor` 面指向该像素，指针保持红色、表盘正常着色。
+  - **逐面染色**（`usemtl tint`）：模型转换时只给背板 / 灯面 / 特定面板写 `usemtl tint`，渲染时这些面的 UV 改指贴图里的一块纯白像素、再用顶点色乘出所选颜色；[ConsoleCompModels.findTintUv](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleCompModels.java) 加载时按当前模型变体的所有 `tint` 面 UV 包围盒统计占用，自右下向左上找 4×4→2×2 未被采样的纯白块；找不到时退化为「只要求不透明白色」再扫一遍——同一组件的不同变体 UV 覆盖范围不同（警报器灯亮模型的灯面包围盒会盖住预留白块），若无此退化扫描，灯亮变体会拿不到采样点、背板染色在灯闪烁时忽有忽无。仍找不到（`tintU < 0`，如安全按钮调色板无纯白块）时保留原 UV、只用顶点色相乘。整图重新着色与逐面染色互斥，避免误染功能部件。
+  - 未设置颜色（`NO_COLOR = -1`）时全部走原贴图；组件颜色与显示设置随 NBT 保存，`copyWith*` 系列保证扩展字段在任何状态更新时都不丢。
+- **附带文字**：`CompText{ text, color, bold, italic, underline, strike }`，`NONE` 表示无文字；NBT 仅在有文字时写 `CompText / CompTextColor / CompTextBold / CompTextItalic / CompTextUnderline / CompTextStrike`，旧存档缺失 = 无附带文字。`applyCompText` 仅 PARTIAL 可改，空文本 = 清除，不保存坐标 / 缩放。字号 = `console_text.default_scale × comp.scale`，间距 `COMP_TEXT_GAP` 同比例缩放；RGB 控制器配置了附带文字时改为在组件位置按灯色绘制文字（保留粗 / 斜 / 下划线 / 删除线），不再显示模型。编辑入口为 `EditTextMenu` 的 `compId >= 0` 分支，走 C2S `ConsoleCompTextRequestPacket`（id 12）与 `ConsoleCompTextPacket`（id 13）。
+- **缩放**：实际大小 = 类型 `renderScale`（模型默认缩放）× `CompEntry.scale`（玩家缩放，0.25~4.0，默认 1.0），`effectiveScale() / halfWidthPx() / halfHeightPx()` 统一供渲染、命中、重叠判定与附带文字定位使用；OBJ 基向量与平移量同时乘缩放，模型才真正以锚点为中心缩放。NBT 仅在非默认时写 `Scale`。
+- **拖动**（[ConsoleDragClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleDragClient.java)，仅客户端）：多功能工具右键按下抓取点击点下的组件（优先）或表面文字 / 绘图图案（优先级 组件 → 文字 → 图案），记录「锚点 - 点击点」偏移，之后每客户端 tick 按准星命中点换算新锚点，组件按 `Math.round` 吸附整像素（文字保持亚像素），去抖阈值 `SEND_THRESHOLD = 0.25` 像素；组件在客户端预判重叠、重叠不发包；松开右键 / 打开界面 / 准星离开同一表面 / 结构变化时结束，允许跨同一结构的相邻方块继续拖动。文字移动走 `applyTextMove`（只改锚点）与 C2S `ConsoleTextMovePacket`（id 14，服务端按自身保存坐标校验 64 格）。
+- **结构变化保持位置**：总线记录 `lastOrigin / lastSizeX/Y/Z`（NBT 同键，失效前也保存），重新成型后用 `rebaseSurfaceEntries` 把新旧表面中心偏移投影到该面的 U/V 并从坐标中扣除，组件 / 文字 / 绘图的世界位置不变；法线方向不补偿（始终贴在新表面）。
+- **组件设置界面**（[ConsoleCompMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompMenu.java) / [ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java)，菜单类型 `console_comp`）：标准布局显示类型、代号、位置 X/Y、缩放、16 染料色块 + `#RRGGBB` + 「原色」按钮 + 颜色预览；按类型追加「小数位 / 单位」（数字显示屏）、「弹起时间」（按钮 / 旋转按钮 / 安全按钮）、「连接 / R / G / B / 显示原色」（RGB）、「转速变量 / 灯状态变量」（同步指示器）、「静音变量」（警报器）、「钥匙模式」（钥匙开关）、「第二名称」（圆盘记录仪）、「盖子自动关闭」（安全按钮）。背景贴图 `console_comp_gui.png`（176×152，数字显示字段时 176×174，RGB / 带附加变量时 176×212 的 `console_comp_gui_tall.png`），与文字编辑界面同一套 1px 圆角黑描边 + 左上白高光 + 右下深灰阴影 + 内部淡灰。
+
+#### 41.4 组件清单
+
+> 通用规则：所有组件都由总线方块实体保存、只允许 PARTIAL 编辑；`renderScale` 指模型默认缩放，玩家缩放另乘。下表「变量」一栏是程序 / CC 绑定语义。
+
+| 组件 id（物品） | 变量语义 | 模型与贴图 | 交互与特殊规则 |
+| --- | --- | --- | --- |
+| `gauge`（流量表，`controller_meter`） | FLOAT `value` | 5×5 占位，hbm_ror `gauge_surface.obj`（`o Needle` 指针），`recolorable=true` | 指针枢轴按刻度圆心反推（模型 y=0.4375、z=-0.125），数值 0~100 映射 `-90° + 0.9° × value`，显示夹 -5~105；`renderScale=1.2`；空手右键无动作，只显示 |
+| `numitron`（数字显示屏，`controller_display`） | FLOAT `value` | 13×5，`numitron` 模型，`recolorable=false`（颜色用作读数颜色） | 屏幕读数 `String.format("%.<decimals>f", value) + unit`，小数位 0~6（默认 2）、单位最长 8 字符，按 `font.width` 自动缩小上限 0.25；读数贴近凹陷内屏、位于模型批次之后 |
+| `graph`（显示器，`controller_graph`） | FLOAT `value` + 50 点历史 | 复用 `numitron` 模型与贴图（`modelId=numitron`） | 以「█」按列画 50 点趋势线，`history[0]` 在最右列，柱高按 0~100 连续映射、列宽 `11.8/50 ≈ 0.236` 结构像素、线高 0.4 像素；默认红色、可用组件颜色；不参与点击状态 |
+| `indicator`（指示灯，`controller_lamp`） | BOOL `state` | 7×4，`indicator` 模型（`Base / Light` 分组），`recolorable=true` | 熄灯时颜色 × 0.38 后整图重新着色；未设置颜色时把 `Light` 分组顶点色压到 `INDICATOR_OFF_GRAY = 97`，外壳保持原色 |
+| `keypad`（按钮，`controller_button`） | BOOL「是否按下」，只读 | 5×5，`keypad` 模型，`Button` 分组可内推 | 空手右键按下 `state = gameTime + holdTicks`，`holdTicks` 默认取配置 `console_button.hold_ticks`（20 tick），设为 0 时 `state = HOLD_UNTIL_RELEASE(-1)` 表示按住直到松手（松开由 `ConsoleKeypadReleasePacket` id 17 清零）；按下动画 `Button` 沿 -x 内推 `KEYPAD_PRESS_DEPTH = 0.03`；`renderScale=0.5`，程序不可直写 |
+| `terminal`（发信终端，`controller_terminal`） | 不参与变量 | 14×14，`terminal` 模型 | 仅外观与占位，未接入变量与程序 |
+| `knob_switch`（旋钮开关，`controller_switch`） | BOOL，`state` 0/1 | 14×14，开 / 关两套模型（绿灯箭头左上 / 红灯箭头右下），`o Panel` 可染色 | 空手右键翻转 0↔1，`renderScale=0.3`；背板染色，灯座与手柄保持原色 |
+| `lever_switch`（拉杆开关，`controller_lever`） | BOOL，`state` 0/1 | 14×14，开 / 关两套模型（拉杆左倾绿灯 / 右倾红灯），`o Panel` 可染色 | 同旋钮开关，`renderScale=0.3` |
+| `gauge_v`（立式仪表，`controller_gauge`） | FLOAT `value` | 14×14，`gauge_v` 模型（中央竖槽 `Needle`），`recolorable=false` | 指针垂直平移，50% 居中，半行程 `GAUGE_V_HALF_TRAVEL = 0.32` 格；显示夹 -5~105；`renderScale=0.45` |
+| `gauge_arc`（调节器仪表，`controller_knob`） | FLOAT `value` + `state` 0~100（默认 50） | 14×14，`gauge_arc` 模型（指针烘焙在 35%），`recolorable=false` | 左按钮减、右按钮加（1，Shift 为 10），指针绕枢轴 `(0.4344, 0.5)` 旋转 `1.2°/1%`，0% → -42°、100% → +78°；左红右绿；`renderScale=0.45` |
+| `rgb_color`（RGB 颜色控制器，`controller_rgb`） | BOOL「启用」+ R/G/B 三个 FLOAT 通道 + `links` 连接组件 | 14×14，`indicator_orange_on` 换型模型（`Lamp` 灯面可染色），`renderScale=0.25` | 仅 FULL 时按 `R<<16|G<<8|B` 结算灯色并同步给 `links` 中的组件；启用取同名 BOOL 变量，否则取 `!showOriginal`；有附带文字时代替模型绘制彩色文字 |
+| `lever_f`（阀门拉杆，`controller_lever_f`） | BOOL，`state` 0/1 | 10.5×14，开 / 关两套把手模型（`Panel` + `Handle`），两者红色面可染色 | 完全等同开关；关态直接切另一套 OBJ，不做运行时旋转；`renderScale=0.3` |
+| `button_x`（旋转按钮，`controller_button_x`） | BOOL「是否按下」，只读 | 14×14，`Body` 背板 + `Rotate` 中间件（烘焙按下态），背板黄色面可染色 | 完全等同按钮（含弹起时间、按住直到松手）；未按下时 `Rotate` 绕面板法线顺时针 90° 复位，按下保持烘焙态；`renderScale=0.15` |
+| `t_switch`（三状态旋钮开关，`controller_t_switch`） | FLOAT 0/1/2（写入四舍五入夹紧） | 14×14，三套模型（绿 / 橙 / 红三档），`o Panel` 可染色 | 右键 `(state+1) mod 3` 循环并同步 `value`；渲染取 `2 - state` 映射模型档位（state 0 = 右 + 红灯）；`renderScale=0.3` |
+| `t_lever`（三状态拉杆，`controller_t_lever`） | FLOAT 0/1/2 | 14×14，三套模型，`o Panel` 可染色 | 同三状态旋钮开关，`renderScale=0.3` |
+| `lamp_d`（双色指示灯，`controller_lamp_d`） | BOOL `state` | 14×14，红亮绿灭 / 绿亮红灭两套模型，共用 `t_switch.png` | `state 0 → 红亮模型、1 → 绿亮模型`，`renderScale=0.3`，`o Panel` 可染色 |
+| `gauge_f`（扇形仪表，`controller_gauge_f`） | FLOAT `value` | 14×14，`gauge_fan` 模型（`Frame / Face / Hub / Needle`），`recolorable=true` | 指针绕枢轴 `(0.5, 0.5)` 旋转，烘焙角 -17°，0 值 -30°、100 值 +210°，全程 240°；表盘亮部着色、指针与刻度保持原色；`renderScale=0.45` |
+| `synchroscope`（同步指示器，`controller_synchroscope`） | FLOAT 角度（自身变量）+ `_s` FLOAT 转速 + `_b` BOOL 灯状态 | 14×14，灯亮 / 灯灭两套模型（`Frame / Face / Hub / Needle / Lamp`），`recolorable=true` | 角度 `wrapAngle180` 后与转速累加并再次环绕；`|速度| < console_synchroscope.lamp_speed`（默认 15 度/tick）且 `|角度| ≤ 15°` 时灯亮；`_b` 为只读输出、每 tick 覆盖；转速 / 灯变量名可自定义；指针 0 位竖直向上（烘焙角 -107°）；`renderScale=0.45` |
+| `button_s`（安全按钮，`controller_button_s`） | BOOL「是否按下」 | 14×14，合盖 / 开盖弹起 / 开盖按下三套模型 + 玻璃罩（`usemtl glass`），按钮本体 `o Button` 可染色 | `state`：0 合盖、`OPEN_COVER(-2)` 开盖弹起、`HOLD_UNTIL_RELEASE(-1)` 按住、正数弹起时刻；Shift 开 / 关盖，开盖后右键按下；`coverTicks` 默认 100（0 = 不自动关），到点自动合盖；玻璃用 `entityTranslucentCull` 两遍绘制；`renderScale=0.3` |
+| `switch_k`（钥匙开关，`controller_switch_k`） | BOOL 开关状态 | 14×14，四套模型（合盖/开盖 × 无/有钥匙），`o Panel` 可染色 | 无钥匙不能开关；部分成型 Shift 右键可取出钥匙物品 `console_key`，成型后钥匙右键插入（非创造消耗 1 个）；`keyMode`：0 开闭 / 1 常开 / 2 常闭，决定拔钥匙时机；模型 variant = `(hasKey?2:0)+(state?1:0)`；`renderScale=0.3` |
+| `graph_l`（圆盘记录仪 L，`controller_plotter_l`） | FLOAT `value` + 50 点历史 + 第二名称 `code2` 触发 BOOL | 16×13，`recorder` 模型（`Body` 静止 + `Pen` 只纵向平移），`recolorable=false`（颜色只作曲线色） | 笔按 `history[0]`（无历史取 `value`）纵向平移；曲线按纸面区域 `-5.78..` 宽 `9.7682`、0/100 对应纵向 `-3.664 / +3.612`、线宽 0.5；触发变量每 tick 清零、程序或 CC 置 true 时补记一笔；`renderScale=1.0` |
+| `alarm`（警报器，`controller_alarm`） | BOOL 报警 + `_Q` 只读 BOOL 静音 | 16×16，6 套变体（灯灭/灯亮 × 无/静音按下/重置按下），`lamp_buttons` 模型，红色背板可染色 | 面板从左到右为方形灯 / 静音 / 重置，点击按 `rel < -0.33 / -0.33~0.32 / > 0.32` 分三段；报警中未静音时灯按 `gameTime/10` 闪烁并每 10 tick 播放 `BELL_BLOCK` 占位音效（按 `comp.id` 错开）；静音置 `muted=true` 并镜像 `_Q`，重置把值写回 0；报警解除自动清 `muted`；`renderScale=0.45` |
+| `numpad`（数字键盘，`controller_numpad`） | FLOAT `value` | 16×16，`keypad` 模型，屏幕宽 9.6 / 高 1.9 结构像素（中心上移 5.35） | 屏幕显示最多 4 字符（`%.2f` 去尾零 → `%.1f` → 整数 → `9999 / -999`），默认 LED 橙 `0xFFFFA040`；空手右键打开 200×104 输入界面，确认发 `ConsoleNumpadSetPacket`（id 24）写回组件与变量，放弃 / Esc 不发包；`renderScale=0.5` |
+
+#### 41.5 程序系统（变量表 / IR / 字节码 VM / 表达式 / 编辑界面）
+
+**变量表**
+
+- 类型 `VarType{BOOL, FLOAT}`，`VarDef{slot, name, type, compId, trigger}`；**槽位下标即字节码地址**，地址与变量创建后永久绑定，变量只由玩家手动删除。0 号槽位固定为「程序运行间隔」（只读 FLOAT，非负整数 tick，0 = 停止）。
+- 槽位上限由配置 `console_program.max_vars` 决定（默认 64，范围 2~256），即使写入更大值也会再夹到 256（字节码地址为 1 字节）；数组按硬上限 256 预分配，NBT 只保存到最后一个已定义槽位。
+- 浮点 / 布尔值分别存 `varFloats / varBools`，随总线 NBT 持久化；aux 只展示变量表、不存值；`getVarFloat(0)` 直接返回运行间隔。
+- 组件绑定：变量名与设备代号一致即自动绑定（不需要设备下拉），类型由设备决定并锁定（开关 / 指示灯 / 按钮 / 双色灯 / 三状态开关等 → BOOL，仪表 / 显示屏 / 显示器 / 圆盘记录仪 / 数字键盘等 → FLOAT；发信终端与圆盘记录仪以外的历史类不参与）；`compId = 0` 为自定义变量；组件删除后变量保留、值冻结。附加变量按名称约定识别：同步指示器 `_s` / `_b`、警报器 `_Q`、圆盘记录仪 `code2`（触发）。服务端 `applyVarCreate` 按名称重新匹配组件（不信任客户端 compId），不支持变量的设备代号返回 `VAR_NAME_IS_COMP(10)`，被程序引用的槽位删除返回 `VAR_IN_USE(11)`。
+- 变量名规则 `[A-Za-z0-9_]{1,32}`、新建时不能以数字开头、不能与 `true / false` 重名（程序常量语法冲突），客户端与服务端双重校验；NBT 读取沿用旧正则，避免旧存档中数字开头的变量被丢弃。
+- 组件 ↔ 变量同步：`findVarSlotByComp / writeBackToVar / refreshVarsFromComponents`；空手操作组件后立即回写绑定变量，打开程序界面前统一刷新，新建绑定变量以设备当前值为初值；「保存」时 `applyVarValuesSave` 把所有绑定组件强制上传一次（即使值未变）再 `sync()` 一次。
+
+**程序行与 IR**（[ProgramIR.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramIR.java)）
+
+- `MAX_PROGRAM_LINES = 64`，`ProgramIR.Line[] programLines`（下标即行号，`null` 为空行）。`Line{ enabled, cond, condSlot, targetSlot, expr, comment, exprSource, condExpr, condSource }`：`cond` 为旧三态 `ALWAYS / TRUE_VAR / FALSE_VAR`（`condExpr == null` 时使用，兼容旧存档），`comment` 最长 80 字符、不参与编译与校验。
+- 表达式树 `Expr`：`FLOAT / BOOL / VAR / NEG / NOT / CAST / ADD / SUB / MUL / DIV / IDIV / MOD / EQ / NE / LT / GT / LE / GE / AND / OR`，以及一元 `FLOOR / FRAC / ABS`（符号 `# ~ @`，与 `! -` 一起以 `ordinal` 追加，网络包只允许追加）；`Expr.type(Scope)` 做类型推导，`depth()` 给嵌套深度。
+- `Line.validate(Scope, slots)` 在保存前集中校验：目标必须是已定义且可写的变量、条件必须是布尔、表达式非空且深度 ≤ 16（`MAX_DEPTH`）、表达式类型必须与目标一致，返回 `OK / BAD_TARGET / BAD_COND / BAD_EXPR / TYPE_MISMATCH / TOO_DEEP`。`Expr / Line` 各自实现 NBT 与网络序列化，GUI、网络包、配置 JSON、编译器共用同一份结构；反序列化时递归按剩余深度余量递减，超限返回 null，防止恶意 / 损坏数据触发 `StackOverflowError`。
+- NBT：外层 `ProgLines`，每个非空行保存 `Idx` + 行内键 `On / Cond / CondSlot / Target / Expr / Comment / Src / CondExpr / CondSrc`；读取前整表清空、按 `Idx` 还原，重复行号以先读到为准。
+- 保存走 `applyProgramSave`（仅服务端、FULL 拒绝、逐行校验，结果码 `PROG_*` 20~25），通过后整表替换并 `sync()` 一次；C2S [ConsoleProgramPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleProgramPacket.java)（id 16，`ACTION_SAVE_LINES` 全量快照，服务端校验 8 格与成型状态）。
+
+**字节码编译与栈式 VM**（[ProgramVM.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramVM.java)）
+
+- 一条指令打包进一个 `int`：低 8 位操作码、高 24 位操作数（变量槽位或跳转目标）；浮点常量占两条 int（`OP_PUSH_F` 后紧跟 `Float.floatToRawIntBits`）；跳转操作数用**指令下标**。指令集 `NOP(0x00) / PUSH_F / PUSH_B / LOAD_F / LOAD_B / STORE_F / STORE_B / ADD_F / SUB_F / MUL_F / DIV_F / FLOORDIV_F / MOD_F / NEG_F / NOT_B / AND_B / OR_B / LT_F / LE_F / GT_F / GE_F / EQ_F / NE_F / EQ_B / NE_B / B2F / JMP_IF_FALSE(0x1A) / HALT(0x1B) / FLOOR_F(0x1C) / FRAC_F(0x1D) / ABS_F(0x1E)`，`BYTECODE_VERSION = 2`。字节码不写存档，读档后 `programDirty = true` 重新编译。
+- 编译 `compile(lines, scope)`：跳过禁用行与空行；条件非恒真时生成条件代码（`condExpr` 优先，旧三态补 `LOAD_B / NOT_B`）并记录 `JMP_IF_FALSE` 回填位；表达式后按目标类型生成 `STORE_F / STORE_B`；算术 / 比较为布尔操作数自动补 `B2F`，双方均布尔时 `== / !=` 走 `EQ_B / NE_B`，否则浮点按 1e-5 容差；`//` 为 `floor(a/b)`、`%` 余数符号跟随除数。编译期同步记录每条指令所属程序行（`lineOf`）供警告定位；无有效行或超过 `MAX_CODE = 2048` 指令返回 null（不执行）。
+- 执行 `execute(compiled, floats, bools)`：浮点 / 布尔双栈 + 共享栈指针，执行期零分配，只读写传入的影子数组；每条指令先按 `requiredStack(op)` 检查栈深（一元 / 写变量 1、二元 2），不足立即结束；除零结果记 0 并记 `DIV_ZERO`，任何非有限结果（NaN / Infinity）置 0 并记 `NON_FINITE`；同一行同一原因去重、最多 `MAX_WARNINGS = 4` 条；非法操作码 / 超步数直接结束。
+- 总线侧字段：`programCode`（运行时编译缓存，不持久化）、`programDirty`、`programTimer`、`shadowFloats / shadowBools`、`runWarnings`；保存程序、增删变量、NBT 读取时置脏，保存程序同时清零计数器与旧警告。
+
+**tick 调度**
+
+- 服务端 `tick()` 顺序：`releaseExpiredKeypads()` → `releaseExpiredCovers()` → `clearPlotTriggers()` → `tickProgram()` → `applyCcOps()` → `flushPlotters()` → `applyRgbControllers()` → `applySynchroscopes()` → `applyAlarms()` → `publishCcSnapshot()`；未成型清零计数器，每 100 tick 的结构巡检独立保留，结构失效分支同样先清零再结算。CC 的写入在程序之后结算，组件直接写入最后生效，全部结算完最多同步一次。
+- `runProgram()` 严格执行影子数组三步：① 读取——绑定组件的变量取组件实时状态（开关 `state != 0`、按钮类用 `isKeypadPressed(gameTime)`、仪表取 `value`），自定义变量沿用总线值，0 号槽位写入运行间隔，组件来源失效时沿用冻结值并记 `SOURCE_INVALID`；② 执行——只读写影子数组；③ 提交——变量值写回总线，只有值变化的绑定组件才 `uploadVarToComponent`，变量 / 组件 / 警告任一变化才 `sync()` 一次。只有**FULL 且 period > 0** 时按 `programTimer` 累计到 period 执行一次，period = 0 停止但保留上次警告。
+- 圆盘记录仪只在触发变量为 true（程序赋值或 CC `pushPoint`）时由 `flushPlotters()` 补记采样，普通变量写入不再无条件记点；`uploadVarToComponent` 对记录仪只镜像当前值、不动历史，触发变量不参与上传与回读。
+
+**运行警告与回显**
+
+- 警告不写存档；`getUpdateTag()` 额外写 `ProgWarn`（行号 + 原因），客户端 `load()` 解析到 `runWarnings`；程序界面在行列表底部显示「⚠ 第一条警告（+N）」，悬停给出全部警告，来源失效无行号、单独提示。文案 `gui.cc_rc.program.warn_div_zero / warn_non_finite / warn_source`。
+
+**表达式文本（[ProgramExprParser.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ProgramExprParser.java)）**
+
+- `parse(source, vars, targetType)` 返回 `Result{expr, error(code + [start,end) + 中文提示), tokens}`，失败时 `expr` 为 null、`tokens` 仍可用于着色。词法：`NAME`（`[A-Za-z0-9_]`，经 `Vars.findSlot` 解析槽位，未定义记 -1）、`NUMBER`（小数 / 科学计数法）、`BOOL`（true/false，忽略大小写）、`OP`、`LPAREN / RPAREN / EOF`；空白与换行只作分隔，双字符运算符优先（`&& || == != <= >= //`），单个 `& / |` 与其它字符记 `bad_char`。
+- 语法为 Pratt 优先级爬升：`||` < `&&` < 比较 < `+ -` < `* / // %` < 一元 < 原子，全部左结合；减号在操作数位置按取负、一元可连续叠用（如 `-@A`）。解析时携带期望类型（`&& || !` 的操作数期望布尔，算术 / 比较期望数值，顶层用目标变量类型），布尔位置上的 `0 / 1` 解释为布尔常量；解析完成后用 `Expr.type(vars)` 复核并要求与目标类型一致，另做 `MAX_DEPTH` 检查（超出报 `too_deep`，同时限制递归）。
+- 一元只支持符号 `! - # ~ @`（`#` 取整、`~` 取小数部分、`@` 绝对值），**不提供** `floor() / frac() / abs()` 函数写法；仅保留历史数据里的 `float(x)`（显式布尔转浮点），且 `float` 优先按变量名解析，未定义时才当拓宽写法并计入嵌套深度。
+- 相等必须写 `==`，单个 `=` 在词法阶段直接报错并提示改写。
+
+**原文与条件表达式**
+
+- `Line.exprSource`（`Src`，最长 1024）保存玩家书写的原文（可含换行），NBT 空串不写、网络包尾部追加、配置 JSON 用 `source` 字段；打开行编辑器优先回显原文，缺失时用 `Expr.toText(scope)` 生成。
+- `Line.condExpr`（`CondExpr` 复合标签）+ `condSource`（`CondSrc`）：条件留空表示总是执行；存在 `condExpr` 时 VM 直接编译它再 `JMP_IF_FALSE`，`null` 时保持旧三态路径；`validate` 要求条件类型为 BOOL。配置 JSON 双写 `condition_expr` 与旧 `cond / condition`，导入时 `condition_expr` 优先。
+
+**表达式输入控件**（[ExprEditBox.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ExprEditBox.java)）
+
+- 以内核 `MultilineTextField` 外包绘制与键鼠转发：构造时按控件宽度算 `wrapWidth`，用 `font.getSplitter().splitLines(...)` 自行缓存每个显示行的原文区间（`List<int[]>`，空串补 `{0,0}`、结尾换行补 `{len,len}`），因为原版 `StringView` 是 protected 嵌套 record、外部无法读取区间。逐显示行「Token 分段着色 → 错误区间改红 → 选区底色 → 光标」，`scissor` 裁剪并自绘滚动条；选区区间用「光标 ± `getSelectedText().length()`」反推。
+- 交互：`keyPressed` 转发原版（表达式框 Enter 插入真实换行、Ctrl+Enter 提交；条件框用 `singleLine` 模式，Enter 交还界面提交），Esc 在补全展开时只收补全；滚轮仅在鼠标位于控件内时生效。
+- 自动补全：光标在开头、空白之后或算符 / `(` 之后时直接列出全部可读变量（`true/false` + 变量），其余位置按前缀过滤；聚焦即自动弹出、失焦收起；自动弹出的列表标记 `autoOpened`，此时回车只收列表，Tab 直接应用候选，上下键导航后回车确认；候选按变量 / 常量 / 算符分别着色，悬停显示变量类型与绑定设备信息。
+- 语法着色两套调色板：列表（浅灰底）布尔未绑定 `#4A7FD6` / 绑定 `#1E4FA8`，浮点未绑定 `#3F9A4C` / 绑定 `#1E6B2A`；编辑框 / 悬浮提示（深色底）布尔 `#A8CCFF / #7FB4FF`、浮点 `#A8F0B0 / #7FE08A`；常量黄色、算符（含 `=`、括号、`!`、一元 `-`）品红、注释灰色；`EditBox` 自身文字颜色由 `syncBoxTextColor` 每帧设置，再叠加分段覆盖绘制。
+
+**变量表 / 行编辑 GUI**（[ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java)）
+
+- 面板 416×260，左栏 162 像素（含 18 像素设备图标列）、右栏 212，背景贴图 `console_program_gui.png` 与界面 1:1；变量表与程序列表为原版凹陷深色槽，按钮统一 `VanillaButton`（浅灰凸起、悬停深红内描边、无阴影文字）与 `ArrowButton`（`page_arrows.png` 四象限切片）。
+- 变量表按页显示 8 行（滚轮整页翻、左下 `< / >` 翻页按钮），首行固定 `#00 运行间隔`（只可改值、不可删 / 改名 / 改类型），空槽位点击打开新建表单；名称输入框带仿原版指令的自动补全下拉（空输入即列全部可绑定设备、输入后前缀过滤、滚轮滚动、悬停中文名提示、Esc 先收下拉）；布尔变量点击整行切换、浮点变量就地弹数值输入；底部「保存 / 放弃」，「保存」提交并强制上传一次，「放弃」清空本地待提交值，**Esc 关闭等同保存**。
+- 程序区两种视图：行列表（每页 8 行 / 共 64 行，左侧启用开关，行内「条件 目标 = 表达式」+ 下方注释双行、长算式悬停看全文，右侧「移」热区，翻页 / 保存按钮；行编辑期间列表与翻页不响应点击）与行编辑器（启用 / 复制 / 删除 / 条件 / 目标 / 表达式多行框 / 注释 / 确定 / 取消）。
+- 行编辑器即时校验：所有输入 `setResponder → onEditorChanged → refreshLineError`，每键解析表达式与条件并调用 `Line.validate`，错误直接显示在底部；载入已有行时 `loadingLine` 抑制中途报错；打开已有表达式时优先原文回显。移动把源行 `snapshot[to] = line; snapshot[from] = null` 后整表提交并跳到目标页；复制把整行（含注释与启用状态）收进 `pendingCopy`、由玩家点空行放置；删除在行编辑器内执行。FULL 时列表与编辑器只读并提示 `prog_locked`。
+- 变量表 / 程序列表 / 行编辑器 / 新建变量表单都支持同时操作（各面板只以自身状态为前提，不再互斥）；`keyPressed` 按焦点决定活动面板。
+
+**网络包**
+
+- [ConsoleVarPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleVarPacket.java)（**id 15**）一条包四种动作：创建 / 删除 / 保存数值 / 保存运行间隔（仅 0 号槽位）；服务端校验 8 格与成型状态，结果码翻译为动作栏提示。
+- 运行间隔值存 `programPeriod`，上限 `MAX_PERIOD_TICKS = 72000`，手动输入浮点四舍五入、负值按 0（`Math.round(Math.max(0, Math.min(上限, 值)))`），客户端 `sanitizePeriod` 与服务端 `applyProgramPeriod` 双重保证；`applyVarValuesSave` 忽略 0 号槽位，单独通过 `savePeriod` 提交。
+
+#### 41.6 CC: Tweaked 外设接口
+
+- **注册**：`CcRc` 的 `registerPeripheralProvider` 把 `ConsoleBusBlockEntity` 暴露为 `ConsoleBusPeripheral`，外设类型 `controller_bus`；电脑用调制解调器接到总线即可调用。
+- **线程模型**（[ConsoleCcBridge.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCcBridge.java)）：所有 Lua 方法**不标注 mainThread**——Lua 线程只读写 volatile 快照与加锁的待处理队列，零 `Level` 访问、0 tick；主线程每 tick `drain()` 一次，按调用顺序批量应用并最多同步一次，连续多次读写不各消耗 1 tick。写操作同时记入 overlay，读取优先返回 overlay，overlay 与待处理队列在同一把锁内随 `drain()` 一起清空，既可读己之写又不会永久遮蔽程序 / 玩家的修改。
+- **变量接口**（[ConsoleBusPeripheral.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleBusPeripheral.java)）：`listVars()`（name / type / address / component）、`getVar(name)`、`setVar(name, value)`（布尔 / 数值类型校验，0 号运行间隔不可写）、`getPeriod()`（只读）。
+- **组件接口**：`listComponents()`（code / type / id / kind）、`getComponent(code)`（value / state / decimals / unit，RGB 额外返回 color / enabled）、`getComponentValue(code)`、`setComponentValue(code, value)`；按钮面板为只读按压状态，写入返回 false；代号不区分大小写。`code` 不是组件代号时回退到变量名，仅放行「已绑定组件的变量」，因此可用 `getComponentValue("SYNCHROSCOPE_1_s")` 读转速、`setComponentValue("SYNCHROSCOPE_1_s", 5)` 写转速、`getComponentValue("SYNCHROSCOPE_1_b")` 读灯状态；组件代号优先，未绑定的普通变量不通过组件接口暴露。
+- **圆盘记录仪**（类型 `graph` / `graph_l`）：`pushPoint(code, value)`（0~100 钳制、整体移位、返回写入值）、`setPoint(code, index, value)`（Lua 索引 1~50，1 = 最新）、`getPoint(code, index)`、`getPoints(code)`（长度 50）；历史数组只换引用、不原地修改，快照与 Lua 读取共享安全。
+- **RGB 控制器**：`getColor / setColor`（直接 `0xRRGGBB`，与 CC `colors` 表兼容）、`getChannels / setChannels`（0~255 三通道）、`setChannel`（r/g/b/red/green/blue 单改）、`getEnabled / setEnabled`（启用 = 不显示原色）；内部走 `OP_RGB_COLOR` 与 `CompInfo.color / enabled` 快照字段，`applyCcOps` 中 RGB 的 `OP_COMP_BOOL` 特判为启用开关。
+- **执行顺序**：程序先跑、CC 队列后结算；变量写入后立即上传绑定组件（记录仪按触发变量决定是否记点），组件直接写入最后生效。结构未成型时仍可读写已有变量 / 组件，只是程序不运行。
+- **说明书**：[InstructionBook2Item.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/InstructionBook2Item.java) 目录含「6. 控制柜总线」，附 4 页 Lua 方法说明与示例。
+
+#### 41.7 配置 JSON 保存与加载
+
+- **入口**：总线界面通栏「保存/加载配置」按钮（未成型禁用）→ [ConsoleConfigScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleConfigScreen.java)（保存 / 加载两个按钮，Esc 返回总线界面）。
+- **格式**（[ConsoleConfigJson.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleConfigJson.java)）：`format = "cc_rc_console_config"`、`version = 1`，Gson `setPrettyPrinting`，可直接用记事本编辑。内容：`size(x/y/z)`、`facing`（总线相对结构朝向，`Direction.getName()`）、`components`（type/face/u/v/code/code2/color/text/decimals/unit/holdTicks/scale，RGB 另有 links/rgbR/rgbG/rgbB/showOriginal）、`texts`（face/u/v/content/color/粗斜下删线/anchor/scale）、`variables`（name/type/trigger/component/value/bool）、`program`（period + lines：row/enabled/cond/condition/condition_expr/condition_source/target/expr/comment/source）。表达式以结构化节点保存（`op` + `number/flag/var/left/right`），变量与组件统一用名称 / 代号引用，不写内部槽位与组件 id。
+- **客户端读写**（[ConsoleConfigStore.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleConfigStore.java)）：存放于游戏目录 `cc_rc_configs/<名称>.json`（UTF-8，自动建目录），文件名过滤 `\ / : * ? " < > |`、限制 48 字符、列表按名称排序；导出由 `exportConfigJson()` 用 `getUpdateTag()` 的同步数据组装，不写 state / value / 历史点，程序只导出非空行并记录原行号。
+- **服务端校验应用** `applyConfigJson(String)`：方块实体类型与距离（包内 256 格）→ 结构与总线交汇点存在且为 PARTIAL → JSON 解析（`CFG_BAD_JSON`）→ `format` + `version` → 朝向合法性与旋转角（竖直朝向 `CFG_FACING_MISMATCH`）→ `size` 按旋转后（奇数次 90° 时 X/Z 互换）比对（`CFG_SIZE_MISMATCH`）→ 变量数不超上限（`CFG_LIMIT`）→ 逐项构建组件 / 文字 / 变量 / 程序（任何非法 `CFG_INVALID`）。全部通过才整体替换并 `sync()`，不会留下半套配置。重建时按现有规则校验代号格式、主代号与第二名称共用命名空间去重、坐标按该面实际像素范围夹紧、同面重叠检测；变量按名称重新分配槽位、`trigger` 必须绑定圆盘记录仪第二名称且变量名等于该代号、类型强制跟随所绑组件；程序行号 0~63 且不重复、条件 / 目标 / 表达式按变量名解析后 `line.validate()` 必须通过、按钮面板不可作写入目标。
+- **网络**：[ConsoleConfigUploadPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleConfigUploadPacket.java)（C2S，上限 1 MiB，按 UTF-8 字节串 + int 长度直写，绕开 `writeUtf` 32 KiB 限制）与 [ConsoleConfigResultPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleConfigResultPacket.java)（S2C 结果码），注册为 id 18 / 19；结果包不在网络包内直接引用客户端 GUI，沿用 `PENDING` + `DistExecutor.unsafeRunWhenOn` + [ConsoleConfigClientHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleConfigClientHandler.java)。
+- **旋转加载**：`rotationSteps()` / `rotateFace()` 按保存朝向与当前总线朝向的顺时针 90° 差值旋转组件与文字的 `face`，奇数次交换 X/Z；局部 `u/v` 随表面坐标系一起旋转而保持不变（顶 / 底面绕 Y 旋转朝向不变）。
+- **覆盖确认**：加载时总线已有数据（`hasConfigData()`）先弹「确认覆盖 / 取消」；保存时同名 `.json` 已存在（`ConsoleConfigStore.exists()`）也先确认；确认按钮按待处理动作（保存文件名 / 待上传 JSON）分派。
+
+#### 41.8 画图工具（draw_tool）
+
+- **数据模型**（`block/console/draw/`）：[ConsoleShapeType.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/draw/ConsoleShapeType.java) 枚举 `RECT`（实心矩形）/ `RECT_OUTLINE`（空心矩形）/ `LINE`（线段）/ `ARROW`（箭头）/ `PRESET`（预设图案），`usesWidth()` 标出可设线宽的类型；[ConsoleShape.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/draw/ConsoleShape.java) 是不可变图形 `id / face / layer / type / color(0xRRGGBB) / width / u1,v1,u2,v2 / preset / rotation / scale`，`MIN_WIDTH=0.1 / MAX_WIDTH=4.0`、`LAYERS=8`、`MIN_SCALE=0.1 / MAX_SCALE=3.0`，`quantize(v)` 四舍五入到 0.1 避免浮点噪声累积；`save/load` 用 `putFloat/getFloat`（旧 int 线宽 / 缩放可被兼容读取，旧 0~3 旋转 int 读入时 ×90 迁移为角度）。
+- **预设**（[ConsoleDrawPresets.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/draw/ConsoleDrawPresets.java)）：共 24 条，登记 `id / 贴图 / 像素尺寸（32 或 16）/ 最大缩放 3.0`；贴图位于 `textures/gui/draw_presets/`（中文文件名改为英文 id），含储罐、泵、汽轮机、反应堆、抑压池、换热器、汽水分离器、给水加热器、过滤器、电池、变压器、整流器、电闸、各类阀门与 `sample`。显示时先乘 `DISPLAY_SCALE = 0.5` 再乘玩家缩放（32 像素贴图默认占 16 表面像素），预设贴图以顶点色相乘染色。
+- **存储**：图形按面存总线方块实体的 `Map<Direction, List<ConsoleShape>>`，上限 `MAX_DRAW_SHAPES = 512`，随总线 NBT 保存（`Draws` + `NextDrawId`）并经 `getUpdateTag` 同步，GUI 直接读本地方块实体。服务端 API：`getDrawShapes / countDrawShapes / findDrawShape / findDrawShapeAt / applyDrawAdd / applyDrawEdit / applyDrawSetAnchor / applyDrawDelete`，返回 `DRAW_OK / NOT_FORMED / LOCKED / OUTSIDE / LIMIT / NOT_FOUND / BAD_DATA`；`shiftDrawShape` 按包围盒整体夹紧、`rebaseSurfaceEntries` 同步平移，`hasConfigData()` 计入图形数量。
+- **渲染**（[ConsoleDrawRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleDrawRenderer.java)）：按 U/V/N 基向量构造矩阵（列 `U/16、V/16、N/16`），外推 `OUTSET_BASE = 0.001 + layer*0.0001`（最大 0.0017，小于组件 `COMP_OUTSET=0.002`，图案位于组件下方）；实心图形用 1×1 白贴图 `textures/block/console_parts/white.png` + 顶点色（`entitySolid`），预设用 `entityCutoutNoCull` 贴单色 PNG，`rotation` 任意角度绕中心旋转、UV 固定 0..1。箭头头长 `min(len, 4*width)`、头半宽 `1.5*width`，`ConsoleShape.bounds` 留边同步；所有顶点传入固定「视空间向上」法线 `FLAT_NORMAL`，避免实体着色器漫反射把颜色压灰。接入 `ConsoleBusBER.render` 最前面（组件之前）。
+- **网络**：[ConsoleDrawPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleDrawPacket.java)（id 21，`OP_EDIT / OP_MOVE / OP_DELETE / OP_CREATE`，服务端 100 格校验），[ConsoleDrawCreatedPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/ConsoleDrawCreatedPacket.java)（id 22，S2C 回执 `pos + shapeId`，-1 = 失败），[DrawToolSettingsPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/DrawToolSettingsPacket.java)（id 23，C2S 工具设置，服务端校验预设白名单后写 NBT）。
+- **属性界面**（[ConsoleDrawMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleDrawMenu.java) / [ConsoleDrawScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleDrawScreen.java)）：单个图案的 386×220 属性界面（不在 GUI 内画布绘图），菜单携带图形全部参数、表面半宽高与 `shapeId / pending`；控件为 5 个类型按钮、16 色块 + `#RRGGBB`、线宽 0.1~4.0、图层 0~7、位置 X/Y（左下角，表面像素）、尺寸（矩形宽高 / 线段箭头长度 + 角度）、右侧 4 列 × 3 行预设缩略图（滚轮滚动、裁剪、滚动条）、选中预设时的旋转 0~359.9 与缩放 0.1~3.0、保存 / 删除 / 关闭；未创建时选线段 / 箭头默认长度 8、角度 0，点类型或贴图才发 `OP_CREATE`，回执轮询在 `containerTick()`（`tick()` 是 final）。绘制与命中统一用绝对坐标。
+- **物品与快速绘画**（[DrawToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/DrawToolItem.java)）：工具 NBT 记住 `DrawColor / DrawWidth / DrawScale / DrawLayer / DrawType / DrawPreset / DrawQuick / DrawSnap / DrawStraight`；`useOn` 普通模式命中已有图案打开属性界面，否则以点击点为图案左下角、「未创建」状态打开；`use`（右键空气）Shift 打开 [DrawQuickScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/DrawQuickScreen.java)（386×200：类型 / 三个开关 / 16 色 + HEX / 线宽 / 缩放 / 图层 / 4×3 预设），否则取消第一点。快速绘画开启后右键面板不打开属性界面：PRESET 单击生成，矩形 / 线段 / 箭头两次右键取点（按玩家 UUID 记服务端静态 Map，含 busPos + face + u,v），右键非面板或空气取消；吸附整数把点击坐标 `Math.round`，平直线优先在 `|dx| > 2|dy|` 或反向时对齐一轴。
+- **拖动**：多功能工具拖动支持 `KIND_SHAPE`，图案以 `u1,v1` 为锚点、吸附整像素、发 `OP_MOVE` 绝对锚点。
+
+#### 41.9 斜面控制台（controller_slope）
+
+- **方块**（[ConsoleSlopeBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSlopeBlock.java)）：只有上表面（斜面）是工作面；`FACING` 为水平四向的「下坡方向」，放置取玩家水平朝向反方向。空手右键转交 `ConsoleCompUse.tryUse`；`onPlace / playerWillDestroy / onRemove` 让相邻控制柜或已登记总线 `invalidateStructure()`，放置 / 拆除后需重新「检测并成型」。另有 `controller_slope_blue / controller_slope_black` 复用同类（带 `color` 字段）。
+- **方块实体**（[ConsoleSlopeBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSlopeBlockEntity.java)）：只存 `Bus / Host / HostFace` 三项链接信息，`setLink` 有变化时 `setChanged + sendBlockUpdated`；组件与文字仍留在总线。
+- **几何映射**（[ConsoleSlopeGeometry.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleSlopeGeometry.java)）：坡板模型 `from [0,7,0] to [16,9,17.3]`、`rotation -22.5° axis x origin [0,9,0]`，坡长 17.3px、宽 16px，`SIN 0.38268 / COS 0.92388`，`COVERED_START_PX 1.3`、`COVERED_MID_PX 9.3`。映射取 `U = 宿主面 u 方向`、`V = 上坡方向`、`N = U×V`，宿主 v 上端对齐坡面高端，`v ∈ [中心-8, 中心+8] ↔ t ∈ [1.3, 17.3]`；低边中心取「方块中心沿 FACING 外移半格、高度固定 `LOW_EDGE_Y_PX`」。竖直面要求 `facing == hostFace`；顶面要求 `facing` 与总线 FACING 同轴（与总线背面一致时 U 保持原样、与正面一致时 U 取反 = 内容旋转 180°），与总线前后垂直的朝向明确不映射。`resolve(level, clickedPos, eyePos, hitLocation)` 用「眼睛 → 命中点」射线与坡面平面求交（交点须在视线段内且从外侧射入），再反算宿主 `(u, v)`、用 `inCell` 限制在 16×16 内，返回 `Target(busPos, face, u, v)`。
+- **成型登记**：总线静态内部类 `SlopeLink{slopePos, hostPos, hostFace}`（NBT `SlopeLinks`，随 `getUpdateTag` 同步）；`formStructure` 成功后 `applySlopeLinks()` 遍历结构外接长方体内每个 `ConsoleBlock` 的六向邻居（跳过 DOWN），命中朝向匹配的斜面就登记并写入斜面方块实体；重新成型前与 `invalidateStructure()` 时 `clearSlopeLinks()`。`applySlopeLinks` 先比较斜面 `color` 与结构颜色，异色不登记。
+- **渲染**：斜面 BER 从自己方块实体取总线与宿主信息，筛出目标格内的组件 / 文字 / 绘图后调用 `ConsoleBusBER.renderMapped(...)`；`ConsoleFrame` 把斜面 origin 平移回宿主表面像素 (0,0)，`ConsoleDrawRenderer.renderInFrame` 按 frame 三轴构造矩阵，因此 `(u,v)` 数据无需迁移，总线 AABB 不扩大。
+- **交互**：[ConsoleCompUse.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleCompUse.java)、[ConsoleCompItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/ConsoleCompItem.java)、[DrawToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/DrawToolItem.java)、[ConsoleKeyItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/ConsoleKeyItem.java)、[EditToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/EditToolItem.java)、[MultiToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/MultiToolItem.java)、[ConsoleTextClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleTextClient.java)、[ConsoleDragClient.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleDragClient.java) 全部先调用 `ConsoleSlopeGeometry.resolve`（传玩家眼睛位置 + 命中点）：非空直接用宿主 `face + (u,v)`，为空且点是斜面块则提示「未成型」，否则走原 `findBus + pixelU/V + contains`。服务端包格式不变；拖动额外记录 `slopePos`，每 tick 要求准星仍停在同一斜面并按当前视线重新求交。
+- **模型与碰撞**：`controller_slope` 贴图多余面为透明（alpha 0 / 255），方块加 `noOcclusion()` 并在客户端注册 `RenderType.cutout()`，否则默认 solid 会把 alpha=0 写成黑色遮挡斜板；`getShape / getCollisionShape` 按 FACING 缓存四个水平台阶形状（8 级、每级 2 像素进深、每级顶面取该级中点的坡面高度，误差 < 0.42 像素，低端朝 FACING），顶面再下沉 `TOP_OFFSET_PX = 1` 像素；模型根部 `"ambientocclusion": false`，item 模型 `display` 为 gui `[30,225,0]` 缩放 0.625、firstperson 0.32、thirdperson 0.35、ground 0.25、fixed 0.5。
+
+#### 41.10 辅助计算机与界面清单
+
+- **辅助计算机**（[ControllerAuxBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ControllerAuxBlock.java)）：`controller_aux` 装饰性完整方块，无方块实体，`HORIZONTAL_FACING`（默认 NORTH，放置取玩家水平朝向反方向，blockstate 四向变体，模型默认正面 north）。右键扫描六邻：恰好一个 `controller_bus` 时打开程序界面，没有或多于一个用动作栏提示 `message.cc_rc.controller.need_bus / multi_bus`；仍无方块实体，数据全部在总线。朝向只影响模型显示，旧存档缺 `facing` 自动取 NORTH。
+- **界面清单**（菜单类型 / 尺寸 / 包）：
+
+| 界面 | 类 | 尺寸 | 网络 |
+| --- | --- | --- | --- |
+| 总线界面 | [ConsoleScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleScreen.java) | 高 172（含保存 / 加载配置按钮） | `ConsoleStructurePacket` id 7 |
+| 配置保存 / 加载 | [ConsoleConfigScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleConfigScreen.java) | 由总线界面进入 | id 18 / 19 |
+| 程序界面（变量表 + 程序行） | [ConsoleProgramScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleProgramScreen.java) / `console_program` | 416×260 | id 15 / 16 |
+| 表面文字编辑 | [ConsoleTextScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleTextScreen.java) / `console_text` | 192×234（`console_text_gui.png`） | id 8 / 9、14 |
+| 组件设置 | [ConsoleCompScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleCompScreen.java) / `console_comp` | 176×152，数字显示字段 176×174，RGB / 附加变量 176×212 | id 10 / 11、12 / 13 |
+| 画图属性 | [ConsoleDrawScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ConsoleDrawScreen.java) / `console_draw` | 386×220 | id 21 / 22 / 23 |
+| 画图工具快速设置 | [DrawQuickScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/DrawQuickScreen.java) | 386×200（普通 `Screen`） | id 23 |
+| 数字键盘输入 | [ConsoleNumpadScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/ConsoleNumpadScreen.java) | 200×104（无容器菜单） | id 24 |
+
+- 程序界面、组件界面、文字界面、画图界面均以总线为数据源：菜单只同步坐标 / 少量参数，实体数据靠 `sendBlockUpdated` 每帧读取。
+
+#### 41.11 关键数据格式（NBT / 网络包 / 配置 JSON）
+
+- 总线 NBT：`FormState / Error / Origin / SizeX~Z / Count / Color / LastOrigin~LastSizeZ / Texts / NextTextId / Draws / NextDrawId / Comps / NextCompId / SlopeLinks / ProgramPeriod / Vars / VarF / VarB / ProgLines / ProgWarn`。
+- 组件 NBT：`Type`（字符串 id）/ `Face / U / V / Code / Code2 / Color / Decimals / Unit / HoldTicks / Scale / State / Value / History / CompText* / SpeedVar / LampVar / MuteVar / HasKey / KeyMode / CoverTicks / Links / RgbR / RgbG / RgbB / ShowOriginal / Muted / PressButton / PressUntil`——仅非默认值才写，旧存档缺失走默认值。
+- 表面文字 NBT：`Texts`（ListTag，每项含 `Id / Face / U / V / Text / Color / Bold / Italic / Underline / Strike / AnchorH / AnchorV / Scale`）+ `NextTextId`。
+- 斜面方块实体 NBT：`Bus / Host / HostFace`（仅链接信息，组件与文字仍留在总线里）。
 - 程序行 NBT：外层 `Idx`，行内 `On / Cond / CondSlot / Target / Expr / Comment / Src / CondExpr / CondSrc`；字节码不持久化，读档后 `programDirty = true` 重新编译。
-- 网络包：`ConsoleProgramPacket`（整表保存）、`ConsoleVarPacket`、`ConsoleCompPacket`、`ConsoleConfigUpload/Result`、`ConsoleStructurePacket`、`ConsoleText*/ConsoleCompText*`、`ConsoleDraw*`、`ConsoleKeypadRelease`。
-- 配置 JSON：`format / version / size / facing / components / texts / variables / program{period, lines[row, enabled, cond, condition, condition_expr, condition_source, target, expr, comment, source]}`；`condition_expr` 存在时优先于旧三态 `cond / condition`。
+- 网络包（`ModNetwork` id）：7 结构操作、8 文字请求、9 文字提交、10 组件请求、11 组件提交、12 组件文字请求、13 组件文字提交、14 文字移动、15 变量表、16 程序行、17 键盘释放、18/19 配置上传 / 结果、21 绘图、22 绘图创建回执、23 画图工具设置、24 数字键盘、25 涂鸦文字、26 涂鸦形状、27 便签。
+- 配置 JSON：`format / version / size / facing / components / texts / variables / program{period, lines[row, enabled, cond, condition, condition_expr, condition_source, target, expr, comment, source]}`；`condition_expr` 存在时优先于旧三态 `cond / condition`；`format` 缺失即视为非法。
 
-**4. 现状与待办**
+#### 41.12 现状与待办
 
-- 程序系统 P0 ~ P4 已完成（文本表达式、原文回显、`condExpr` 条件）；P5 仅剩手工回归。
-- 已知未实现：前向引用提示（§4.3 / §16.1）、CC 单变量 `writableByCC` 开关（可选）。
-- 2026-11-15 系统性审查的结论见临时日志；确认项以「网络 / 反序列化健壮性」为主，不影响现有玩法。
+- 程序系统 P0 ~ P4 已完成（文本表达式、原文回显、`condExpr` 条件表达式）；P5 仅剩手工回归。
+- 已知未实现：前向引用提示（方案文档 §4.3 / §16.1）、CC 单变量 `writableByCC` 开关（可选）。
+- 系统性审查结论以「网络 / 反序列化健壮性」为主：负行数归零、`Expr.load / read` 深度上限、VM 栈深检查均已落地，不影响现有玩法。
+
+### 42. 涂鸦文字（graffiti）
+
+- **方块**（[GraffitiBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/graffiti/GraffitiBlock.java)）：贴墙透明方块，几何与海报一致——`FACING` 四向、16×16×1 轮廓、`noCollission`、支撑墙消失自动掉落、`RenderShape.INVISIBLE`；右键（非潜行）打开涂鸦编辑界面。
+- **方块实体**（[GraffitiBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/graffiti/GraffitiBlockEntity.java)）：保存 `Text / Color / Scale / Dx / Dy / Bold / Italic / Underline / Strike`；文字单行最长 128 字符，大小 = 一行文字高度（格，0.05~4.0，默认 0.5 = 半格），偏移 ±16 格；`getRenderBoundingBox` 按文字长度与字号动态放大，避免长文本被视锥剔除。
+- **渲染**（[GraffitiBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/graffiti/GraffitiBER.java)）：复用海报的四向锚点与「观者向右」向量，用 `Matrix4f` 把字体像素映射到墙面（每字体像素 = `scale / font.lineHeight` 格），`font.drawInBatch` 全亮绘制；手持编辑工具（主手 / 副手）时在未偏移锚点绘制 1×1 半透明物品图标（`textures/item/graffiti.png`）标记透明方块位置。
+- **放置**：[EditToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/EditToolItem.java) 的 `useOn` 在控制台 / `ITextDisplay` 分支之后接入涂鸦分支——右键已有涂鸦打开界面；右键任意实心水平墙面（非潜行、目标格可替换）时在墙外侧放置涂鸦方块并立即打开界面。
+- **菜单 / 界面 / 网络**：[GraffitiMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/GraffitiMenu.java)（同步文字 / 颜色 / 大小 / 偏移 + 格式位标志）、[GraffitiScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/GraffitiScreen.java)（复用 `console_text_gui.png` 面板：文字输入、完成、B/I/U/S、16 染料色块、dx/dy/大小）、[GraffitiConfigPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/GraffitiConfigPacket.java)（C2S 包 id 25，服务端校验方块实体类型 + 8 格距离后写入并 `sendBlockUpdated`）。
+- **注册与资源**：`ModBlocks.GRAFFITI`、`ModItems.GRAFFITI_ITEM`、`ModBlockEntities.GRAFFITI_BE`、`ModMenuTypes.GRAFFITI`、创造物品栏、客户端 cutout 渲染层 / 菜单屏幕 / BER；资源 `blockstates/graffiti.json`、`models/block/graffiti.json`（粒子复用 `block/poster/no_material`）、`models/item/graffiti.json`、`textures/item/graffiti.png`，中英 lang 各一条。
+- **注意点**：文字只支持单行（换行符不参与渲染）；放置必须贴着结实的水平墙面，垂直面不放置；透明方块本身不渲染，只有手持编辑工具时才出现幽灵图标。
+
+### 43. 涂鸦形状（graffiti_shape）
+
+- **方块**（[GraffitiShapeBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/graffiti/GraffitiShapeBlock.java)）：贴墙透明方块，几何与海报 / 涂鸦文字一致（`FACING` 四向、16×16×1 轮廓、`noCollission`、支撑墙消失自动掉落、`RenderShape.INVISIBLE`）；右键（非潜行）打开图案设置界面。
+- **方块实体**（[GraffitiShapeBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/graffiti/GraffitiShapeBlockEntity.java)）：保存 `Type / Preset / Color / Size / Width / Rot / Dx / Dy`；类型复用 `ConsoleShapeType`（预设 / 实心矩形 / 空心矩形 / 线段 / 箭头），预设 id 取自 `ConsoleDrawPresets`（24 种）；大小 = 图案边长（格，0.1~16.0，默认 1.0），线宽 0.1~4.0 像素，旋转 0~359.9 度，偏移 ±16 格；`toShape()` 按类型生成以中心为原点的像素坐标图形，`getRenderBoundingBox` 按大小与偏移放大。
+- **渲染**（[GraffitiShapeBER.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/graffiti/GraffitiShapeBER.java)）：锚点取贴墙面中心（如 north 为 `(0.5, 0.5, 15/16)`），像素坐标系 1 像素 = 1/16 格，dx/dy 沿观者向右 / 向上偏移，rotation 在像素平面内绕中心旋转（对所有类型生效）；绘制直接调用 [ConsoleDrawRenderer.renderShape](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/console/ConsoleDrawRenderer.java)（公开入口，复用预设染色与矩形 / 线段 / 箭头顶点逻辑）；手持画图工具（主手 / 副手）时在方块本体面绘制半透明物品图标（`textures/item/graffiti_shape.png`）。
+- **放置**：[DrawToolItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/DrawToolItem.java) 的 `useOn` 在非控制台分支接入涂鸦形状分支——右键任意实心水平墙面（非潜行、目标格可替换）时在墙外侧放置，用工具当前设置（类型 / 预设 / 颜色 / 缩放 / 线宽）初始化后立即打开设置界面；其它情况仍 PASS。
+- **菜单 / 界面 / 网络**：[GraffitiShapeMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/GraffitiShapeMenu.java)、[GraffitiShapeScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/GraffitiShapeScreen.java)（复用 `console_text_gui.png` 面板：类型切换按钮、8×3 预设缩略图网格、16 染料色块、dx/dy/大小/线宽/旋转输入框、完成）、[GraffitiShapeConfigPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/GraffitiShapeConfigPacket.java)（C2S 包 id 26，服务端校验方块实体类型 + 8 格距离后写入并 `sendBlockUpdated`）。
+- **注册与资源**：`ModBlocks.GRAFFITI_SHAPE`、`ModItems.GRAFFITI_SHAPE_ITEM`、`ModBlockEntities.GRAFFITI_SHAPE_BE`、`ModMenuTypes.GRAFFITI_SHAPE`、创造物品栏、客户端 cutout 渲染层 / 菜单屏幕 / BER；资源 `blockstates/graffiti_shape.json`、`models/block/graffiti_shape.json`（粒子复用 `block/poster/no_material`）、`models/item/graffiti_shape.json`、`textures/item/graffiti_shape.png`，中英 lang 各一条。
+- **注意点**：类型按钮必须按枚举值 `switch` 映射（按下标查数组会与 `RECT / RECT_OUTLINE / LINE / ARROW / PRESET` 错位一位）；在类型按钮上滚动滚轮可循环切换（上滚向后、下滚向前），左键点击为向后切换；预设列表一次显示 24 个（8 列 × 3 行）。
+
+### 44. 便签（note）
+
+- **实体**（[NoteEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/NoteEntity.java)）：自定义非生物实体（`extends Entity`），朝向与四行文字全部放在 `SynchedEntityData`（`DIRECTION` + `COMPOUND_TAG`，文字键 `L0~L3 / C0~C3 / F0~F3`，每行最长 48 字符）随实体自动同步；`makeBoundingBox` 按朝向轴生成 0.5×0.5×0.06 格的薄片（`direction` 为空时兜底 `Direction.NORTH`），纸面外翻后包围盒沿法线改为「靠墙 0.03 + 外翻 0.12」的非对称薄盒以便点选；`isPickable()` 返回 true；右键 `interact`（Shift 取下写物品 NBT，否则打开编辑菜单）、左键 `hurt`（创造模式直接移除，其余 `spawnAtLocation` 掉物品）、`tick` 检查支撑面仍 `isFaceSturdy` 否则自动掉落。
+- **物品**（[NoteItem.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/item/NoteItem.java)）：`useOn` 校验目标面结实后，用 `getClickLocation` 的命中点 + 面法线半厚生成实体，贴面内两个切向坐标夹到 `[方块+0.25, 方块+0.75]`，因此可贴在方块表面任意浮点位置而不限于格心；先 `setDirection` 再 `setPos` 保证包围盒方向正确；读取物品 NBT `Note` 还原文字；生存 / 冒险 `shrink(1)`，创造不消耗；放置后立即打开编辑界面。
+- **冒险模式放置**：Forge 在 `ItemStack.useOn` 内部先调 `ForgeHooks.onPlaceItemIntoWorld`，`mayBuild = false` 时直接返回 PASS，`useOn` 不会被调用；因此放置逻辑由公开方法 `placeNote(level, player, stack, hit, clickedPos, face)` 承担，内部类 `AdventurePlaceHandler`（FORGE 事件总线，监听 `PlayerInteractEvent.RightClickBlock`）只在服务端、非旁观且 `!mayBuild` 时直接调用 `placeNote` 并取消事件；带界面的方块（`getMenuProvider != null`，如箱子、熔炉）仍优先打开界面。
+- **已书写的便签**：注册 `written_note`（复用 `NoteItem`，贴图 `textures/item/written_note.png` + 模型 + 中英 lang + 创造栏）；`hasText()` 判断任意一行是否有字，`createNoteStack()` 据此返回 `WRITTEN_NOTE` 或 `NOTE`，实现「带文字取下 → 已书写便签，清空后取下 → 空白便签」。
+- **渲染**（[NoteRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/entity/NoteRenderer.java)）：`EntityRenderer` 直绘 0.5 格纸面四边形（`RenderType.entityCutoutNoCull`，贴图 `textures/entity/note.png`），再按六向各自的 `right / upTilt / normalTilt` 基向量用 `Matrix4f` 把字体像素映射到纸面绘制四行文字（字形高约为行高的 80%，长文本按纸面宽度等比缩小），全亮光照。纸面绕上边沿（right 轴）外翻 14°：`upTilt = up·cos − normal·sin`、`normalTilt = up·sin + normal·cos`，文字沿 `normalTilt` 外推 0.01 格、字体 x 沿 `right`、字体 y 沿 `-upTilt`，纸面与文字共用同一组基向量保证倾斜一致、文字位于纸面正面；行距为纸面高度的 82%、字形高为行距的 82%，顶 / 底行不超出纸面。
+- **菜单 / 界面 / 网络**：[NoteMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/NoteMenu.java)（实体 id + 四行文字标签）、[NoteScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/NoteScreen.java)（复用 `console_text_gui.png` 面板：四个输入框 + 完成 + B/I/U/S + 16 染料色块，颜色与格式只作用于当前选中行；背景自绘米黄 `F7EF97` + 描边，选中行描边加深）、[NoteConfigPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/NoteConfigPacket.java)（C2S 包 id 27，服务端校验实体类型 + 8 格距离后写入）。
+- **注册与资源**：`ModEntities.NOTE`（`MobCategory.MISC`，0.5×0.5，跟踪范围 8、更新间隔 4）、`ModItems.NOTE`、`ModMenuTypes.NOTE`、创造物品栏、`MenuScreens` 与实体渲染器；资源 `models/item/note.json`、`textures/item/note.png`、`textures/entity/note.png`，中英 lang 各两条（`item.cc_rc.note` / `entity.cc_rc.note`）。
+- **注意点**：便签文字框使用自绘无阴影 [ShadowlessTextField.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/ShadowlessTextField.java)（无阴影、垂直居中、左侧内缩 4px、scissor 裁剪 + 横向滚动、光标按真实时间 500ms 闪烁、点击定位、退格 / 删除 / 左右 / Home / End、`SharedConstants.isAllowedChatCharacter` 过滤）；「正在编辑第 X 行」位于标题栏右侧以避免与按钮重叠；纸面文字不能画在背面（用 `right / upTilt / normalTilt` 显式基向量，text 沿 `normalTilt` 外推 0.01，字体 y 沿 `-upTilt`）；`direction` 为空会 NPE，`makeBoundingBox` 兜底 `Direction.NORTH`；生存 / 冒险消耗 1 个、创造不消耗；空文字取下得到空白便签。
+
+### 45. 激光笔（laser_pointer）
+
+- **物品**：`ModItems.LASER_POINTER`，普通 `Item`、`stacksTo(1)`、无右键逻辑（激光是「手持即生效」的被动效果）。贴图取 `模型/其他物品/激光笔.png`（16×16）直接复制为 `textures/item/laser_pointer.png`；模型 `models/item/laser_pointer.json` 用 `item/handheld`（原版工具手持姿态，保持原版大小）；中英 lang 各一条 + 创造物品栏。无方块 / 方块实体 / 网络包。
+- **配置**（[Config.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/Config.java)）：`laser_pointer` 段——`max_distance`（默认 16，范围 1~64）、`line_width`（默认 0.02 格，范围 0.005~0.2），配 `getLaserPointerMaxDistance()` / `getLaserPointerLineWidth()`。
+- **渲染**（[LaserPointerRenderer.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/LaserPointerRenderer.java)）：`@EventBusSubscriber(value = Dist.CLIENT, bus = FORGE)` 监听 `RenderLevelStageEvent`，只在 `Stage.AFTER_TRANSLUCENT_BLOCKS` 执行；遍历 `level.players()`，主手或副手持激光笔的玩家各画一条红线（双手各持一支画两条），其他玩家同样可见，全部客户端本地计算，不需要同步包。
+- **射线求交**：以 `player.getEyePosition(partialTick)` 为起点、`getViewVector(partialTick)` 为单位方向，最远 `max_distance` 格，用 `level.clip(new ClipContext(..., ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player))` 按**碰撞箱**求交；命中则终点取 `hit.getLocation()`（碰撞箱表面交点），未命中则取眼睛 + 视线 × 最大距离，即激光与视线平行。
+- **手部起点**：用视线正交基 `right = 视线 × 世界向上`、`up = right × 视线` 构造，起点 = 眼睛 + 视线前 0.30 格 + 左右 0.30 格 − 上 0.62 格（站立时眼睛约 1.62 格高、持物手约 1.0 格高，减去 0.62 后起点落在手部）；右手玩家主手在右、副手在左，`HumanoidArm.LEFT` 玩家整体镜像。
+- **绘制方式**：无贴图 `RenderType.debugQuads()`（POSITION_COLOR，红色不透明），沿光束轴取 3 个互成 60° 的方向各画一条细长四边形（半宽 = 配置线宽 / 2），顶点统一减去相机位置；深度测试保持开启，激光会被墙体正确遮挡。不使用单片朝向相机的四边形，因为第一人称时光束几乎与视线重合，单片会退化到看不见。
+- **专用服务器兼容性**：物品注册（`ModItems` / `ModCreativeTabs`）、配置（`Config`）全部是公共代码，无任何 `net.minecraft.client` 引用；渲染类 `LaserPointerRenderer` 标注 `value = Dist.CLIENT`，与模组内其他客户端处理器一致，服务端不会加载该类；激光全靠各客户端本地依同步来的玩家位置 / 朝向 / 手持物品计算，无网络包与服务端逻辑。`max_distance` / `line_width` 是 COMMON 配置，多人游戏时每个客户端读自己安装目录的配置值（纯视觉参数，不影响服务端判定）。
+- **注意点**：`ClipContext.Block` 中按碰撞箱求交的枚举值是 `COLLIDER`（不是 `COLLISION`）；光束全程按手部位置起算，因此第三人称下同样从手部指向准星交点。
+
+### 46. 音频播放器（audio_player）
+
+- **方块**（[AudioPlayerBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/audio_player/AudioPlayerBlock.java)）：`Block implements EntityBlock`，唯一方块状态 `POWERED`；`neighborChanged` / `onPlace` 在服务端用 `getBestNeighborSignal` 刷新并 `setBlock(..., 3)` 同步给客户端；`canConnectRedstone` 恒 true；右键（非 Shift）服务端 `AudioPlayerMenu.open` 打开设置界面。
+- **方块实体**（[AudioPlayerBlockEntity.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/audio_player/AudioPlayerBlockEntity.java)）：保存音效 id / 模式 / 范围 / 衰减 / 起始 / 截至 / 间隔 / 音量（NBT 键 `Sound / Mode / Range / Atten / Start / Stop / Interval / Volume`）；`record Settings` 作为菜单同步与客户端「配置是否变化」的比较快照；`normalizeSoundId` 缺命名空间补 `cc_rc:`、超长截断 128；`setConfig` 统一 `Mth.clamp`；`getUpdateTag` = `saveWithoutMetadata`、`getUpdatePacket` = `ClientboundBlockEntityDataPacket.create`。
+- **菜单 / 界面**：[AudioPlayerMenu.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/AudioPlayerMenu.java) 仅承载坐标与配置快照，`NetworkHooks.openScreen` 按 `pos → writeUtf(128) → VarInt → Float → VarInt → Float×3 → VarInt(音量)` 顺序写同步数据；[AudioPlayerScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/AudioPlayerScreen.java) 220×224 白底自绘，含音效名称补全框（候选 `ForgeRegistries.SOUND_EVENTS.getKeys()` 排序，前缀匹配、无结果退回包含，5 行滚轮 + 点击选中，配色同 `ConsoleProgramScreen`）、时长文本、模式循环按钮、范围 / 衰减 / 起始 / 截至 / 间隔 / 音量输入框与保存按钮；保存前校验 id 已注册，通过后发 `AudioPlayerConfigPacket`；鼠标悬浮补全候选时显示该音效的中文翻译（语言键 `cc_rc.sound.<id>`，未命中退回 `cc_rc.subtitle.<path>`，都没有则不显示）；下拉展开时，凡矩形与下拉面板相交的模式按钮 / 输入框 / 标签一律跳过渲染（`isCoveredBySuggest`），避免文字从下拉面板上透出。
+- **时长解析**（[SoundDurations.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/SoundDurations.java)）：`SoundManager.getSoundEvent` → `getSound` → `Sound.getLocation` 定位 `sounds/<path>.ogg`，扫描 `01 vorbis` 取采样率（+12，小端 4 字节）、尾部 `OggS` 取 granule（+6，小端 8 字节），`ticks = round(granule / rate * 20)`；按音效事件 id 缓存（失败 -1，调度按 200 tick 兜底）。
+- **客户端调度**（[AudioPlayerSoundHandler.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/client/AudioPlayerSoundHandler.java)）：`Dist.CLIENT` + FORGE 总线，`ClientTickEvent.Phase.END`；每 20 tick 扫描玩家 ±5 区块内 `LevelChunk.getBlockEntities()` 登记 `Track`；每 tick 按配置与 `POWERED` 驱动：触发 = 有红石、反触发 = 无红石、脉冲 = 上升沿播一次（`pulsePending`）、无红石 = 忽略红石常开；配置变化（`Settings.equals`）停旧实例并按新配置重排；`spawn` 受每方块 64 实例上限约束，`nextStartTick = now + max(1, 播放长度 + 间隔)`，负间隔产生重叠；BE 消失 / 距玩家 > 80 格 / 切换维度时停止并清空（含所有实例）。
+- **播放实例**（内部 `AudioPlayerSoundInstance extends AbstractTickableSoundInstance`）：`relative=false` + `Attenuation.NONE` + `SoundSource.BLOCKS` + 固定方块中心；用 `looping=true` 保证引擎每 tick 回调 `tick()`（`AbstractSoundInstance` 没有 `isStopped()`），`tick()` 每 tick 按 `clamp(1 - dist/range * 衰减%/100, 0, 1) × 本方音量倍数` 更新音量，`elapsed >= maxTicks` 或超出范围时 `stopNow()`（公开包装 protected `stop()`）。
+- **网络包**（[AudioPlayerConfigPacket.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/network/AudioPlayerConfigPacket.java)）：id 28；服务端校验方块实体类型、8 格距离、音效 id 已注册后 `setConfig` + `sendBlockUpdated(..., 3)`，附近客户端调度器随即按新配置生效。
+- **参数语义**：范围 1~64 格（默认 16）；衰减 0~100%（默认 100，0 = 范围内等音量，100 = 到范围边缘线性降到 0）；起始 0~60 秒（开播延迟）；截至 0~3600 秒（0 = 整首，否则播放长度 = min(截至, 曲长)）；间隔 -60~3600 秒；音量 0~500%（默认 100，可超过 100）。
+- **音量超过 100% 的实现**：原版 `SoundEngine` 把单个实例音量夹在 0~1，故 `volume = 百分比/100` 超过 1 时拆成 `ceil(volume)` 份同位置实例（最多 5 份），各份音量 = `min(1, volume - i)`，同时开始、混音时振幅相加（如 250% = 1.0 + 1.0 + 0.5）；0% 不创建实例。
+- **注意点**：播放完全由客户端驱动，服务端只存配置与红石状态；衰减百分比字段必须避开父类的 `attenuation` 枚举字段（代码用 `attenuationPercent`）；贴图为 AI 生成 1920×1920 后最近邻缩到 16×16 的 `textures/block/audio_player.png`；`轮询 + 每 tick 手动算音量` 的做法与 F.A.A.S 服务器一致。
+
+### 47. 麦卡锡音频素材（96 条声音）
+
+- **新增内容**：仅注册 `SoundEvent` 与 `sounds.json` 条目，无唱片、无物品；另在 `zh_cn.json` 补 96 个中文名语言键 `cc_rc.sound.<id>`（供音频播放器补全列表的悬浮翻译使用，`sounds.json` 仍无 subtitle）。
+- **命名与存放**：采用「英文类别_英文名」（`mechanical_` / `explosion_` / `alarm_` / `running_` / `music_`），音频放在 `assets/cc_rc/sounds/mccarthy/<category>/<basename>.ogg`；[ModSounds.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModSounds.java) 新增 96 个显式常量（如 `MECHANICAL_AZ5_TRIGGER`），统一走原有 `register(name)`，`sounds.json` 同步新增 96 条同名条目（总条目 45 → 141）。
+- **压缩**：VLC `--sout=#transcode{vcodec=none,acodec=vorb,ab=64,channels=1,samplerate=44100}`，与唱片同规格；96 个输出均校验通道数为 1。
+- **裁剪**：只处理文件名带 `^` 的素材——`^N` 按「总时长 / N」取整数个完整循环（警报类目标约 2s、其它 <5s）；`^连续` 取开头（警报类 1.9s、其它 4.8s）；不带 `^` 的一律不裁（注：`控制室警报4.5` 没有 `^`，按无标记处理）。
+- **流式**：`music` 类别的 8 条在 `sounds.json` 中带 `"stream": true`（最长 243s），其余非流式。
+- **校验**：`sounds.json` 已用 `ConvertFrom-Json` 解析通过，141 个键无重复；`gradlew build` BUILD SUCCESSFUL。
+
+### 48. 水循环图（water_cycle_chart）
+
+- **背景**：水循环图原为海报的其中一张，为保证清晰度改用 5000×3536 原分辨率贴图，常驻显存约 67MB。改为独立物品后，墙面只显示 512×362 低清图，高清图仅在打开查看界面时加载、关闭即释放，闲置时不占大显存（代价是每次打开解码一次大 PNG，有短暂卡顿）。
+- **贴图拆分**：低清 `textures/block/poster/water_cycle_diagram.png`（512×362，墙面模型用）、高清 `textures/gui/water_cycle_diagram_hd.png`（5000×3536，1,643,603 字节，查看界面用）、物品图标 `textures/item/water_cycle_chart.png`（128×128，内容 128×90 等比居中）。
+- **方块**（[WaterCycleChartBlock.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/WaterCycleChartBlock.java)）：继承 `PosterBlock`（复用贴墙朝向 / 四向放置 / 碰撞箱为无碰撞），但 `newBlockEntity` 返回 null、`getRenderShape` 返回 `MODEL`（海报默认 INVISIBLE 是留给 BER 的）；右键在客户端经 `DistExecutor.unsafeRunWhenOn` 调 `WaterCycleChartClient.open()` 打开界面，服务端不存任何状态、无网络包。
+- **界面**（[WaterCycleChartScreen.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/gui/WaterCycleChartScreen.java)）：`init()` 里用 `Minecraft.getInstance().getTextureManager().getTexture(HD_TEXTURE)` 加载高清图并 `setFilter(true, false)`（线性过滤、不开 mipmap）；`render` 用 `renderBackground` + 按窗口**高度**等比 `blit` 整张 5000×3536——图片上下贴满窗口边缘、水平居中（窗口过窄时左右裁掉），标题加深色半透明底画在左上；「完成」按钮缩为 44×14 放右上角（`CommonComponents.GUI_DONE`），尽量减少遮挡；`removed()` 里 `getTextureManager().release(HD_TEXTURE)` 释放显存，下次打开重新加载；`isPauseScreen()` 返回 false。
+- **方块模型**（`assets/cc_rc/models/block/water_cycle_chart.json`）：`minecraft:block/block`，单元素 `from [0,-6.625,0.5] to [32,16,1]`——32 模型像素 = 固定 2 格宽，高 22.625 模型像素 ≈ 1.414 格，符合 512:362；只有朝南的 `"south"` 面（canonical 朝南，其余朝向由 blockstate 绕 Y 旋转），`uv [0,0,16,16]`（模型 UV 的 16 即整个 sprite，自动适配非方形贴图），`ambientocclusion:false`，不写 cullface 保证任何角度看都渲染。
+- **blockstate**（`assets/cc_rc/blockstates/water_cycle_chart.json`）：`south=0 / west=90 / north=180 / east=270`（按 y=90 映射 north→east 推导，与海报一致）；`models/item/water_cycle_chart.json` 为 `item/generated`；`loot_tables/blocks/water_cycle_chart.json` 自掉落 + `survives_explosion`。
+- **注册**：[ModBlocks.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModBlocks.java) `noCollission().strength(0.5F).sound(Wood)`；[ModItems.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModItems.java) `WATER_CYCLE_CHART_ITEM`；[ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 海报后追加；[CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 客户端 `setRenderLayer(..., cutout())`；lang 中英各两条（`block.cc_rc.water_cycle_chart` / `gui.cc_rc.water_cycle_chart.title`）。
+- **海报兼容**：[PosterImages.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/block/poster/PosterImages.java) 把 `water_cycle_diagram` 回退为 512×362，并加入 `HIDDEN_IDS`；旧存档里索引 45 的海报仍能按原索引渲染（不会因删除条目让后面的索引整体前移、把已放置的海报换成别的图），选择界面则通过 `visibleCount()` / `visibleIndexAt(pos)` 跳过隐藏项，不再提供这张海报。列表仍为 47 条，可选 46 张。
+- **注意点**：`TextureManager.release` 与 `setFilter` 在 1.20.1 均可用；`release` 只丢弃本 mod 主动加载的这份纹理，不影响原版缓存策略；模型宽度固定在 JSON 里，不再有海报那套缩放 / 偏移设置。
 
 ## 三、注册物品
 
 > 约定：方块与物品 ID 一一对应；`BlockItem` 为普通方块物品，特殊物品使用专属类。以下按方块类归组。
 
-### 1. 方块（Blocks）——共 130 个
+### 1. 方块（Blocks）——共 134 个
 
 | 方块 ID | 方块类 | 说明 |
 | --- | --- | --- |
@@ -2104,6 +1597,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `data_unit` | `DataUnitBlock` | 数据单元（无方向完整方块，原版书架结构模型 + 专属 top/side 贴图；方块实体存名称+空数据列表，CC 外设读写） |
 | `block_detector` | `BlockDetectorBlock` | 方块探测器（完整方块，六方向放置，原版观察者结构模型 + 专属 top/side/front/back 贴图；CC 外设只读探测面向方块信息） |
 | `poster` | `PosterBlock` | 海报（**单一方块 + 方块实体**：右键 GUI 选图片/缩放/dy/dz，`PosterBER` 直绘四边形，尺寸不受模型 ±16/32 限制；旧 poster_1~26 方块已全部删除） |
+| `graffiti` | `GraffitiBlock` | 涂鸦文字（贴墙透明方块，几何/碰撞箱同海报；手持编辑工具右键实心墙面放置并立即编辑，右键已有涂鸦也可编辑；`GraffitiBER` 在墙面直绘文字，手持编辑工具时显示幽灵图标） |
 | `controller_block` | `ConsoleBlock` | 多方块控制柜结构方块（无方向完整立方体，锁定后不可破坏；方块实体只存所属总线与结构状态） |
 | `controller_block_blue` | `ConsoleBlock` | 蓝色控制柜结构方块（功能与原控制柜完全一致，仅同色方块之间参与同一结构成型；异色可相邻但不相连） |
 | `controller_block_black` | `ConsoleBlock` | 黑色控制柜结构方块（同上，颜色为黑色） |
@@ -2125,9 +1619,9 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 说明：16 色 × 4 类 = 64 个告示牌方块（沿用原版 SignBlock 系列，方块实体复用原版 `BlockEntityType.SIGN` / `HANGING_SIGN`，无需新增方块实体）；`console_lever_1/2` 共用 `ConsoleLeverBlock` 类，`console_lever_6/7` 共用 `ConsoleLever3StageBlock` 类，`point_lamp_1/2/3` 共用 `PointLampBlock` 类，`console_button_1~5` 共用 `ConsoleButtonBlock` 类，`card_reader_a~e` 共用 `CardReaderBlock`（构造参数 grade 'A'~'E'），`server_faas_1/2/3` 共用 `ServerFaasBlock`（仅模型/贴图不同）。
 
-### 2. 物品（Items）——共 165 个
+### 2. 物品（Items）——共 172 个
 
-**方块物品（96 个，`BlockItem` / `SignItem`）：**
+**方块物品（100 个，`BlockItem` / `SignItem`）：**
 
 | 物品 ID | 物品类 | 对应方块 |
 | --- | --- | --- |
@@ -2150,10 +1644,15 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `data_unit` | `BlockItem` | 数据单元（原版书架结构模型 + 专属贴图） |
 | `block_detector` | `BlockItem` | 方块探测器（原版观察者结构模型 + 专属贴图） |
 | `poster` | `BlockItem` | 海报（单一方块，item 形态 item/generated 平面显示 `textures/item/poster.png`；旧 poster_1~26 物品已全部删除） |
+| `graffiti` | `BlockItem` | 涂鸦文字（贴墙透明方块，item 形态 item/generated 平面显示 `textures/item/graffiti.png`） |
+| `graffiti_shape` | `BlockItem` | 涂鸦形状（贴墙透明方块，item 形态 item/generated 平面显示 `textures/item/graffiti_shape.png`） |
 | `controller_block` | `BlockItem` | 控制柜结构方块 |
 | `controller_block_blue` | `BlockItem` | 蓝色控制柜结构方块 |
 | `controller_block_black` | `BlockItem` | 黑色控制柜结构方块 |
 | `controller_bus` | `BlockItem` | 控制柜总线 |
+| `controller_slope` | `BlockItem` | 斜面控制台（gui 30/225/0 缩放 0.625，手持缩小） |
+| `controller_slope_blue` | `BlockItem` | 蓝色斜面控制台 |
+| `controller_slope_black` | `BlockItem` | 黑色斜面控制台 |
 | `controller_aux` | `BlockItem` | 控制柜辅助计算机 |
 | `nai_long_toy` | `BlockItem` | 奶龙玩偶 |
 | `redstone_sender` | `BlockItem` | 红石信号发射器 |
@@ -2169,7 +1668,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 说明：16 色 × 2 = 32 个告示牌物品（复用 key `item.cc_rc.desc_potato_crate_carried` 显示黄色斜体"搬运自农夫乐事"）。
 
-**特殊物品（30 个）：**
+**特殊物品（31 个）：**
 
 | 物品 ID | 物品类 | 说明 |
 | --- | --- | --- |
@@ -2189,6 +1688,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `baguette` | `BaguetteItem` | 法棍（食物：营养 2 / 饱和度 2，堆叠 16；主手附加攻击伤害 4（修饰符 3.0 + 空手 1.0）与击退 ATTACK_KNOCKBACK=3.0，粗体棕色描述"坚如磐石"） |
 | `crowbar` | `CrowbarItem` | 撬棍（铁质 SwordItem 自带横扫，修改器伤害 +19 实际总伤害 20 / 攻速慢 -3.0 / 暴击 2.0 倍 / 耐久 1024 / 铁锭修复 / 铁砧落地打击音效 / 不可堆叠；浅蓝粗体描述"物理学圣剑"+深蓝"f(x)dx"） |
 | `simple_spear` | `SimpleSpearItem` | 简易长矛（铁质 SwordItem 自带横扫，耐久 130 / 修改器伤害 +129 实际总伤害 130 / +13 攻击范围 ForgeMod.ENTITY_REACH / 铁锭修复 / Rarity.EPIC 淡紫名 + isFoil 附魔微光 / 不可堆叠 / 手持模型 2 倍大且 y 前移 3.2；紫色描述"魔女们的秘密武器"） |
+| `laser_pointer` | `Item` | 激光笔（不可堆叠，无右键逻辑；手持时客户端 `LaserPointerRenderer` 从手部向「视线与碰撞箱表面的交点」绘制红色激光，最长距离 16 格 / 线宽 0.02 格均可通过 Config 的 `laser_pointer` 段调整，超距无方块时与视线平行；主手、副手各持一支时各画一条；贴图 `模型/其他物品/激光笔.png`，模型 `item/handheld`） |
 | `password_cracker` | `PasswordCrackerItem` | 破解器（不可堆叠；手持右键密码输入器开始破解，20 秒可配置，离开 5 格/切快捷栏即中断；**3D 物品模型**，模型来源"模型/特殊控制台/破解卡"；破解时播放 password_crack 音效，中断即停） |
 | `key_1` / `key_2` | `Item` | 核弹发射钥匙 1 / 2（不可堆叠；右键核弹按钮消耗并推进状态：状态1+钥匙1→状态2、状态1+钥匙2→状态3、状态2+钥匙2→状态4、状态3+钥匙1→状态4；贴图"特殊控制台/key_1、key_2"） |
 | `error_mob_spawn_egg` | `ForgeSpawnEggItem` | 错误生物刷怪蛋（主色红 0xDC2828 / 次色深灰蓝 0x1E1E28，双色点纹贴图；右键生成 `error_mob` 实体，实体不自然生成只能靠刷怪蛋/刷怪笼；用 ForgeSpawnEggItem 惰性解析实体类型避免注册顺序崩溃） |
@@ -2199,6 +1699,37 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `gajin_spawn_egg` | `ForgeSpawnEggItem` | 盖金蜗牛刷怪蛋（主色金褐 0xD8B24A / 次色深褐 0x5A3A1E；生成 `gajin` 实体，实体不自然生成只能靠刷怪蛋/刷怪笼） |
 | `evil_gajin_spawn_egg` | `ForgeSpawnEggItem` | 邪恶盖金刷怪蛋（主色暗红 0x8B0000 / 次色纯黑 0x000000；生成 `evil_gajin` 敌对生物，实体不自然生成只能靠刷怪蛋/刷怪笼；贴图 16x16 素材 `模型/生物/邪恶盖金/evil_gaijin.png`） |
 | `draw_tool` | `DrawToolItem` | 画图工具（不可堆叠；右键控制柜表面以点击点为左下角创建图案并打开属性界面，可设类型/颜色/线宽/图层/尺寸/位置或删除；线段与箭头用长度+角度；多功能工具可拖动图案；贴图 `模型/其他物品/画图工具.png`） |
+| `note` | `NoteItem` | 便签（贴墙实体物品；右键任意结实方块面按命中点放置并打开四行文字编辑界面，生存/冒险消耗 1 个、创造不消耗；左键移除掉物品，Shift+右键取回并把文字写进 NBT，再放置还原；贴图 `模型/其他物品/便签-物品.png`） |
+| `written_note` | `NoteItem` | 已书写的便签（写有任意一行文字后取下 / 破坏便签得到的物品；贴图 `模型/其他物品/已书写的便签-物品.png` → `textures/item/written_note.png`；放置逻辑与便签完全一致，NBT 文字直接还原；文字清空后取下又变回空白便签） |
+
+**控制柜表面组件物品（23 个 `ConsoleCompItem` + 1 个控制柜钥匙）：**
+
+| 物品 ID | 物品类 | 对应组件类型 |
+| --- | --- | --- |
+| `controller_meter` | `ConsoleCompItem` | GAUGE（流量表） |
+| `controller_display` | `ConsoleCompItem` | NUMITRON（数字显示屏） |
+| `controller_plotter` | `ConsoleCompItem` | GRAPH（图表面板） |
+| `controller_plotter_l` | `ConsoleCompItem` | GRAPH_L（圆盘记录仪 L） |
+| `controller_lamp` | `ConsoleCompItem` | INDICATOR（指示灯） |
+| `controller_button` | `ConsoleCompItem` | KEYPAD（按钮） |
+| `controller_terminal` | `ConsoleCompItem` | TERMINAL（发信终端） |
+| `controller_switch` | `ConsoleCompItem` | KNOB_SWITCH（旋钮开关） |
+| `controller_lever` | `ConsoleCompItem` | LEVER_SWITCH（拉杆开关） |
+| `controller_gauge` | `ConsoleCompItem` | GAUGE_V（立式仪表） |
+| `controller_knob` | `ConsoleCompItem` | GAUGE_ARC（弧形仪表） |
+| `controller_rgb` | `ConsoleCompItem` | RGB_COLOR（RGB 颜色控制器） |
+| `controller_lever_f` | `ConsoleCompItem` | LEVER_F（阀门拉杆） |
+| `controller_button_x` | `ConsoleCompItem` | BUTTON_X（旋转按钮） |
+| `controller_t_switch` | `ConsoleCompItem` | T_SWITCH（三状态旋钮开关） |
+| `controller_t_lever` | `ConsoleCompItem` | T_LEVER（三状态拉杆） |
+| `controller_lamp_d` | `ConsoleCompItem` | LAMP_D（双色指示灯） |
+| `controller_gauge_f` | `ConsoleCompItem` | GAUGE_F（扇形仪表） |
+| `controller_synchroscope` | `ConsoleCompItem` | SYNCHROSCOPE（同步指示器） |
+| `controller_button_s` | `ConsoleCompItem` | BUTTON_S（安全按钮） |
+| `controller_switch_k` | `ConsoleCompItem` | SWITCH_K（钥匙开关） |
+| `controller_alarm` | `ConsoleCompItem` | ALARM（警报器） |
+| `controller_numpad` | `ConsoleCompItem` | NUMPAD（数字键盘，屏幕显示浮点变量，空手右键输入数值） |
+| `console_key` | `ConsoleKeyItem` | —（控制柜钥匙，NBT 记录所属钥匙开关组件代号） |
 
 **音乐唱片（33 个，`RecordItem`，Rarity.RARE）：**
 
@@ -2240,7 +1771,7 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 > 唱片同时注册进原版 `minecraft:tags/items/music_discs` 标签，可被唱片机播放；比较器输出值在 1~15 之间，其中 1~12 被多张唱片复用（1 = railugun、conrnfield_chase、the_imitation_game；2 = assumptions、move、rain、end；3 = cutie_mew_mew_magic、bit；4 = denise、broken_boy；5 = level5、more_one_night、bloom；6 = underground_river、hanezeve_caradhina、jigoku_shoujo；7 = gwangju、panic_track；8 = higher、resonance；9 = king、roller_mobster；10 = marisa、sabotage；11 = mixue、friends_wine；12 = raw_tell、air；13 = reimu、level），其余 14~15 各一张。
 
-### 3. 方块实体（Block Entity Types）——共 18 个
+### 3. 方块实体（Block Entity Types）——共 22 个
 
 | 方块实体 ID | 实体类 | 支持的方块 |
 | --- | --- | --- |
@@ -2258,22 +1789,30 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 | `canvas_hanging_sign_be` | `CanvasHangingSignBlockEntity` | 16 色 × `_hanging_canvas_sign`、`_canvas_wall_hanging_sign`（悬挂式粗布告示牌） |
 | `fridge_be` | `FridgeBlockEntity` | fridge（冰箱，27 格容器） |
 | `key_distributor_be` | `KeyDistributorBlockEntity` | key_distributor（钥匙分发控制器，存储钥匙柜记录列表） |
+| `extended_relay_be` | `ExtendedRelayBlockEntity` | extended_relay（扩展红石继电器） |
+| `relay_bus_be` | `ExtendedRelayBusBlockEntity` | relay_bus（扩展红石继电器总线，CC 外设宿主） |
+| `poster_be` | `PosterBlockEntity` | poster（海报，存图片索引 / 缩放 / 偏移） |
+| `graffiti_be` | `GraffitiBlockEntity` | graffiti（涂鸦文字，存文字 / 颜色 / 大小 / dx / dy / 字体格式） |
+| `graffiti_shape_be` | `GraffitiShapeBlockEntity` | graffiti_shape（涂鸦形状，存类型 / 预设 / 颜色 / 大小 / 线宽 / 旋转 / dx / dy） |
 | `console_block_be` | `ConsoleBlockEntity` | console_block（控制台结构方块，存所属总线 + 结构状态） |
 | `console_bus_be` | `ConsoleBusBlockEntity` | console_bus（控制台总线，三态结构 + 最小角/尺寸/格数） |
+| `controller_slope_be` | `ConsoleSlopeBlockEntity` | controller_slope、controller_slope_blue、controller_slope_black（斜面控制台，只存 Bus / Host / HostFace 链接信息） |
 
 > 注意：`breaker`（断路器）为纯逻辑方块，**没有**方块实体，状态完全由 `BlockState`（FACING/POWERED）驱动。
 >
 > **告示牌为何需要自定义方块实体类型**：原版 `BlockEntityType.SIGN` / `HANGING_SIGN` 的 `validBlocks` 只包含原版告示牌方块。`BlockEntityRenderDispatcher` 渲染时会先做 `blockEntity.getType().isValid(blockState)` 校验，若方块不在该方块实体类型的有效方块集合内则直接跳过渲染，导致告示牌完全透明（无模型、无文字、亦非紫黑块）。因此为粗布告示牌注册了专用方块实体类型（工厂复用 `CanvasSignBlockEntity`/`CanvasHangingSignBlockEntity`，`getType()` 返回自定义类型），并在客户端为这两个类型注册原版 `SignRenderer`/`HangingSignRenderer`。模型层与材质仍由原版机制按 `WoodType "cc_rc:canvas"` 自动生成。
 
-### 4. 声音（Sound Events）——共 38 个
+### 4. 声音（Sound Events）——共 134 个
 
 32 个音乐声音与 32 张唱片一一对应：`music_level5`、`railugun`、`never`、`assumptions`、`conrnfield_chase`、`move`、`night`（more_one_night）、`rain`、`end`、`underground_river`、`hanezeve_caradhina`、`cutie_mew_mew_magic`、`denise`、`gwangju`、`higher`、`king`、`marisa`、`mixue`、`raw_tell`、`reimu`、`you_will_be_perfect`、`bloom`、`jigoku_shoujo`、`the_imitation_game`、`bit`、`broken_boy`、`panic_track`、`resonance`、`roller_mobster`、`sabotage`（GitHub issue #1 新增 6 首）、`friends_wine`、`air`（2026-09-14 新增 2 首）；另有 6 个非唱片声音：`nai_long`（奶龙玩偶语音，右键奶龙玩偶 `nai_long_toy` 时播放）、`server_noise`（F.A.A.S服务器 `server_faas_1/2/3` 的环境音效，玩家靠近时持续播放，注册于 [sounds.json](file:///e:/trae/program/CC_RC/src/main/resources/assets/cc_rc/sounds.json)）、`password_crack`（破解器破解音效，破解密码输入器期间在方块位置循环播放，中断/成功/方块破坏时由网络包通知客户端停止）、`gajin`（盖金蜗牛右键音效，玩家右键 `gajin` 时播放，平常无 ambient 叫声）、`reactor_start` / `reactor_start_full`（反应堆启动音乐，素材 `模型/音频素材/反应堆正常启动音乐.ogg` 3:51 转 mono 160kbps；`reactor_start` 截取前 56s 且末尾 4s 淡出（52~56s，淡出算在 56s 内，尾部 RMS -28dB），`reactor_start_full` 完整全曲；两者均 `stream: true`、**仅指令播放无唱片**，如 `/playsound cc_rc:reactor_start @p`）。
+
+另有 **麦卡锡音频素材 96 条**（2026-11-22 新增，仅注册声音、无唱片/物品）：素材来自 `模型/音频素材/麦卡锡音频/{器械声,爆炸声,警报声,运行声,音乐}`，按「英文类别_英文名」注册——`mechanical_*` 18 条、`explosion_*` 5 条、`alarm_*` 34 条、`running_*` 31 条、`music_*` 8 条。音频存放在 `assets/cc_rc/sounds/mccarthy/<category>/<basename>.ogg`，`sounds.json` 中对应 `cc_rc:mccarthy/<category>/<basename>`，`music` 类别带 `"stream": true`；全部无 subtitle。压缩统一使用 VLC `acodec=vorb,ab=64,channels=1,samplerate=44100`（与唱片同规格，单声道才能吃到距离衰减）。仅对文件名带 `^` 的素材裁剪：`^N` 表示同一声音重复 N 次，取整数个完整循环（警报类约 2s、其它 <5s）；`^连续` 表示可任意裁剪，取开头 2s（警报类）/4.8s（其它）；不带 `^` 的一律不裁剪。
 
 ### 5. 创造标签
 
 方块与物品通过 [ModCreativeTabs.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModCreativeTabs.java) 加入标签 `cc_rc_tab`（"CC：反应堆控制台"）；另注册第二个标签 `cc_rc_tab_carried`（"CCRC：搬运的物品"），Forge 按注册名对模组创造标签排序，此前缀更长的注册名位于主标签之后，图标为箱装土豆，仅收录搬运类物品（当前为箱装土豆、冰箱、水槽与 16 色粗布告示牌/悬挂式粗布告示牌，均不加入主标签）。
 
-### 6. 实体（Entities）——共 5 个
+### 6. 实体（Entities）——共 6 个
 
 **弹射物实体（Projectile Entities）——1 个：**
 
@@ -2285,10 +1824,16 @@ public class FridgeBlockEntity extends RandomizableContainerBlockEntity {
 
 | 实体 ID | 实体类 | 说明 |
 | --- | --- | --- |
-| `error_mob` | `ErrorMob` | 错误生物（由「模型/错误生物/error.obj」立体化生成的敌对实体，详见 [二、27 错误生物](#27-错误生物error_mob)） |
+| `error_mob` | `ErrorMob` | 错误生物（由「模型/错误生物/error.obj」立体化生成的敌对实体，详见 [二、27 错误生物](#27-错误生物errormob)） |
 | `error_mob_null` | `ErrorMob` | 错误生物变种（「模型/错误生物/null.obj」，NULL 字牌，仅模型/贴图不同） |
 | `error_mob_warn` | `ErrorMob` | 错误生物变种（「模型/错误生物/WARN/warn.obj」，WARN 字牌，仅模型/贴图不同） |
-| `gajin` | `GajinSnail` | 盖金蜗牛（被动动物，AI 参考原版猪无乘骑机制，金鹰食物，右键播放 gajin 音效，不自然生成，详见 [二、30 盖金蜗牛与金鹰](#30-盖金蜗牛与金鹰gajinsnail--golden_eagle)） |
+| `gajin` | `GajinSnail` | 盖金蜗牛（被动动物，AI 参考原版猪无乘骑机制，金鹰食物，右键播放 gajin 音效，不自然生成，详见 [二、30 盖金蜗牛与金鹰](#30-盖金蜗牛与金鹰gajinsnail--goldeneagle)） |
 | `evil_gajin` | `EvilGajin` | 邪恶盖金（敌对生物，继承原版僵尸 AI：不会燃烧/不会捡装备，100 血 20 攻，距离变速追击（远快于玩家疾跑、近身减速），锁定/攻击/击杀/受击全套语音 + RWR 追击循环音，不自然生成，详见 [二、38 邪恶盖金](#38-邪恶盖金evilgajin--evil_gajin)） |
+
+**其他实体（Other Entities）——1 个：**
+
+| 实体 ID | 实体类 | 说明 |
+| --- | --- | --- |
+| `note` | `NoteEntity` | 便签（贴墙薄片实体，可贴在方块表面任意浮点位置；右键打开四行文字编辑界面，左键移除，Shift+右键取回物品并保存文字 NBT，详见 [二、44 便签](#44-便签note)） |
 
 > 实体类型注册于 [ModEntities.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/ModEntities.java)（`DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ...)`），在 [CcRc.java](file:///e:/trae/program/CC_RC/src/main/java/com/cc_rc/CcRc.java) 构造函数中 `ModEntities.ENTITY_TYPES.register(modEventBus)`。左键投掷由客户端 `InputEvent.InteractionKeyMappingTriggered` 事件 + C2S 数据包实现（见「二、15 包子」）。

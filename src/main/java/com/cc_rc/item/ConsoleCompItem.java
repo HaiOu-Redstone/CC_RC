@@ -59,9 +59,11 @@ public class ConsoleCompItem extends Item {
             return InteractionResult.PASS;
         }
         BlockPos clickedPos = context.getClickedPos();
-        // 只对控制台结构方块生效
+        // 只对控制台结构方块 / 斜面控制台生效
         if (!com.cc_rc.block.console.ConsoleStructureHelper.isConsole(
-                level.getBlockState(clickedPos))) {
+                level.getBlockState(clickedPos))
+                && !(level.getBlockState(clickedPos).getBlock()
+                        instanceof com.cc_rc.block.console.ConsoleSlopeBlock)) {
             return InteractionResult.PASS;
         }
         // 服务端执行实际逻辑（点击位置两端一致，无需额外网络包）
@@ -74,7 +76,31 @@ public class ConsoleCompItem extends Item {
     /** 服务端：添加组件或打开已有组件的设置界面。 */
     private void handleUse(ServerPlayer player, Level level, BlockPos clickedPos,
                            UseOnContext context) {
-        BlockPos busPos = ConsoleStructureHelper.findBus(level, clickedPos);
+        // 斜面控制台：用「眼睛 → 命中点」视线与坡面求交，换算出宿主表面上的等效坐标
+        com.cc_rc.block.console.ConsoleSlopeGeometry.Target slopeTarget =
+                com.cc_rc.block.console.ConsoleSlopeGeometry.resolve(
+                        level, clickedPos, player.getEyePosition(), context.getClickLocation());
+        BlockPos busPos;
+        Direction face;
+        double u;
+        double v;
+        if (slopeTarget != null) {
+            busPos = slopeTarget.busPos();
+            face = slopeTarget.face();
+            u = slopeTarget.u();
+            v = slopeTarget.v();
+        } else {
+            // 斜面未登记（未成型 / 朝向不符）时不能放组件
+            if (level.getBlockState(clickedPos).getBlock()
+                    instanceof com.cc_rc.block.console.ConsoleSlopeBlock) {
+                hint(player, "message.cc_rc.console.need_form");
+                return;
+            }
+            busPos = ConsoleStructureHelper.findBus(level, clickedPos);
+            face = context.getClickedFace();
+            u = 0.0D;
+            v = 0.0D;
+        }
         if (busPos == null || !(level.getBlockEntity(busPos) instanceof ConsoleBusBlockEntity bus)) {
             hint(player, "message.cc_rc.console.need_form");
             return;
@@ -89,17 +115,18 @@ public class ConsoleCompItem extends Item {
             return;
         }
 
-        // 点击点 → 表面像素坐标
-        Direction face = context.getClickedFace();
-        Direction busFacing = bus.getBusFacing();
-        double u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, busFacing, context.getClickLocation());
-        double v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, busFacing, context.getClickLocation());
-        if (!ConsoleSurface.contains(face, busFacing,
-                bus.getSizeX(), bus.getSizeY(), bus.getSizeZ(), u, v)) {
-            hint(player, "message.cc_rc.console.comp_outside");
-            return;
+        // 普通表面：点击点 → 表面像素坐标（斜面的坐标已由 resolve 给出）
+        if (slopeTarget == null) {
+            Direction busFacing = bus.getBusFacing();
+            u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, busFacing, context.getClickLocation());
+            v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, busFacing, context.getClickLocation());
+            if (!ConsoleSurface.contains(face, busFacing,
+                    bus.getSizeX(), bus.getSizeY(), bus.getSizeZ(), u, v)) {
+                hint(player, "message.cc_rc.console.comp_outside");
+                return;
+            }
         }
 
         // 命中已有组件 → 打开设置界面（而不是重复放置）

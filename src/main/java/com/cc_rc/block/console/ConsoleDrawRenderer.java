@@ -115,6 +115,67 @@ public final class ConsoleDrawRenderer {
         }
     }
 
+    /**
+     * 在指定绘制坐标系里画一组图形（斜面控制台使用：只画宿主格子内的图形）。
+     *
+     * 顶点仍使用结构像素坐标，坐标系的原点 / 轴由 {@link ConsoleFrame} 提供，
+     * 因此图形会随坡面一起倾斜。
+     */
+    public static void renderInFrame(ConsoleFrame frame, java.util.List<ConsoleShape> shapes,
+                                     PoseStack poseStack, MultiBufferSource bufferSource) {
+        if (shapes == null || shapes.isEmpty()) {
+            return;
+        }
+        Vec3 uAxis = frame.u();
+        Vec3 vAxis = frame.v();
+        Vec3 nAxis = frame.n();
+        for (int layer = 0; layer < ConsoleShape.LAYERS; layer++) {
+            double outset = OUTSET_BASE + layer * OUTSET_STEP;
+            // 坐标系像素原点（相对渲染方块），顶点 (u, v, 0) 即结构像素坐标
+            Vec3 center = frame.toLocal(0.0D, 0.0D, outset);
+            Matrix4f local = new Matrix4f(
+                    (float) uAxis.x() / 16.0F, (float) uAxis.y() / 16.0F,
+                    (float) uAxis.z() / 16.0F, 0.0F,
+                    (float) vAxis.x() / 16.0F, (float) vAxis.y() / 16.0F,
+                    (float) vAxis.z() / 16.0F, 0.0F,
+                    (float) nAxis.x() / 16.0F, (float) nAxis.y() / 16.0F,
+                    (float) nAxis.z() / 16.0F, 0.0F,
+                    (float) center.x, (float) center.y, (float) center.z, 1.0F);
+            Matrix4f matrix = new Matrix4f(poseStack.last().pose()).mul(local);
+            for (ConsoleShape shape : shapes) {
+                if (shape.layer != layer) {
+                    continue;
+                }
+                if (shape.type == com.cc_rc.block.console.draw.ConsoleShapeType.PRESET) {
+                    renderPreset(shape, matrix, bufferSource);
+                } else {
+                    VertexConsumer consumer = bufferSource.getBuffer(
+                            RenderType.entitySolid(WHITE_TEXTURE));
+                    renderSolid(shape, matrix, consumer);
+                }
+            }
+        }
+    }
+
+    /**
+     * 在调用方给定的像素坐标系里绘制单个图形（涂鸦形状方块使用）。
+     *
+     * 坐标系需满足：顶点 (u, v, 0) 以「表面像素」为单位（1 像素 = 1/16 格），
+     * 图形中心位于 (0, 0)。图层 / 外推由调用方自行处理。
+     */
+    public static void renderShape(ConsoleShape shape, Matrix4f matrix,
+                                   MultiBufferSource bufferSource) {
+        if (shape == null) {
+            return;
+        }
+        if (shape.type == com.cc_rc.block.console.draw.ConsoleShapeType.PRESET) {
+            renderPreset(shape, matrix, bufferSource);
+        } else {
+            renderSolid(shape, matrix,
+                    bufferSource.getBuffer(RenderType.entitySolid(WHITE_TEXTURE)));
+        }
+    }
+
     /** 绘制实心图形（矩形 / 空心矩形 / 线段 / 箭头）。 */
     private static void renderSolid(ConsoleShape shape, Matrix4f matrix,
                                     VertexConsumer consumer) {

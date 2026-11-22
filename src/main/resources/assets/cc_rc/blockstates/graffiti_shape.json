@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "cc_rc:block/graffiti_shape" },
+    "facing=east": { "model": "cc_rc:block/graffiti_shape", "y": 90 },
+    "facing=south": { "model": "cc_rc:block/graffiti_shape", "y": 180 },
+    "facing=west": { "model": "cc_rc:block/graffiti_shape", "y": 270 }
+  }
+}

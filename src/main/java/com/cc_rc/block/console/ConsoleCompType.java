@@ -123,7 +123,14 @@ public enum ConsoleCompType {
      */
     // 染色只作用于模型里标记 usemtl tint 的背板红色面板（顶点色 + 纯白采样块），
     // 不走整张贴图重新着色，故 recolorable 保持 false
-    ALARM("alarm", "alarm", 16.0F, 16.0F, false, 0.45F);
+    ALARM("alarm", "alarm", 16.0F, 16.0F, false, 0.45F),
+    /**
+     * 数字键盘（numpad）：外壳 + 4 位数字屏 + 10 个按键 + 2 个圆钮。
+     * 绑定浮点变量，屏幕上方显示该变量的数值（组件颜色用于数字文字颜色）。
+     * 空手右键打开输入界面（数字输入框 + 确认 / 放弃），确认后把值写入组件与变量。
+     * 追加在枚举末尾，避免改变已有类型的序号（byOrdinal / 网络包按序号传输）。
+     */
+    NUMPAD("numpad", "numpad", 16.0F, 16.0F, false, 0.5F);
 
     /** 资源名后缀（全小写；决定表面模型 / 贴图 / 类型翻译键）。 */
     public final String id;
@@ -207,6 +214,8 @@ public enum ConsoleCompType {
             case SWITCH_K -> ModItems.CONSOLE_SWITCH_K.get();
             // 警报器（alarm）
             case ALARM -> ModItems.CONSOLE_ALARM.get();
+            // 数字键盘（numpad）
+            case NUMPAD -> ModItems.CONSOLE_NUMPAD.get();
         };
     }
 
@@ -298,7 +307,9 @@ public enum ConsoleCompType {
                 || this == GAUGE_V || this == GAUGE_ARC || this == GAUGE_F
                 || this == T_SWITCH || this == T_LEVER
                 // 同步指示器：指针位置为浮点量
-                || this == SYNCHROSCOPE;
+                || this == SYNCHROSCOPE
+                // 数字键盘：屏幕显示的数值为浮点量
+                || this == NUMPAD;
     }
 
     /**

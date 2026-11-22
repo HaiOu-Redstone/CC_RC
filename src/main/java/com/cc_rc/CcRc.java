@@ -190,12 +190,35 @@ public class CcRc
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.KEY_DISTRIBUTOR.get(), RenderType.cutout());
             // 海报（单方块）：贴图由 PosterBER 直接绘制，这里保留 cutout 以让破坏粒子的透明区域正确
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.POSTER.get(), RenderType.cutout());
+            // 水循环图（方块模型渲染）：低清图含透明区域，用 cutout 避免 alpha=0 像素变黑
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.WATER_CYCLE_CHART.get(), RenderType.cutout());
+            // 涂鸦文字（透明贴墙方块）：文字由 GraffitiBER 绘制，这里让破坏粒子的透明区域正确
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.GRAFFITI.get(), RenderType.cutout());
+            // 涂鸦形状（透明贴墙方块）：图案由 GraffitiShapeBER 绘制，同上
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.GRAFFITI_SHAPE.get(), RenderType.cutout());
+            // 斜面控制台：模型里既有可见贴图也有透明贴图，solid 会把 alpha=0 像素写黑并挡住斜板，改用 cutout
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.CONTROLLER_SLOPE.get(), RenderType.cutout());
+            // 蓝色 / 黑色斜面控制台贴图结构相同，同样需要 cutout
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.CONTROLLER_SLOPE_BLUE.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.CONTROLLER_SLOPE_BLACK.get(), RenderType.cutout());
             // 注册编辑工具文字编辑屏幕（关联菜单类型 edit_text）
             net.minecraft.client.gui.screens.MenuScreens.register(
                     ModMenuTypes.EDIT_TEXT.get(), com.cc_rc.gui.EditTextScreen::new);
             // 注册海报设置屏幕（关联菜单类型 poster）
             net.minecraft.client.gui.screens.MenuScreens.register(
                     ModMenuTypes.POSTER.get(), com.cc_rc.gui.PosterScreen::new);
+            // 注册音频播放器设置屏幕（关联菜单类型 audio_player）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.AUDIO_PLAYER.get(), com.cc_rc.gui.AudioPlayerScreen::new);
+            // 注册涂鸦文字编辑屏幕（关联菜单类型 graffiti）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.GRAFFITI.get(), com.cc_rc.gui.GraffitiScreen::new);
+            // 注册涂鸦形状设置屏幕（关联菜单类型 graffiti_shape）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.GRAFFITI_SHAPE.get(), com.cc_rc.gui.GraffitiShapeScreen::new);
+            // 注册便签文字编辑屏幕（关联菜单类型 note）
+            net.minecraft.client.gui.screens.MenuScreens.register(
+                    ModMenuTypes.NOTE.get(), com.cc_rc.gui.NoteScreen::new);
             // 注册控制台总线屏幕（关联菜单类型 console）
             net.minecraft.client.gui.screens.MenuScreens.register(
                     ModMenuTypes.CONSOLE.get(), com.cc_rc.gui.ConsoleScreen::new);
@@ -225,12 +248,21 @@ public class CcRc
             event.registerBlockEntityRenderer(ModBlockEntities.DIGITAL_PLOTTER_BE.get(), DigitalPlotterBER::new);
             // 海报：自定义渲染器按方块实体参数绘制贴图四边形（不受方块模型坐标限制）
             event.registerBlockEntityRenderer(ModBlockEntities.POSTER_BE.get(), com.cc_rc.block.poster.PosterBER::new);
+            // 涂鸦文字：绘制文字 + 手持编辑工具时的幽灵标记
+            event.registerBlockEntityRenderer(ModBlockEntities.GRAFFITI_BE.get(),
+                    com.cc_rc.block.graffiti.GraffitiBER::new);
+            // 涂鸦形状：绘制单个图案 + 手持画图工具时的幽灵标记
+            event.registerBlockEntityRenderer(ModBlockEntities.GRAFFITI_SHAPE_BE.get(),
+                    com.cc_rc.block.graffiti.GraffitiShapeBER::new);
             // 控制台结构方块：部分成型时在外露表面绘制一像素网格（辅助按像素摆放组件）
             event.registerBlockEntityRenderer(ModBlockEntities.CONSOLE_BLOCK_BE.get(),
                     com.cc_rc.block.console.ConsoleBER::new);
             // 控制台总线：渲染整个结构表面上的全部文字（文字数据存在总线方块实体里）
             event.registerBlockEntityRenderer(ModBlockEntities.CONSOLE_BUS_BE.get(),
                     com.cc_rc.block.console.ConsoleBusBER::new);
+            // 斜面控制台：把宿主表面被盖住那一格的组件 / 文字 / 绘图映射到斜面上绘制
+            event.registerBlockEntityRenderer(ModBlockEntities.CONSOLE_SLOPE_BE.get(),
+                    com.cc_rc.block.console.ConsoleSlopeBER::new);
             // 粗布告示牌：复用原版 SignRenderer / HangingSignRenderer（按 WoodType 渲染）
             event.registerBlockEntityRenderer(ModBlockEntities.CANVAS_SIGN_BE.get(), SignRenderer::new);
             event.registerBlockEntityRenderer(ModBlockEntities.CANVAS_HANGING_SIGN_BE.get(), HangingSignRenderer::new);
@@ -247,6 +279,9 @@ public class CcRc
             event.registerEntityRenderer(ModEntities.GAJIN.get(), GajinRenderer::new);
             // 邪恶盖金：Blockbench json 直渲渲染器（EvilGajinRenderer，模型+贴图见 assets/cc_rc/models/entity）
             event.registerEntityRenderer(ModEntities.EVIL_GAJIN.get(), EvilGajinRenderer::new);
+            // 便签：按朝向绘制纸面贴图 + 四行小字
+            event.registerEntityRenderer(ModEntities.NOTE.get(),
+                    com.cc_rc.entity.NoteRenderer::new);
         }
 
         @SubscribeEvent

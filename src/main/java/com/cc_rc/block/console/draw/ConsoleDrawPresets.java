@@ -17,7 +17,8 @@ import net.minecraft.resources.ResourceLocation;
  *  - 灰度值越低，显示越暗（例如 0x7F7F7F 约为原色的一半亮度），用于区分明暗层次。
  * 乘法无法让颜色比原色更亮，因此贴图只做「压暗」，不需要也不应使用提亮值。
  *
- * 当前登记的图案均为 32×32，之后可按相同格式继续补充。
+ * 当前登记的图案为 32×32 或 16×16，登记时 size 必须与贴图实际边长一致
+ * （界面缩略图按 size 取 UV，不一致会取错区域）。
  */
 public final class ConsoleDrawPresets {
 
@@ -37,26 +38,57 @@ public final class ConsoleDrawPresets {
     /** 全部预设（顺序即界面中的展示顺序）。 */
     private static final List<Preset> ALL = List.of(
             // 示例图案：32×32，白色实心十字（透明背景），最多放大 3 倍
-            new Preset(DEFAULT_ID,
-                    new ResourceLocation(CcRc.MODID, "textures/gui/draw_presets/sample.png"),
-                    32, 3),
-            // 储罐（两种造型）
-            new Preset("tank1",
-                    new ResourceLocation(CcRc.MODID, "textures/gui/draw_presets/tank1.png"),
-                    32, 3),
-            new Preset("tank2",
-                    new ResourceLocation(CcRc.MODID, "textures/gui/draw_presets/tank2.png"),
-                    32, 3),
+            preset(DEFAULT_ID, "sample", 32),
+            // 储罐（四种造型）
+            preset("tank1", "tank1", 32),
+            preset("tank2", "tank2", 32),
+            preset("tank3", "tank3", 32),
+            preset("tank4", "tank4", 32),
+            // 泵（两种造型）
+            preset("pump1", "pump1", 32),
+            preset("pump2", "pump2", 32),
             // 汽轮机（两种造型）
-            new Preset("steam_tubine_1",
-                    new ResourceLocation(CcRc.MODID,
-                            "textures/gui/draw_presets/steam_tubine_1.png"),
-                    32, 3),
-            new Preset("steam_tubine_2",
-                    new ResourceLocation(CcRc.MODID,
-                            "textures/gui/draw_presets/steam_tubine_2.png"),
-                    32, 3)
+            preset("steam_tubine_1", "steam_tubine_1", 32),
+            preset("steam_tubine_2", "steam_tubine_2", 32),
+            // 反应堆
+            preset("reactor", "reactor", 32),
+            // 抑压池
+            preset("suppression_pool", "suppression_pool", 32),
+            // 换热器
+            preset("heat_exchanger", "heat_exchanger", 32),
+            // 汽水分离器
+            preset("steam_separator", "steam_separator", 32),
+            // 给水加热器
+            preset("feedwater_heater", "feedwater_heater", 32),
+            // 过滤器（16×16）
+            preset("filter", "filter", 16),
+            // 电池
+            preset("battery", "battery", 32),
+            // 变压器
+            preset("transformer", "transformer", 32),
+            // 整流器
+            preset("rectifier", "rectifier", 32),
+            // 电闸（16×16）
+            preset("breaker", "breaker", 16),
+            // 阀门：止回阀（16×16）
+            preset("valve_check", "valve_check", 16),
+            // 阀门：自动阀两种造型（16×16）
+            preset("valve_auto_1", "valve_auto_1", 16),
+            preset("valve_auto_2", "valve_auto_2", 16),
+            // 阀门：手动阀两种造型（16×16）
+            preset("valve_1", "valve_1", 16),
+            preset("valve_2", "valve_2", 16)
     );
+
+    /**
+     * 构造一条预设：贴图路径固定为 textures/gui/draw_presets/{fileName}.png，
+     * 像素尺寸取贴图实际边长，最大放大倍数统一为 3。
+     */
+    private static Preset preset(String id, String fileName, int size) {
+        return new Preset(id,
+                new ResourceLocation(CcRc.MODID, "textures/gui/draw_presets/" + fileName + ".png"),
+                size, 3);
+    }
 
     private ConsoleDrawPresets() {
     }

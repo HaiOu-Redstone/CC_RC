@@ -4,6 +4,7 @@ import com.cc_rc.entity.BaoZi;
 import com.cc_rc.entity.ErrorMob;
 import com.cc_rc.entity.EvilGajin;
 import com.cc_rc.entity.GajinSnail;
+import com.cc_rc.entity.NoteEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.registries.DeferredRegister;
@@ -76,4 +77,13 @@ public class ModEntities {
                     .clientTrackingRange(8)
                     .updateInterval(3)
                     .build("cc_rc:evil_gajin"));
+
+    // 便签（note）：贴墙实体，位置为浮点坐标（不限于格子中心）。
+    // 尺寸 0.5×0.5（实际包围盒按朝向在 NoteEntity 里改成薄片），追踪范围 8，更新间隔 4。
+    public static final RegistryObject<EntityType<NoteEntity>> NOTE = ENTITY_TYPES.register("note",
+            () -> EntityType.Builder.<NoteEntity>of(NoteEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F)
+                    .clientTrackingRange(8)
+                    .updateInterval(4)
+                    .build("cc_rc:note"));
 }

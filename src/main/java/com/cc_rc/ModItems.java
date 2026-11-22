@@ -15,6 +15,7 @@ import com.cc_rc.item.InstructionBookItem;
 import com.cc_rc.item.InstructionBook2Item;
 import com.cc_rc.item.ModToolTiers;
 import com.cc_rc.item.MultiToolItem;
+import com.cc_rc.item.NoteItem;
 import com.cc_rc.item.PasswordCrackerItem;
 import com.cc_rc.item.SimpleSpearItem;
 import java.util.ArrayList;
@@ -171,6 +172,31 @@ public class ModItems {
     public static final RegistryObject<Item> POSTER_ITEM = ITEMS.register("poster",
             () -> new BlockItem(ModBlocks.POSTER.get(), new Item.Properties()));
 
+    // 水循环图物品（贴墙固定 2 格宽，右键打开高清查看界面）
+    public static final RegistryObject<Item> WATER_CYCLE_CHART_ITEM = ITEMS.register("water_cycle_chart",
+            () -> new BlockItem(ModBlocks.WATER_CYCLE_CHART.get(), new Item.Properties()));
+
+    // 音频播放器物品（右键打开设置界面：音效 / 模式 / 范围 / 衰减 / 起始 / 截至 / 间隔）
+    public static final RegistryObject<Item> AUDIO_PLAYER_ITEM = ITEMS.register("audio_player",
+            () -> new BlockItem(ModBlocks.AUDIO_PLAYER.get(), new Item.Properties()));
+
+    // 涂鸦文字物品（贴墙透明方块；也可用编辑工具右键墙面直接放置并打开编辑界面）
+    public static final RegistryObject<Item> GRAFFITI_ITEM = ITEMS.register("graffiti",
+            () -> new BlockItem(ModBlocks.GRAFFITI.get(), new Item.Properties()));
+
+    // 涂鸦形状物品（贴墙透明方块；也可用画图工具右键墙面直接放置并打开图案设置界面）
+    public static final RegistryObject<Item> GRAFFITI_SHAPE_ITEM = ITEMS.register("graffiti_shape",
+            () -> new BlockItem(ModBlocks.GRAFFITI_SHAPE.get(), new Item.Properties()));
+
+    // 便签物品（贴墙实体 note）：右键任意结实方块面按命中点放置并打开编辑界面；
+    // 生存 / 冒险消耗 1 个，创造不消耗；NBT 键 Note 保存四行文字以便取下后还原。
+    public static final RegistryObject<Item> NOTE = ITEMS.register("note",
+            () -> new NoteItem(new Item.Properties()));
+
+    // 已书写的便签：写下文字后取下 / 破坏便签得到的物品（贴图不同，放置逻辑与便签相同）
+    public static final RegistryObject<Item> WRITTEN_NOTE = ITEMS.register("written_note",
+            () -> new NoteItem(new Item.Properties()));
+
     // 多方块控制柜 - 结构方块、总线方块与辅助计算机物品
     public static final RegistryObject<Item> CONSOLE_BLOCK_ITEM = ITEMS.register("controller_block",
             () -> new BlockItem(ModBlocks.CONSOLE_BLOCK.get(), new Item.Properties()));
@@ -181,6 +207,15 @@ public class ModItems {
             () -> new BlockItem(ModBlocks.CONSOLE_BLOCK_BLACK.get(), new Item.Properties()));
     public static final RegistryObject<Item> CONSOLE_BUS_ITEM = ITEMS.register("controller_bus",
             () -> new BlockItem(ModBlocks.CONSOLE_BUS.get(), new Item.Properties()));
+    public static final RegistryObject<Item> CONTROLLER_SLOPE_ITEM = ITEMS.register("controller_slope",
+            () -> new BlockItem(ModBlocks.CONTROLLER_SLOPE.get(), new Item.Properties()));
+    // 斜面控制台的蓝色 / 黑色变体物品（模型相同，仅贴图与颜色不同）
+    public static final RegistryObject<Item> CONTROLLER_SLOPE_BLUE_ITEM =
+            ITEMS.register("controller_slope_blue",
+                    () -> new BlockItem(ModBlocks.CONTROLLER_SLOPE_BLUE.get(), new Item.Properties()));
+    public static final RegistryObject<Item> CONTROLLER_SLOPE_BLACK_ITEM =
+            ITEMS.register("controller_slope_black",
+                    () -> new BlockItem(ModBlocks.CONTROLLER_SLOPE_BLACK.get(), new Item.Properties()));
     public static final RegistryObject<Item> CONTROLLER_AUX_ITEM = ITEMS.register("controller_aux",
             () -> new BlockItem(ModBlocks.CONTROLLER_AUX.get(), new Item.Properties()));
 
@@ -270,6 +305,10 @@ public class ModItems {
     // 警报器（灯 + 静音 + 重置）
     public static final RegistryObject<Item> CONSOLE_ALARM = ITEMS.register("controller_alarm",
             () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.ALARM,
+                    new Item.Properties()));
+    // 数字键盘（屏幕显示浮点变量，空手右键打开输入界面）
+    public static final RegistryObject<Item> CONSOLE_NUMPAD = ITEMS.register("controller_numpad",
+            () -> new ConsoleCompItem(com.cc_rc.block.console.ConsoleCompType.NUMPAD,
                     new Item.Properties()));
 
     // 奶龙玩偶物品
@@ -592,6 +631,13 @@ public class ModItems {
     public static final RegistryObject<Item> CROWBAR = ITEMS.register("crowbar",
             () -> new CrowbarItem(ModToolTiers.CROWBAR, 0, -3.0F,
                     new Item.Properties().stacksTo(1)));
+
+    // ==================== 激光笔（laser_pointer） ====================
+
+    // 激光笔：普通物品，不可堆叠；本身无右键逻辑，手持时由客户端 LaserPointerRenderer
+    // 实时绘制一条红色激光（最长距离与线宽读取 Config 的 laser_pointer 段）。
+    public static final RegistryObject<Item> LASER_POINTER = ITEMS.register("laser_pointer",
+            () -> new Item(new Item.Properties().stacksTo(1)));
 
     // ==================== 简易长矛（simple_spear） ====================
 

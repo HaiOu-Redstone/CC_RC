@@ -68,7 +68,9 @@ public class ConsoleKeyItem extends Item {
             return InteractionResult.PASS;
         }
         BlockPos clickedPos = context.getClickedPos();
-        if (!ConsoleStructureHelper.isConsole(level.getBlockState(clickedPos))) {
+        if (!ConsoleStructureHelper.isConsole(level.getBlockState(clickedPos))
+                && !(level.getBlockState(clickedPos).getBlock()
+                        instanceof com.cc_rc.block.console.ConsoleSlopeBlock)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
@@ -79,7 +81,26 @@ public class ConsoleKeyItem extends Item {
 
     /** 服务端：定位点击位置上的钥匙开关并插入钥匙。 */
     private void insertKey(ServerPlayer player, Level level, UseOnContext context) {
-        BlockPos busPos = ConsoleStructureHelper.findBus(level, context.getClickedPos());
+        // 斜面控制台：用「眼睛 → 命中点」视线与坡面求交，换算出宿主表面上的等效坐标
+        com.cc_rc.block.console.ConsoleSlopeGeometry.Target slopeTarget =
+                com.cc_rc.block.console.ConsoleSlopeGeometry.resolve(
+                        level, context.getClickedPos(),
+                        player.getEyePosition(), context.getClickLocation());
+        BlockPos busPos;
+        Direction face;
+        double u;
+        double v;
+        if (slopeTarget != null) {
+            busPos = slopeTarget.busPos();
+            face = slopeTarget.face();
+            u = slopeTarget.u();
+            v = slopeTarget.v();
+        } else {
+            busPos = ConsoleStructureHelper.findBus(level, context.getClickedPos());
+            face = context.getClickedFace();
+            u = 0.0D;
+            v = 0.0D;
+        }
         if (busPos == null
                 || !(level.getBlockEntity(busPos) instanceof ConsoleBusBlockEntity bus)) {
             return;
@@ -87,16 +108,17 @@ public class ConsoleKeyItem extends Item {
         if (bus.getFormState() == ConsoleBusBlockEntity.State.UNFORMED || bus.getOrigin() == null) {
             return;
         }
-        // 点击点 → 表面像素坐标 → 命中组件
-        Direction face = context.getClickedFace();
-        Direction busFacing = bus.getBusFacing();
-        double u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, busFacing, context.getClickLocation());
-        double v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, busFacing, context.getClickLocation());
-        if (!ConsoleSurface.contains(face, busFacing,
-                bus.getSizeX(), bus.getSizeY(), bus.getSizeZ(), u, v)) {
-            return;
+        if (slopeTarget == null) {
+            // 点击点 → 表面像素坐标
+            Direction busFacing = bus.getBusFacing();
+            u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, busFacing, context.getClickLocation());
+            v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, busFacing, context.getClickLocation());
+            if (!ConsoleSurface.contains(face, busFacing,
+                    bus.getSizeX(), bus.getSizeY(), bus.getSizeZ(), u, v)) {
+                return;
+            }
         }
         ConsoleBusBlockEntity.CompEntry hit = bus.findCompAt(face, (float) u, (float) v);
         if (hit == null || hit.type != ConsoleCompType.SWITCH_K) {

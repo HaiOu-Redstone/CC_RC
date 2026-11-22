@@ -49,11 +49,24 @@ public class ModCreativeTabs {
                         output.accept(ModItems.BLOCK_DETECTOR_ITEM.get());
                         // 海报（单方块，右键设置图片/缩放/偏移）
                         output.accept(ModItems.POSTER_ITEM.get());
+                        // 水循环图（贴墙固定 2 格宽，右键查看高清图）
+                        output.accept(ModItems.WATER_CYCLE_CHART_ITEM.get());
+                        // 涂鸦文字（贴墙透明方块，右键打开文字编辑界面）
+                        output.accept(ModItems.GRAFFITI_ITEM.get());
+                        // 涂鸦形状（贴墙透明方块，右键打开图案设置界面）
+                        output.accept(ModItems.GRAFFITI_SHAPE_ITEM.get());
+                        // 便签（贴墙实体，右键放置 / 编辑，Shift+右键取下）
+                        output.accept(ModItems.NOTE.get());
+                        // 已书写的便签（写有文字后取下 / 破坏得到的物品）
+                        output.accept(ModItems.WRITTEN_NOTE.get());
                         // 多方块控制柜：结构方块 + 总线方块 + 辅助计算机
                         output.accept(ModItems.CONSOLE_BLOCK_ITEM.get());
                         output.accept(ModItems.CONSOLE_BLOCK_BLUE_ITEM.get());
                         output.accept(ModItems.CONSOLE_BLOCK_BLACK_ITEM.get());
                         output.accept(ModItems.CONSOLE_BUS_ITEM.get());
+                        output.accept(ModItems.CONTROLLER_SLOPE_ITEM.get());
+                        output.accept(ModItems.CONTROLLER_SLOPE_BLUE_ITEM.get());
+                        output.accept(ModItems.CONTROLLER_SLOPE_BLACK_ITEM.get());
                         output.accept(ModItems.CONTROLLER_AUX_ITEM.get());
                         // 控制柜表面组件（仪表 / 数字显示屏 / 指示灯 / 按钮面板 / 发信终端）
                         output.accept(ModItems.CONSOLE_GAUGE.get());
@@ -89,9 +102,13 @@ public class ModCreativeTabs {
                         output.accept(ModItems.CONSOLE_KEY.get());
                         // 警报器（灯 + 静音 + 重置）
                         output.accept(ModItems.CONSOLE_ALARM.get());
+                        // 数字键盘（屏幕显示浮点变量）
+                        output.accept(ModItems.CONSOLE_NUMPAD.get());
                         output.accept(ModItems.NAI_LONG_TOY_ITEM.get());
                         output.accept(ModItems.REDSTONE_SENDER_ITEM.get());
                         output.accept(ModItems.REDSTONE_RECEIVER_ITEM.get());
+                        // 音频播放器（右键配置音效 / 四种红石模式 / 范围与时间参数）
+                        output.accept(ModItems.AUDIO_PLAYER_ITEM.get());
                         // 扩展红石继电器 + 总线
                         output.accept(ModItems.EXTENDED_RELAY_ITEM.get());
                         output.accept(ModItems.RELAY_BUS_ITEM.get());
@@ -155,6 +172,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.BAGUETTE.get());
                         output.accept(ModItems.CROWBAR.get());
                         output.accept(ModItems.SIMPLE_SPEAR.get());
+                        output.accept(ModItems.LASER_POINTER.get());
                         output.accept(ModItems.CCRC_BLOCK_ITEM.get());
                         // 错误生物刷怪蛋（error_mob + 变种 null/warn）
                         output.accept(ModItems.ERROR_MOB_SPAWN_EGG.get());

@@ -51,6 +51,61 @@ public class ModMenuTypes {
                             new PosterMenu(windowId, data.readBlockPos(), data.readVarInt(),
                                     data.readFloat(), data.readFloat(), data.readFloat())));
 
+    // 音频播放器设置菜单：方块坐标 + 音效 id / 模式 / 范围 / 衰减 / 起始 / 截至 / 间隔
+    public static final RegistryObject<MenuType<com.cc_rc.gui.AudioPlayerMenu>> AUDIO_PLAYER =
+            MENU_TYPES.register("audio_player",
+                    () -> IForgeMenuType.create((windowId, inv, data) ->
+                            new com.cc_rc.gui.AudioPlayerMenu(windowId, data.readBlockPos(),
+                                    new com.cc_rc.block.audio_player.AudioPlayerBlockEntity.Settings(
+                                            data.readUtf(com.cc_rc.block.audio_player.AudioPlayerBlockEntity.MAX_SOUND_ID_LENGTH),
+                                            data.readVarInt(),
+                                            data.readFloat(),
+                                            data.readVarInt(),
+                                            data.readFloat(),
+                                            data.readFloat(),
+                                            data.readFloat(),
+                                            data.readVarInt()))));
+
+    // 涂鸦文字编辑菜单：构造参数 = 方块坐标 + 文字/颜色/大小/偏移 + 字体格式位标志
+    public static final RegistryObject<MenuType<com.cc_rc.gui.GraffitiMenu>> GRAFFITI =
+            MENU_TYPES.register("graffiti",
+                    () -> IForgeMenuType.create((windowId, inv, data) -> {
+                        net.minecraft.core.BlockPos pos = data.readBlockPos();
+                        String text = data.readUtf(com.cc_rc.block.graffiti.GraffitiBlockEntity.MAX_TEXT);
+                        int color = data.readVarInt();
+                        float scale = data.readFloat();
+                        float dx = data.readFloat();
+                        float dy = data.readFloat();
+                        int flags = data.readUnsignedByte();
+                        return new com.cc_rc.gui.GraffitiMenu(windowId, pos, text, color, scale,
+                                dx, dy, (flags & 1) != 0, (flags & 2) != 0,
+                                (flags & 4) != 0, (flags & 8) != 0);
+                    }));
+
+    // 涂鸦形状设置菜单：构造参数 = 方块坐标 + 类型/预设/颜色/大小/线宽/旋转/偏移
+    public static final RegistryObject<MenuType<com.cc_rc.gui.GraffitiShapeMenu>> GRAFFITI_SHAPE =
+            MENU_TYPES.register("graffiti_shape",
+                    () -> IForgeMenuType.create((windowId, inv, data) -> {
+                        net.minecraft.core.BlockPos pos = data.readBlockPos();
+                        int type = data.readVarInt();
+                        String preset = data.readUtf(
+                                com.cc_rc.block.graffiti.GraffitiShapeBlockEntity.MAX_PRESET_LENGTH);
+                        int color = data.readVarInt();
+                        float size = data.readFloat();
+                        float width = data.readFloat();
+                        float rotation = data.readFloat();
+                        float dx = data.readFloat();
+                        float dy = data.readFloat();
+                        return new com.cc_rc.gui.GraffitiShapeMenu(windowId, pos, type, preset,
+                                color, size, width, rotation, dx, dy);
+                    }));
+
+    // 便签编辑菜单：构造参数 = 实体 id + 四行文字标签（文字 / 颜色 / 格式）
+    public static final RegistryObject<MenuType<com.cc_rc.gui.NoteMenu>> NOTE =
+            MENU_TYPES.register("note",
+                    () -> IForgeMenuType.create((windowId, inv, data) -> new com.cc_rc.gui.NoteMenu(
+                            windowId, data.readVarInt(), data.readNbt())));
+
     // 控制台总线菜单：构造参数 = 总线方块坐标（其余数据由客户端直接读方块实体）
     public static final RegistryObject<MenuType<ConsoleMenu>> CONSOLE =
             MENU_TYPES.register("console",

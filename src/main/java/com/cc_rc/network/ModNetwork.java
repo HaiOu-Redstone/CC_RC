@@ -133,5 +133,30 @@ public class ModNetwork {
                 DrawToolSettingsPacket::encode,
                 DrawToolSettingsPacket::decode,
                 DrawToolSettingsPacket::handle);
+        // 数字键盘：提交输入界面确认的数值（C2S）
+        CHANNEL.registerMessage(24, ConsoleNumpadSetPacket.class,
+                ConsoleNumpadSetPacket::encode,
+                ConsoleNumpadSetPacket::decode,
+                ConsoleNumpadSetPacket::handle);
+        // 涂鸦文字设置提交（C2S，客户端把文字/颜色/大小/偏移/字体格式写回涂鸦方块实体）
+        CHANNEL.registerMessage(25, GraffitiConfigPacket.class,
+                GraffitiConfigPacket::encode,
+                GraffitiConfigPacket::decode,
+                GraffitiConfigPacket::handle);
+        // 涂鸦形状设置提交（C2S，客户端把类型/预设/颜色/大小/线宽/旋转/偏移写回涂鸦形状方块实体）
+        CHANNEL.registerMessage(26, GraffitiShapeConfigPacket.class,
+                GraffitiShapeConfigPacket::encode,
+                GraffitiShapeConfigPacket::decode,
+                GraffitiShapeConfigPacket::handle);
+        // 便签文字提交（C2S，客户端把四行文字 / 颜色 / 字体格式写回便签实体）
+        CHANNEL.registerMessage(27, NoteConfigPacket.class,
+                NoteConfigPacket::encode,
+                NoteConfigPacket::decode,
+                NoteConfigPacket::handle);
+        // 音频播放器设置提交（C2S，客户端把音效/模式/范围/衰减/起始/截至/间隔写回方块实体）
+        CHANNEL.registerMessage(28, AudioPlayerConfigPacket.class,
+                AudioPlayerConfigPacket::encode,
+                AudioPlayerConfigPacket::decode,
+                AudioPlayerConfigPacket::handle);
     }
 }

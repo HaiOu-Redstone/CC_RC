@@ -41,8 +41,29 @@ public final class ConsoleTextClient {
         BlockPos clickedPos = context.getClickedPos();
         Direction face = context.getClickedFace();
 
+        // 斜面控制台：用「眼睛 → 命中点」视线与坡面求交，换算出宿主表面上的等效坐标
+        // 客户端本地玩家为空时退回命中点（求交必然失败，只影响斜面的文字编辑）
+        Vec3 eye = Minecraft.getInstance().player == null
+                ? context.getClickLocation()
+                : Minecraft.getInstance().player.getEyePosition();
+        com.cc_rc.block.console.ConsoleSlopeGeometry.Target slopeTarget =
+                com.cc_rc.block.console.ConsoleSlopeGeometry.resolve(
+                        level, clickedPos, eye, context.getClickLocation());
+
         // 1. 找所属总线
-        BlockPos busPos = ConsoleStructureHelper.findBus(level, clickedPos);
+        BlockPos busPos;
+        double u;
+        double v;
+        if (slopeTarget != null) {
+            busPos = slopeTarget.busPos();
+            face = slopeTarget.face();
+            u = slopeTarget.u();
+            v = slopeTarget.v();
+        } else {
+            busPos = ConsoleStructureHelper.findBus(level, clickedPos);
+            u = 0.0D;
+            v = 0.0D;
+        }
         if (busPos == null || !(level.getBlockEntity(busPos) instanceof ConsoleBusBlockEntity bus)) {
             hint("message.cc_rc.console.need_form");
             return;
@@ -56,19 +77,27 @@ public final class ConsoleTextClient {
             return;
         }
 
-        // 2. 点击点 → 表面像素坐标
-        BlockPos origin = bus.getOrigin();
-        int sizeX = bus.getSizeX();
-        int sizeY = bus.getSizeY();
-        int sizeZ = bus.getSizeZ();
-        Direction busFacing = bus.getBusFacing();
-        Vec3 hit = context.getClickLocation();
-        double u = ConsoleSurface.pixelU(origin, sizeX, sizeY, sizeZ, face, busFacing, hit);
-        double v = ConsoleSurface.pixelV(origin, sizeX, sizeY, sizeZ, face, busFacing, hit);
+        // 2. 普通表面：点击点 → 表面像素坐标（斜面的坐标已由 resolve 给出）
+        if (slopeTarget == null) {
+            // 斜面未登记（未成型 / 朝向不符）时不能编辑
+            if (level.getBlockState(clickedPos).getBlock()
+                    instanceof com.cc_rc.block.console.ConsoleSlopeBlock) {
+                hint("message.cc_rc.console.need_form");
+                return;
+            }
+            BlockPos origin = bus.getOrigin();
+            int sizeX = bus.getSizeX();
+            int sizeY = bus.getSizeY();
+            int sizeZ = bus.getSizeZ();
+            Direction busFacing = bus.getBusFacing();
+            Vec3 hit = context.getClickLocation();
+            u = ConsoleSurface.pixelU(origin, sizeX, sizeY, sizeZ, face, busFacing, hit);
+            v = ConsoleSurface.pixelV(origin, sizeX, sizeY, sizeZ, face, busFacing, hit);
 
-        if (!ConsoleSurface.contains(face, busFacing, sizeX, sizeY, sizeZ, u, v)) {
-            hint("message.cc_rc.console.text_outside");
-            return;
+            if (!ConsoleSurface.contains(face, busFacing, sizeX, sizeY, sizeZ, u, v)) {
+                hint("message.cc_rc.console.text_outside");
+                return;
+            }
         }
 
         // 3a. 命中已放置组件 → 编辑它的附带文字（组件优先于表面文字）

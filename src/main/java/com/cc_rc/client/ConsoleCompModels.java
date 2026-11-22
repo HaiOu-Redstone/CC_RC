@@ -342,6 +342,21 @@ public final class ConsoleCompModels {
                     }
                 }
             }
+            // 退化扫描：同一组件的不同模型变体 UV 覆盖范围不同，某些变体（如警报器
+            // 灯亮模型）的面包围盒会盖住预留白块，导致上面「未被任何面采样」的检查
+            // 全部失败。此时只要求区域是不透明白色，保证各变体都能拿到纯白采样点，
+            // 否则该变体的可染色面会退回原贴图（表现为灯闪烁时背板染色忽有忽无）。
+            for (int size = 4; size >= 2; size -= 2) {
+                for (int y = height - size; y >= 0; y--) {
+                    for (int x = width - size; x >= 0; x--) {
+                        if (!isWhiteBlock(image, null, width, height, x, y, size)) {
+                            continue;
+                        }
+                        return new float[]{(x + size / 2.0F) / width,
+                                (y + size / 2.0F) / height};
+                    }
+                }
+            }
         } catch (Exception e) {
             LOGGER.warn("控制台组件贴图采样点解析失败：{}", texture, e);
         } finally {
@@ -353,14 +368,18 @@ public final class ConsoleCompModels {
         return null;
     }
 
-    /** 该 size×size 区域是否「未被任何面采样且全部为不透明白色」。 */
+    /**
+     * 该 size×size 区域是否「未被任何面采样且全部为不透明白色」。
+     *
+     * @param covered 采样占用图；为 null 时跳过「未被采样」检查（退化扫描用）
+     */
     private static boolean isWhiteBlock(NativeImage image, boolean[] covered,
                                         int width, int height, int x0, int y0, int size) {
         for (int dy = 0; dy < size; dy++) {
             for (int dx = 0; dx < size; dx++) {
                 int x = x0 + dx;
                 int y = y0 + dy;
-                if (covered[y * width + x]) {
+                if (covered != null && covered[y * width + x]) {
                     return false;
                 }
                 int pixel = image.getPixelRGBA(x, y);

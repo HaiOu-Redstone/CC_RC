@@ -51,10 +51,12 @@ public final class PosterImages {
     }
 
     /**
-     * 图片列表（共 24 张）。
+     * 图片列表（共 47 张，其中 46 张可选）。
      * 索引 = 已保存到方块实体 NBT 的数值，**顺序一旦发布就不能再插入/调换**，
      * 新图片只能追加到列表末尾（否则存档里已放置的海报会变成别的图片）。
-     * 当前顺序：0 = 无材质（默认材质）；1~21 = 之前已注册的图片（原顺序）；22~23 = 最新追加的两张。
+     * 当前顺序：0 = 无材质（默认材质）；1~23 = 之前已注册的图片（原顺序）；24~40 = CCNR / 其他 / 安全标识一批；41~46 = 新海报与模组图标。
+     * 索引 45（水循环示意图）已改为独立物品 water_cycle_chart，这里保留低清条目仅为旧存档兼容，
+     * 并从海报选择界面隐藏（见 HIDDEN_IDS），避免破坏索引顺序。
      */
     public static final List<Image> LIST = List.of(
             // 索引 0：默认材质「无材质」
@@ -87,8 +89,70 @@ public final class PosterImages {
             img("tartarus_gate", "塔塔鲁斯上层入口logo", 512, 114),
             // 最新追加（只能往列表末尾追加，不要插到中间）
             img("goggles_mark", "戴护目镜标识", 256, 341),
-            img("mixue_sign", "蜜雪冰城招牌", 768, 256)
+            img("mixue_sign", "蜜雪冰城招牌", 768, 256),
+            // CCNR 宣传系列（源图 模型/其他物品/海报/新海报/CCNR图标，
+            // 导入时已按最长边 512 等比缩小并裁掉四周透明留白）
+            img("ccnr_main", "CCNR主图标", 404, 296),
+            img("ccnr_logo_horizontal", "CCNR横版图标文字", 420, 99),
+            img("ccnr_logo_vertical", "CCNR竖版图标文字", 416, 426),
+            img("ccnr_admin_region", "CCNR行政区域图标", 451, 182),
+            img("ccnr_character", "CCNR角色宣传画", 341, 512),
+            img("ccnr_canteen", "CCNR食堂标语", 512, 204),
+            img("ccnr_page_8", "第 8 頁", 394, 512),
+            img("ccnr_page_9", "第 9 頁", 394, 512),
+            // 其他
+            img("milk_dragon", "奶龙", 236, 489),
+            img("slippery_floor", "小心地滑", 300, 400),
+            img("wear_helmet", "戴安全帽", 300, 400),
+            img("decor_1", "装饰画1", 512, 512),
+            img("decor_2", "装饰画2", 512, 512),
+            img("decor_3", "装饰画3", 256, 384),
+            // 安全标识
+            img("danger_fall", "坠落危险", 448, 512),
+            img("danger_electric", "触电危险", 448, 512),
+            img("danger_radiation", "辐射危险", 454, 512),
+            // 新海报（模型/其他物品/海报/新海报）+ 模组图标（源图已裁掉透明留白，最长边 512）
+            img("nuclear_sketch", "核电站简笔画", 452, 389),
+            img("blue_fish_portrait", "蓝色大肥鱼画像", 288, 512),
+            img("facility_director_portrait", "设施总监画像", 307, 512),
+            img("mod_icon", "模组图标", 256, 256),
+            // 新海报（模型/其他物品/海报/新海报）
+            img("water_cycle_diagram", "水循环示意图", 512, 362),
+            img("facility_director_2", "设施总监照片2", 512, 512)
     );
+
+    /** 不在海报选择界面中展示的图片 id（索引保留，旧存档里的该海报仍能正常显示）。 */
+    private static final java.util.Set<String> HIDDEN_IDS = java.util.Set.of("water_cycle_diagram");
+
+    /** 该索引的图片是否已隐藏（隐藏项不显示在 PosterScreen，但仍可被旧存档 NBT 引用）。 */
+    public static boolean isHidden(int index) {
+        return HIDDEN_IDS.contains(get(index).id());
+    }
+
+    /** 可选图片数量（不计隐藏项）。 */
+    public static int visibleCount() {
+        int count = 0;
+        for (int i = 0; i < LIST.size(); i++) {
+            if (!isHidden(i)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** 第 pos 个可见图片在 LIST 中的实际索引。 */
+    public static int visibleIndexAt(int pos) {
+        int seen = -1;
+        for (int i = 0; i < LIST.size(); i++) {
+            if (!isHidden(i)) {
+                seen++;
+                if (seen == pos) {
+                    return i;
+                }
+            }
+        }
+        return 0;
+    }
 
     private PosterImages() {
     }

@@ -188,11 +188,26 @@ public class DrawToolItem extends Item {
             return InteractionResult.PASS;
         }
         BlockPos clickedPos = context.getClickedPos();
-        if (!ConsoleStructureHelper.isConsole(level.getBlockState(clickedPos))) {
+        if (!ConsoleStructureHelper.isConsole(level.getBlockState(clickedPos))
+                && !(level.getBlockState(clickedPos).getBlock()
+                        instanceof com.cc_rc.block.console.ConsoleSlopeBlock)) {
             // 右键非面板方块：取消快速绘画已记录的第一点
             if (!level.isClientSide && player instanceof ServerPlayer serverPlayer
                     && PENDING.remove(serverPlayer.getUUID()) != null) {
                 hint(serverPlayer, "message.cc_rc.draw.cancel_point");
+            }
+            // 右键实心墙面：放置涂鸦形状方块，并按画图工具的当前设置初始化后打开设置界面
+            Direction face = context.getClickedFace();
+            BlockPos target = clickedPos.relative(face);
+            boolean canPlace = !player.isShiftKeyDown()
+                    && face.getAxis() != Direction.Axis.Y
+                    && level.getBlockState(clickedPos).isFaceSturdy(level, clickedPos, face)
+                    && level.getBlockState(target).canBeReplaced();
+            if (canPlace) {
+                if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+                    placeGraffitiShape(serverPlayer, level, face, target, context);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
             return InteractionResult.PASS;
         }
@@ -202,10 +217,53 @@ public class DrawToolItem extends Item {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
+    /**
+     * 在墙面外侧放置涂鸦形状方块：类型 / 预设 / 颜色 / 大小 / 线宽取画图工具的当前设置，
+     * 偏移与旋转归零，然后立即打开设置界面。
+     */
+    private static void placeGraffitiShape(ServerPlayer player, Level level, Direction face,
+                                           BlockPos target, UseOnContext context) {
+        Settings settings = readSettings(context.getItemInHand());
+        level.setBlock(target, com.cc_rc.ModBlocks.GRAFFITI_SHAPE.get().defaultBlockState()
+                .setValue(com.cc_rc.block.graffiti.GraffitiShapeBlock.FACING, face), 3);
+        if (level.getBlockEntity(target)
+                instanceof com.cc_rc.block.graffiti.GraffitiShapeBlockEntity graffiti) {
+            graffiti.setConfig(settings.type().ordinal(), settings.preset(), settings.color(),
+                    settings.scale(), settings.width(), 0.0F, 0.0F, 0.0F);
+            com.cc_rc.gui.GraffitiShapeMenu.open(player, graffiti);
+        }
+    }
+
     /** 服务端：普通模式打开属性界面；快速模式按设置直接生成图案。 */
     private void handleUse(ServerPlayer player, Level level, BlockPos clickedPos,
                            UseOnContext context) {
-        BlockPos busPos = ConsoleStructureHelper.findBus(level, clickedPos);
+        // 斜面控制台：用「眼睛 → 命中点」视线与坡面求交，换算出宿主表面上的等效坐标
+        com.cc_rc.block.console.ConsoleSlopeGeometry.Target slopeTarget =
+                com.cc_rc.block.console.ConsoleSlopeGeometry.resolve(
+                        level, clickedPos, player.getEyePosition(), context.getClickLocation());
+        BlockPos busPos;
+        Direction face;
+        float u;
+        float v;
+        Direction busFacing;
+        if (slopeTarget != null) {
+            busPos = slopeTarget.busPos();
+            face = slopeTarget.face();
+            u = slopeTarget.u();
+            v = slopeTarget.v();
+            busFacing = Direction.NORTH;
+        } else {
+            if (level.getBlockState(clickedPos).getBlock()
+                    instanceof com.cc_rc.block.console.ConsoleSlopeBlock) {
+                hint(player, "message.cc_rc.console.need_form");
+                return;
+            }
+            busPos = ConsoleStructureHelper.findBus(level, clickedPos);
+            face = context.getClickedFace();
+            u = 0.0F;
+            v = 0.0F;
+            busFacing = Direction.NORTH;
+        }
         if (busPos == null || !(level.getBlockEntity(busPos) instanceof ConsoleBusBlockEntity bus)) {
             hint(player, "message.cc_rc.console.need_form");
             return;
@@ -222,12 +280,13 @@ public class DrawToolItem extends Item {
 
         // 设置取自手上的工具（优先使用触发交互的那只手）
         Settings settings = readSettings(context.getItemInHand());
-        Direction face = context.getClickedFace();
-        Direction busFacing = bus.getBusFacing();
-        float u = (float) ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, busFacing, context.getClickLocation());
-        float v = (float) ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, busFacing, context.getClickLocation());
+        busFacing = bus.getBusFacing();
+        if (slopeTarget == null) {
+            u = (float) ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, busFacing, context.getClickLocation());
+            v = (float) ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, busFacing, context.getClickLocation());
+        }
         // 吸附整数：把点击坐标四舍五入为整像素
         if (settings.snap()) {
             u = Math.round(u);

@@ -83,8 +83,9 @@ public class MultiToolItem extends Item {
 
         BlockState state = level.getBlockState(pos);
 
-        // 控制台结构方块：按住右键拖动表面组件 / 文字（命中检测与跟随仅在客户端进行）
-        if (com.cc_rc.block.console.ConsoleStructureHelper.isConsole(state)) {
+        // 控制台结构方块 / 斜面控制台：按住右键拖动表面组件 / 文字（命中检测与跟随仅在客户端进行）
+        if (com.cc_rc.block.console.ConsoleStructureHelper.isConsole(state)
+                || state.getBlock() instanceof com.cc_rc.block.console.ConsoleSlopeBlock) {
             if (level.isClientSide) {
                 return com.cc_rc.client.ConsoleDragClient.begin(context);
             }

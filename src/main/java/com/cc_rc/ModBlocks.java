@@ -37,6 +37,10 @@ import com.cc_rc.block.server_faas.ServerFaasBlock;
 import com.cc_rc.block.nuke_button.NukeButtonBlock;
 import com.cc_rc.block.password_inputer.PasswordInputerBlock;
 import com.cc_rc.block.poster.PosterBlock;
+import com.cc_rc.block.poster.WaterCycleChartBlock;
+import com.cc_rc.block.graffiti.GraffitiBlock;
+import com.cc_rc.block.graffiti.GraffitiShapeBlock;
+import com.cc_rc.block.audio_player.AudioPlayerBlock;
 import com.cc_rc.block.sink.SinkBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -301,6 +305,14 @@ public class ModBlocks {
                     .strength(2.0F)
                     .sound(SoundType.METAL)));
 
+    // 音频播放器（完整方块，右键配置音效/模式/范围等；POWERED 由邻居红石信号刷新）
+    public static final RegistryObject<AudioPlayerBlock> AUDIO_PLAYER = BLOCKS.register("audio_player",
+            () -> new AudioPlayerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
     // ==================== 搬运方块（原农夫乐事等外部模组） ====================
 
     // 箱装土豆方块（搬运自农夫乐事）：无方向完整方块，木板材质（木质音效、木质地图颜色），仅作装饰展示用。
@@ -443,6 +455,31 @@ public class ModBlocks {
                     .strength(0.5F)
                     .sound(SoundType.WOOD)));
 
+    // 水循环图（独立贴墙物品）：墙面用低清贴图由方块模型固定渲染为 2 格宽，
+    // 右键打开高清查看界面（高清图只在界面打开时占用显存）
+    public static final RegistryObject<WaterCycleChartBlock> WATER_CYCLE_CHART =
+            BLOCKS.register("water_cycle_chart",
+                    () -> new WaterCycleChartBlock(BlockBehaviour.Properties.of()
+                            .noCollission()
+                            .strength(0.5F)
+                            .sound(SoundType.WOOD)));
+
+    // 涂鸦文字（贴墙透明方块，碰撞箱与海报相同；文字内容/颜色/大小/偏移/字体格式存在方块实体里，
+    // 由客户端 GraffitiBER 直接绘制。手持编辑工具右键墙面可放置，右键已有涂鸦可编辑）
+    public static final RegistryObject<GraffitiBlock> GRAFFITI = BLOCKS.register("graffiti",
+            () -> new GraffitiBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .strength(0.5F)
+                    .sound(SoundType.WOOD)));
+
+    // 涂鸦形状（贴墙透明方块，碰撞箱与海报相同；图案类型/预设/颜色/大小/线宽/旋转/偏移存在方块实体里，
+    // 由客户端 GraffitiShapeBER 复用控制柜画图渲染器绘制。手持画图工具右键墙面可放置）
+    public static final RegistryObject<GraffitiShapeBlock> GRAFFITI_SHAPE = BLOCKS.register("graffiti_shape",
+            () -> new GraffitiShapeBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .strength(0.5F)
+                    .sound(SoundType.WOOD)));
+
     // 多方块控制柜 - 结构方块（完整立方体，无方向；结构数据保存在总线方块实体里）
     public static final RegistryObject<ConsoleBlock> CONSOLE_BLOCK = BLOCKS.register("controller_block",
             () -> new ConsoleBlock(BlockBehaviour.Properties.of()
@@ -474,6 +511,39 @@ public class ModBlocks {
                     .strength(2.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.METAL)));
+
+    // 斜面控制台（贴在控制柜侧面 / 顶面，只做视觉与交互映射，数据仍在总线里）
+    public static final RegistryObject<com.cc_rc.block.console.ConsoleSlopeBlock> CONTROLLER_SLOPE =
+            BLOCKS.register("controller_slope",
+                    () -> new com.cc_rc.block.console.ConsoleSlopeBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.METAL)
+                            .strength(2.0F)
+                            .requiresCorrectToolForDrops()
+                            // 模型整块立方体上有大片透明贴图，关闭遮挡剔除以免透明处露出被剔除的相邻面
+                            .noOcclusion()
+                            .sound(SoundType.METAL)));
+
+    // 斜面控制台的蓝色 / 黑色变体：模型与功能相同，仅贴图与颜色不同；
+    // 只有颜色与结构颜色一致的斜面才会被总线登记映射，异色互不识别。
+    public static final RegistryObject<com.cc_rc.block.console.ConsoleSlopeBlock>
+            CONTROLLER_SLOPE_BLUE =
+            BLOCKS.register("controller_slope_blue",
+                    () -> new com.cc_rc.block.console.ConsoleSlopeBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_BLUE)
+                            .strength(2.0F)
+                            .requiresCorrectToolForDrops()
+                            .noOcclusion()
+                            .sound(SoundType.METAL), ConsoleColor.BLUE));
+
+    public static final RegistryObject<com.cc_rc.block.console.ConsoleSlopeBlock>
+            CONTROLLER_SLOPE_BLACK =
+            BLOCKS.register("controller_slope_black",
+                    () -> new com.cc_rc.block.console.ConsoleSlopeBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_BLACK)
+                            .strength(2.0F)
+                            .requiresCorrectToolForDrops()
+                            .noOcclusion()
+                            .sound(SoundType.METAL), ConsoleColor.BLACK));
 
     // 控制柜辅助计算机（装饰方块，邻接总线放置；右键打开总线的程序界面）
     public static final RegistryObject<ControllerAuxBlock> CONTROLLER_AUX = BLOCKS.register("controller_aux",

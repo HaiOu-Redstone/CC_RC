@@ -4,6 +4,8 @@ import com.cc_rc.block.ITextDisplay;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
@@ -59,9 +61,12 @@ public class EditToolItem extends Item {
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
 
-        // 控制台结构方块：在结构表面添加 / 编辑文字（位置由客户端命中检测决定）
-        if (com.cc_rc.block.console.ConsoleStructureHelper.isConsole(
-                level.getBlockState(context.getClickedPos()))) {
+        BlockState clickedState = level.getBlockState(context.getClickedPos());
+
+        // 控制台结构方块 / 斜面控制台：在结构表面添加 / 编辑文字（位置由客户端命中检测决定）
+        if (com.cc_rc.block.console.ConsoleStructureHelper.isConsole(clickedState)
+                || clickedState.getBlock()
+                        instanceof com.cc_rc.block.console.ConsoleSlopeBlock) {
             if (level.isClientSide) {
                 // 只有客户端有字体宽度，可精确判断是否点在某条文字的覆盖区域内
                 com.cc_rc.client.ConsoleTextClient.requestEdit(context);
@@ -69,15 +74,46 @@ public class EditToolItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
-        // 目标方块实体必须是可显示名称的方块（ITextDisplay）
+        // 目标方块实体是可显示名称的方块（ITextDisplay）→ 打开文字编辑菜单
         BlockEntity be = level.getBlockEntity(context.getClickedPos());
-        if (!(be instanceof ITextDisplay)) return InteractionResult.PASS;
-
-        // 仅服务端打开菜单；客户端返回成功避免额外逻辑
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            openEditMenu(serverPlayer, context.getClickedPos(), ((ITextDisplay) be).getText());
+        if (be instanceof ITextDisplay textDisplay) {
+            // 仅服务端打开菜单；客户端返回成功避免额外逻辑
+            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+                openEditMenu(serverPlayer, context.getClickedPos(), textDisplay.getText());
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+
+        // 涂鸦文字：右键已有涂鸦 → 打开编辑界面
+        if (clickedState.getBlock() instanceof com.cc_rc.block.graffiti.GraffitiBlock) {
+            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer
+                    && level.getBlockEntity(context.getClickedPos())
+                            instanceof com.cc_rc.block.graffiti.GraffitiBlockEntity graffiti) {
+                com.cc_rc.gui.GraffitiMenu.open(serverPlayer, graffiti);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+
+        // 涂鸦文字：右键任意实心墙面 → 在墙外侧放置透明涂鸦方块并立即打开编辑界面
+        Direction face = context.getClickedFace();
+        if (!player.isShiftKeyDown() && face.getAxis() != Direction.Axis.Y
+                && clickedState.isFaceSturdy(level, context.getClickedPos(), face)) {
+            BlockPos target = context.getClickedPos().relative(face);
+            if (level.getBlockState(target).canBeReplaced()) {
+                if (!level.isClientSide) {
+                    level.setBlock(target, com.cc_rc.ModBlocks.GRAFFITI.get().defaultBlockState()
+                            .setValue(com.cc_rc.block.graffiti.GraffitiBlock.FACING, face), 3);
+                    if (player instanceof ServerPlayer serverPlayer
+                            && level.getBlockEntity(target)
+                                    instanceof com.cc_rc.block.graffiti.GraffitiBlockEntity graffiti) {
+                        com.cc_rc.gui.GraffitiMenu.open(serverPlayer, graffiti);
+                    }
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+        }
+
+        return InteractionResult.PASS;
     }
 
     /** 打开编辑菜单：MenuProvider 携带坐标 + 当前文字（经同步数据传给客户端）。 */

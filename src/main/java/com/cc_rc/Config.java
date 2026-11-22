@@ -51,6 +51,10 @@ public class Config
     // 控制柜同步指示器配置
     private static final ForgeConfigSpec.DoubleValue CONSOLE_SYNCHROSCOPE_LAMP_SPEED;
 
+    // 激光笔配置
+    private static final ForgeConfigSpec.IntValue LASER_POINTER_MAX_DISTANCE;
+    private static final ForgeConfigSpec.DoubleValue LASER_POINTER_LINE_WIDTH;
+
     static {
         BUILDER.push("safe_button");
 
@@ -184,6 +188,18 @@ public class Config
                 .defineInRange("lamp_speed", 15.0D, 0.0D, 180.0D);
 
         BUILDER.pop();
+
+        BUILDER.push("laser_pointer");
+
+        LASER_POINTER_MAX_DISTANCE = BUILDER
+                .comment("激光笔射线的最长距离（格），默认 16；该距离内没有方块时激光与玩家视线平行")
+                .defineInRange("max_distance", 16, 1, 64);
+
+        LASER_POINTER_LINE_WIDTH = BUILDER
+                .comment("激光线的宽度（格），默认 0.02")
+                .defineInRange("line_width", 0.02D, 0.005D, 0.2D);
+
+        BUILDER.pop();
     }
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -278,5 +294,15 @@ public class Config
             default -> "";
         };
         return rule != null && rule.indexOf(cardLetter) >= 0;
+    }
+
+    /** 激光笔射线的最长距离（格，默认 16） */
+    public static int getLaserPointerMaxDistance() {
+        return LASER_POINTER_MAX_DISTANCE.get();
+    }
+
+    /** 激光线的宽度（格，默认 0.02） */
+    public static double getLaserPointerLineWidth() {
+        return LASER_POINTER_LINE_WIDTH.get();
     }
 }

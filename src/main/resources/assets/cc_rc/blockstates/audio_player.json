@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "powered=false": { "model": "cc_rc:block/audio_player" },
+    "powered=true": { "model": "cc_rc:block/audio_player" }
+  }
+}

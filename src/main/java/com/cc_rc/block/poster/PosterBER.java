@@ -21,7 +21,7 @@ import org.joml.Matrix4f;
  * 只能用自定义渲染。
  *
  * 几何约定（局部坐标，单位「格」）：
- *  - 以「观者视角」为基准：锚点 = 方块贴墙面的左上角（离墙 1 像素），图片自锚点向右、向下延伸；
+ *  - 以「观者视角」为基准：锚点 = 方块贴墙面的左上角（离墙 0.5 像素，碰撞箱仍 1 像素厚），图片自锚点向右、向下延伸；
  *    u=0/v=0 对应图片左上角，因此无论朝向如何，图片都不会左右镜像；
  *  - 宽 = 缩放倍率（1.0 = 1 格）；高 = 宽 * 内容高 / 原图宽（保持原始比例）；
  *    贴图 v 从内容顶部（跳过画布顶部透明留白）采样，因此默认「图片顶端对齐方块顶端」；
@@ -29,16 +29,16 @@ import org.joml.Matrix4f;
  *  - 手持海报物品时额外在方块贴墙面绘制半透明物品图标，标记透明方块本体的位置。
  *
  * 四个朝向的锚点与「观者向右」单位向量：
- *  - FACING=north（墙在 z+ 侧，面朝北，观者自北向南看）：锚点 (1.0, 1.0, 15/16)，向右 = -X
- *  - FACING=south（墙在 z- 侧）：锚点 (0.0, 1.0, 1/16)，向右 = +X
- *  - FACING=east （墙在 x- 侧）：锚点 ( 1/16, 1.0, 1.0)，向右 = -Z
- *  - FACING=west （墙在 x+ 侧）：锚点 (15/16, 1.0, 0.0)，向右 = +Z
+ *  - FACING=north（墙在 z+ 侧，面朝北，观者自北向南看）：锚点 (1.0, 1.0, 31/32)，向右 = -X
+ *  - FACING=south（墙在 z- 侧）：锚点 (0.0, 1.0, 1/32)，向右 = +X
+ *  - FACING=east （墙在 x- 侧）：锚点 ( 1/32, 1.0, 1.0)，向右 = -Z
+ *  - FACING=west （墙在 x+ 侧）：锚点 (31/32, 1.0, 0.0)，向右 = +Z
  *  （与 PosterBlock 的碰撞箱、原版四个方向面的 UV 约定一致）
  */
 public class PosterBER implements BlockEntityRenderer<PosterBlockEntity> {
 
-    /** 贴图离墙面的距离（格）：1 像素，避免与墙方块表面 z-fighting。 */
-    private static final float WALL_GAP = 1.0F / 16.0F;
+    /** 贴图离墙面的距离（格）：0.5 像素，避免与墙方块表面 z-fighting（碰撞箱仍为 1 像素厚）。 */
+    private static final float WALL_GAP = 0.5F / 16.0F;
 
     /** 幽灵标记用的贴图：海报物品图标（手持海报时用来标记透明方块本体的位置）。 */
     private static final net.minecraft.resources.ResourceLocation GHOST_TEXTURE =
@@ -72,24 +72,24 @@ public class PosterBER implements BlockEntityRenderer<PosterBlockEntity> {
         switch (facing) {
             case NORTH -> {
                 ax = 1.0F;
-                az = 1.0F - WALL_GAP;   // 15/16
+                az = 1.0F - WALL_GAP;   // 31/32
                 rx = -1.0F;
                 rz = 0.0F;
             }
             case SOUTH -> {
                 ax = 0.0F;
-                az = WALL_GAP;          // 1/16
+                az = WALL_GAP;          // 1/32
                 rx = 1.0F;
                 rz = 0.0F;
             }
             case EAST -> {
-                ax = WALL_GAP;          // 1/16
+                ax = WALL_GAP;          // 1/32
                 az = 1.0F;
                 rx = 0.0F;
                 rz = -1.0F;
             }
             default -> {                // WEST
-                ax = 1.0F - WALL_GAP;   // 15/16
+                ax = 1.0F - WALL_GAP;   // 31/32
                 az = 0.0F;
                 rx = 0.0F;
                 rz = 1.0F;

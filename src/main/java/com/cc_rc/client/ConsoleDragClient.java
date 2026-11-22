@@ -3,6 +3,8 @@ package com.cc_rc.client;
 import com.cc_rc.CcRc;
 import com.cc_rc.ModBlocks;
 import com.cc_rc.block.console.ConsoleBusBlockEntity;
+import com.cc_rc.block.console.ConsoleSlopeBlock;
+import com.cc_rc.block.console.ConsoleSlopeGeometry;
 import com.cc_rc.block.console.ConsoleStructureHelper;
 import com.cc_rc.block.console.ConsoleSurface;
 import com.cc_rc.block.console.draw.ConsoleShape;
@@ -56,6 +58,8 @@ public final class ConsoleDragClient {
     private static boolean active = false;
     /** 被拖动目标所属的总线坐标。 */
     private static BlockPos busPos;
+    /** 拖动起始的斜面控制台坐标（普通表面为 null）。 */
+    private static BlockPos slopePos;
     /** 被抓取时点击的表面（拖动过程中必须保持不变）。 */
     private static Direction face;
     private static int kind = KIND_NONE;
@@ -91,8 +95,30 @@ public final class ConsoleDragClient {
         BlockPos clickedPos = context.getClickedPos();
         Direction clickedFace = context.getClickedFace();
 
+        // 斜面控制台：用「眼睛 → 命中点」视线与坡面求交，换算出宿主表面上的等效坐标
+        ConsoleSlopeGeometry.Target slopeTarget =
+                ConsoleSlopeGeometry.resolve(level, clickedPos,
+                        mc.player.getEyePosition(), context.getClickLocation());
+        double u;
+        double v;
+        BlockPos foundBus;
+        if (slopeTarget != null) {
+            foundBus = slopeTarget.busPos();
+            clickedFace = slopeTarget.face();
+            u = slopeTarget.u();
+            v = slopeTarget.v();
+        } else {
+            // 斜面未登记（未成型 / 朝向不符）时不能拖动
+            if (level.getBlockState(clickedPos).getBlock() instanceof ConsoleSlopeBlock) {
+                hint("message.cc_rc.console.need_form");
+                return InteractionResult.SUCCESS;
+            }
+            u = 0.0D;
+            v = 0.0D;
+            foundBus = ConsoleStructureHelper.findBus(level, clickedPos);
+        }
+
         // 1. 找所属总线并校验成型状态
-        BlockPos foundBus = ConsoleStructureHelper.findBus(level, clickedPos);
         if (foundBus == null || !(level.getBlockEntity(foundBus) instanceof ConsoleBusBlockEntity bus)) {
             return InteractionResult.PASS;
         }
@@ -105,15 +131,17 @@ public final class ConsoleDragClient {
             return InteractionResult.SUCCESS;
         }
 
-        // 2. 点击点 → 表面像素坐标
+        // 2. 普通表面：点击点 → 表面像素坐标（斜面的坐标已由 resolve 给出）
         Vec3 hit = context.getClickLocation();
-        double u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), clickedFace, bus.getBusFacing(), hit);
-        double v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), clickedFace, bus.getBusFacing(), hit);
-        if (!ConsoleSurface.contains(clickedFace, bus.getBusFacing(), bus.getSizeX(),
-                bus.getSizeY(), bus.getSizeZ(), u, v)) {
-            return InteractionResult.PASS;
+        if (slopeTarget == null) {
+            u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), clickedFace, bus.getBusFacing(), hit);
+            v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), clickedFace, bus.getBusFacing(), hit);
+            if (!ConsoleSurface.contains(clickedFace, bus.getBusFacing(), bus.getSizeX(),
+                    bus.getSizeY(), bus.getSizeZ(), u, v)) {
+                return InteractionResult.PASS;
+            }
         }
 
         // 3. 先抓组件（与编辑工具一致：组件优先于表面文字）
@@ -147,6 +175,7 @@ public final class ConsoleDragClient {
 
         active = true;
         busPos = foundBus;
+        slopePos = slopeTarget == null ? null : clickedPos.immutable();
         face = clickedFace;
         // 记录目标当前锚点作为「上一次已发送位置」：吸附取整后位置有变化才会发包
         if (kind == KIND_COMP) {
@@ -182,23 +211,45 @@ public final class ConsoleDragClient {
             stop();
             return;
         }
-        // 准星必须仍停留在同一表面：同一朝向、同一结构（可跨方块，方便大结构上拖动）
-        if (blockHit.getDirection() != face
-                || !ConsoleStructureHelper.isConsole(
-                        mc.level.getBlockState(blockHit.getBlockPos()))
-                || !busPos.equals(ConsoleStructureHelper.findBus(mc.level, blockHit.getBlockPos()))
-                || !(mc.level.getBlockEntity(busPos) instanceof ConsoleBusBlockEntity bus)
-                || bus.getOrigin() == null) {
-            stop();
-            return;
+        double u;
+        double v;
+        ConsoleBusBlockEntity bus;
+        if (slopePos != null) {
+            // 斜面拖动：准星必须仍停在同一块斜面上，并沿坡面投影得到宿主坐标
+            if (!blockHit.getBlockPos().equals(slopePos)) {
+                stop();
+                return;
+            }
+            ConsoleSlopeGeometry.Target target = ConsoleSlopeGeometry.resolve(
+                    mc.level, slopePos, mc.player.getEyePosition(), blockHit.getLocation());
+            if (target == null
+                    || !(mc.level.getBlockEntity(busPos) instanceof ConsoleBusBlockEntity slopeBus)
+                    || slopeBus.getOrigin() == null) {
+                stop();
+                return;
+            }
+            bus = slopeBus;
+            u = target.u();
+            v = target.v();
+        } else {
+            // 准星必须仍停留在同一表面：同一朝向、同一结构（可跨方块，方便大结构上拖动）
+            if (blockHit.getDirection() != face
+                    || !ConsoleStructureHelper.isConsole(
+                            mc.level.getBlockState(blockHit.getBlockPos()))
+                    || !busPos.equals(ConsoleStructureHelper.findBus(mc.level, blockHit.getBlockPos()))
+                    || !(mc.level.getBlockEntity(busPos) instanceof ConsoleBusBlockEntity normalBus)
+                    || normalBus.getOrigin() == null) {
+                stop();
+                return;
+            }
+            bus = normalBus;
+            // 当前准星点 → 表面像素坐标，加上抓取偏移得到目标新锚点
+            Vec3 hit = blockHit.getLocation();
+            u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, bus.getBusFacing(), hit);
+            v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
+                    bus.getSizeZ(), face, bus.getBusFacing(), hit);
         }
-
-        // 当前准星点 → 表面像素坐标，加上抓取偏移得到目标新锚点
-        Vec3 hit = blockHit.getLocation();
-        double u = ConsoleSurface.pixelU(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, bus.getBusFacing(), hit);
-        double v = ConsoleSurface.pixelV(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),
-                bus.getSizeZ(), face, bus.getBusFacing(), hit);
         float nu = (float) u + grabOffsetU;
         float nv = (float) v + grabOffsetV;
 
@@ -285,6 +336,7 @@ public final class ConsoleDragClient {
     private static void stop() {
         active = false;
         busPos = null;
+        slopePos = null;
         face = null;
         kind = KIND_NONE;
         targetId = -1;

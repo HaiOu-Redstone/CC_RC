@@ -28,39 +28,53 @@ import net.minecraft.world.item.ItemStack;
  */
 public class DrawQuickScreen extends Screen {
 
-    private static final int W = 340;
+    /** 界面尺寸与属性界面（ConsoleDrawScreen）一致，便于两处排版对齐。 */
+    private static final int W = 386;
     private static final int H = 200;
 
-    /** 类型按钮排布。 */
-    private static final int TYPE_X = 8;
-    private static final int TYPE_Y = 30;
-    private static final int TYPE_W = 27;
+    /** 类型按钮排布（与属性界面相同：5 个等宽按钮一行）。 */
+    private static final int TYPE_X = 6;
+    private static final int TYPE_Y = 31;
+    private static final int TYPE_W = 46;
     private static final int TYPE_H = 16;
-    private static final int TYPE_STEP = 28;
+    private static final int TYPE_STEP = 48;
 
-    /** 三个开关。 */
-    private static final int TOGGLE_Y = 52;
-    private static final int TOGGLE2_Y = 72;
+    /** 三个开关（同一行）。 */
+    private static final int TOGGLE_Y = 55;
+    private static final int QUICK_X = 8;
+    private static final int QUICK_W = 92;
+    private static final int SNAP_X = 104;
+    private static final int SNAP_W = 70;
+    private static final int STRAIGHT_X = 178;
+    private static final int STRAIGHT_W = 72;
 
     /** 颜色色块（8 列 × 2 行）。 */
     private static final int SWATCH_X = 8;
-    private static final int SWATCH_Y = 104;
+    private static final int SWATCH_Y = 86;
     private static final int SWATCH_W = 14;
     private static final int SWATCH_H = 12;
     private static final int SWATCH_GAP = 2;
     private static final int SWATCH_COLS = 8;
 
-    /** 数值输入行。 */
-    private static final int INPUT_Y = 150;
-    /** 右侧贴图样式列表（3 列）。 */
-    private static final int PRESET_X = 160;
+    /** 线宽 / 缩放 / 图层所在行。 */
+    private static final int LABEL_Y = 120;
+    private static final int INPUT_Y = 131;
+    private static final int WIDTH_X = 8;
+    private static final int SCALE_X = 78;
+    private static final int LAYER_X = 170;
+    /** 关闭按钮。 */
+    private static final int CLOSE_Y = 170;
+    /** 右侧贴图样式列表：4 列 × 3 行 = 12 个预览框。 */
+    private static final int PRESET_X = 260;
     private static final int PRESET_Y = 32;
     private static final int PRESET_CELL = 24;
     private static final int PRESET_GAP = 4;
-    private static final int PRESET_COLS = 3;
-    /** 图层按钮。 */
-    private static final int LAYER_X = 160;
-    private static final int LAYER_Y = 106;
+    private static final int PRESET_COLS = 4;
+    /** 列表内最多显示的行数（图案更多时用滚轮翻看）。 */
+    private static final int PRESET_VISIBLE_ROWS = 3;
+    /** 列表的可视区域上下边界相对 GUI 左上角的 Y（只会画裁剪后的部分）。 */
+    private static final int PRESET_AREA_TOP = 30;
+    private static final int PRESET_AREA_BOTTOM = 118;
 
     private static final int[] DYE_COLORS = {
             0xFFFFFF, 0xF9801D, 0xC74EBD, 0x3AB3DA,
@@ -85,6 +99,8 @@ public class DrawQuickScreen extends Screen {
     private int layer;
     private ConsoleShapeType type;
     private String presetId;
+    /** 贴图样式列表的滚动行偏移（0 = 从第一行开始）。 */
+    private int presetScroll;
     private boolean quick;
     private boolean snap;
     private boolean straight;
@@ -133,31 +149,31 @@ public class DrawQuickScreen extends Screen {
             }).bounds(x + TYPE_X + i * TYPE_STEP, y + TYPE_Y, TYPE_W, TYPE_H).build());
         }
 
-        // 三个开关
+        // 三个开关：同一行排开，宽度按文字长度分配（原布局会互相重叠）
         this.quickButton = addRenderableWidget(Button.builder(toggleLabel("gui.cc_rc.draw.quick",
                         this.quick), b -> {
                     captureInputs();
                     this.quick = !this.quick;
                     push();
                     b.setMessage(toggleLabel("gui.cc_rc.draw.quick", this.quick));
-                }).bounds(x + 8, y + TOGGLE_Y, 138, 16).build());
+                }).bounds(x + QUICK_X, y + TOGGLE_Y, QUICK_W, 16).build());
         this.snapButton = addRenderableWidget(Button.builder(toggleLabel("gui.cc_rc.draw.snap",
                         this.snap), b -> {
                     captureInputs();
                     this.snap = !this.snap;
                     push();
                     b.setMessage(toggleLabel("gui.cc_rc.draw.snap", this.snap));
-                }).bounds(x + 8, y + TOGGLE2_Y, 66, 16).build());
+                }).bounds(x + SNAP_X, y + TOGGLE_Y, SNAP_W, 16).build());
         this.straightButton = addRenderableWidget(Button.builder(
                         toggleLabel("gui.cc_rc.draw.straight", this.straight), b -> {
                     captureInputs();
                     this.straight = !this.straight;
                     push();
                     b.setMessage(toggleLabel("gui.cc_rc.draw.straight", this.straight));
-                }).bounds(x + 80, y + TOGGLE2_Y, 66, 16).build());
+                }).bounds(x + STRAIGHT_X, y + TOGGLE_Y, STRAIGHT_W, 16).build());
 
-        // 颜色
-        this.hexBox = new EditBox(this.font, x + 146, y + 82, 64, 14,
+        // 颜色（输入框与色块第一行同高，不再压到图样列表上）
+        this.hexBox = new EditBox(this.font, x + 146, y + SWATCH_Y + 2, 64, 14,
                 Component.translatable("gui.cc_rc.draw.color"));
         this.hexBox.setMaxLength(7);
         this.hexBox.setValue(String.format("#%06X", this.color));
@@ -172,13 +188,13 @@ public class DrawQuickScreen extends Screen {
         addRenderableWidget(this.hexBox);
 
         // 线宽 / 缩放
-        this.widthBox = new EditBox(this.font, x + 32, y + INPUT_Y, 50, 14,
+        this.widthBox = new EditBox(this.font, x + WIDTH_X, y + INPUT_Y, 50, 14,
                 Component.translatable("gui.cc_rc.draw.width"));
         this.widthBox.setMaxLength(5);
         this.widthBox.setValue(fmt(this.lineWidth));
         addRenderableWidget(this.widthBox);
 
-        this.scaleBox = new EditBox(this.font, x + 116, y + INPUT_Y, 50, 14,
+        this.scaleBox = new EditBox(this.font, x + SCALE_X, y + INPUT_Y, 50, 14,
                 Component.translatable("gui.cc_rc.draw.preset_label"));
         this.scaleBox.setMaxLength(5);
         this.scaleBox.setValue(fmt(this.scale));
@@ -191,13 +207,13 @@ public class DrawQuickScreen extends Screen {
                 captureInputs();
                 this.layer = target;
                 push();
-            }).bounds(x + LAYER_X + i * 17, y + LAYER_Y, 15, 14).build());
+            }).bounds(x + LAYER_X + i * 17, y + INPUT_Y, 15, 14).build());
         }
 
-        // 关闭
+        // 关闭（与属性界面一样放在底部按钮行）
         addRenderableWidget(Button.builder(Component.translatable("gui.cc_rc.draw.close"),
                         b -> onClose())
-                .bounds(x + 250, y + H - 28, 80, 20).build());
+                .bounds(x + 8, y + CLOSE_Y, 76, 20).build());
     }
 
     /** 把界面当前值写回物品 NBT 并同步服务端。 */
@@ -253,18 +269,25 @@ public class DrawQuickScreen extends Screen {
         graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.type"),
                 x + 8, y + 20, 0xFFFFFFFF, false);
         graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.color"),
-                x + 8, y + 94, 0xFFFFFFFF, false);
+                x + 8, y + 76, 0xFFFFFFFF, false);
         graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.width"),
-                x + 8, y + 140, 0xFFFFFFFF, false);
+                x + WIDTH_X, y + LABEL_Y, 0xFFFFFFFF, false);
         graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.scale_short"),
-                x + 92, y + 140, 0xFFFFFFFF, false);
+                x + SCALE_X, y + LABEL_Y, 0xFFFFFFFF, false);
+        graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.layer"),
+                x + LAYER_X, y + LABEL_Y, 0xFFFFFFFF, false);
+        // 图样列表面板（与属性界面一致：深色底 + 灰边框 + 标题）
+        int panelLeft = x + PRESET_X - 6;
+        int panelRight = x + PRESET_X + PRESET_COLS * (PRESET_CELL + PRESET_GAP);
+        int panelTop = y + PRESET_AREA_TOP - 16;
+        int panelBottom = y + PRESET_AREA_BOTTOM;
+        graphics.fill(panelLeft, panelTop, panelRight + 6, panelBottom, 0xFF1E1E1E);
+        border(graphics, panelLeft, panelTop, panelRight + 6, panelBottom, 0xFF606060);
         graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.preset_list"),
                 x + PRESET_X, y + 18, 0xFFFFFFFF, false);
-        graphics.drawString(this.font, Component.translatable("gui.cc_rc.draw.layer"),
-                x + LAYER_X, y + 96, 0xFFFFFFFF, false);
         // 类型 / 图层选中高亮
         highlight(graphics, x + TYPE_X + typeIndex() * TYPE_STEP, y + TYPE_Y, TYPE_W, TYPE_H);
-        highlight(graphics, x + LAYER_X + this.layer * 17, y + LAYER_Y, 15, 14);
+        highlight(graphics, x + LAYER_X + this.layer * 17, y + INPUT_Y, 15, 14);
 
         // 颜色色块
         for (int i = 0; i < DYE_COLORS.length; i++) {
@@ -276,12 +299,18 @@ public class DrawQuickScreen extends Screen {
             }
         }
 
-        // 贴图样式缩略图
+        // 贴图样式缩略图：超出可视区域的部分裁掉，滚轮翻看（见 mouseScrolled）
         List<ConsoleDrawPresets.Preset> all = ConsoleDrawPresets.all();
+        graphics.enableScissor(x + PRESET_X - 4, y + PRESET_AREA_TOP,
+                x + PRESET_X + PRESET_COLS * (PRESET_CELL + PRESET_GAP), y + PRESET_AREA_BOTTOM);
         for (int i = 0; i < all.size(); i++) {
+            int row = i / PRESET_COLS - this.presetScroll;
+            if (row < 0 || row >= PRESET_VISIBLE_ROWS) {
+                continue;
+            }
             ConsoleDrawPresets.Preset preset = all.get(i);
             int cx = x + presetCellX(i);
-            int cy = y + presetCellY(i);
+            int cy = y + PRESET_Y + row * (PRESET_CELL + PRESET_GAP);
             graphics.fill(cx, cy, cx + PRESET_CELL, cy + PRESET_CELL, 0xFF2A2A2A);
             int inner = PRESET_CELL - 4;
             graphics.blit(preset.texture(), cx + 2, cy + 2, inner, inner,
@@ -292,6 +321,47 @@ public class DrawQuickScreen extends Screen {
             border(graphics, cx, cy, cx + PRESET_CELL, cy + PRESET_CELL,
                     selected ? 0xFFFFFFFF : 0xFF606060);
         }
+        graphics.disableScissor();
+        // 可滚动时在列表右侧画一条滚动条指示
+        int maxScroll = presetMaxScroll();
+        if (maxScroll > 0) {
+            int barX = x + PRESET_X + PRESET_COLS * (PRESET_CELL + PRESET_GAP) - 2;
+            int trackTop = y + PRESET_AREA_TOP;
+            int trackBottom = y + PRESET_AREA_BOTTOM;
+            int trackHeight = trackBottom - trackTop;
+            int rows = presetRowCount();
+            int thumbHeight = Math.max(8, trackHeight * PRESET_VISIBLE_ROWS / rows);
+            int thumbTop = trackTop + (trackHeight - thumbHeight) * this.presetScroll / maxScroll;
+            graphics.fill(barX, trackTop, barX + 2, trackBottom, 0xFF303030);
+            graphics.fill(barX, thumbTop, barX + 2, thumbTop + thumbHeight, 0xFFA0A0A0);
+        }
+    }
+
+    /** 贴图样式总行数（向上取整）。 */
+    private static int presetRowCount() {
+        int count = ConsoleDrawPresets.all().size();
+        return (count + PRESET_COLS - 1) / PRESET_COLS;
+    }
+
+    /** 贴图样式列表的最大滚动行偏移。 */
+    private static int presetMaxScroll() {
+        return Math.max(0, presetRowCount() - PRESET_VISIBLE_ROWS);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        int areaLeft = this.leftPos + PRESET_X - 4;
+        int areaRight = this.leftPos + PRESET_X + PRESET_COLS * (PRESET_CELL + PRESET_GAP);
+        int areaTop = this.topPos + PRESET_AREA_TOP;
+        int areaBottom = this.topPos + PRESET_AREA_BOTTOM;
+        if (mouseX >= areaLeft && mouseX < areaRight
+                && mouseY >= areaTop && mouseY < areaBottom
+                && presetMaxScroll() > 0) {
+            int next = this.presetScroll - (int) Math.signum(delta);
+            this.presetScroll = Math.max(0, Math.min(presetMaxScroll(), next));
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
@@ -300,8 +370,13 @@ public class DrawQuickScreen extends Screen {
             // 贴图样式
             List<ConsoleDrawPresets.Preset> all = ConsoleDrawPresets.all();
             for (int i = 0; i < all.size(); i++) {
+                // 只命中当前滚动位置下可见的格子
+                int row = i / PRESET_COLS - this.presetScroll;
+                if (row < 0 || row >= PRESET_VISIBLE_ROWS) {
+                    continue;
+                }
                 int cx = this.leftPos + presetCellX(i);
-                int cy = this.topPos + presetCellY(i);
+                int cy = this.topPos + PRESET_Y + row * (PRESET_CELL + PRESET_GAP);
                 if (mouseX >= cx && mouseX < cx + PRESET_CELL
                         && mouseY >= cy && mouseY < cy + PRESET_CELL) {
                     captureInputs();
@@ -357,10 +432,6 @@ public class DrawQuickScreen extends Screen {
 
     private static int presetCellX(int index) {
         return PRESET_X + (index % PRESET_COLS) * (PRESET_CELL + PRESET_GAP);
-    }
-
-    private static int presetCellY(int index) {
-        return PRESET_Y + (index / PRESET_COLS) * (PRESET_CELL + PRESET_GAP);
     }
 
     private static void highlight(GuiGraphics graphics, int x, int y, int w, int h) {

@@ -17,6 +17,9 @@ import com.cc_rc.block.key_distributor.KeyDistributorBlockEntity;
 import com.cc_rc.block.console.ConsoleBlockEntity;
 import com.cc_rc.block.console.ConsoleBusBlockEntity;
 import com.cc_rc.block.poster.PosterBlockEntity;
+import com.cc_rc.block.graffiti.GraffitiBlockEntity;
+import com.cc_rc.block.graffiti.GraffitiShapeBlockEntity;
+import com.cc_rc.block.audio_player.AudioPlayerBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBlockEntity;
 import com.cc_rc.block.extended_relay.ExtendedRelayBusBlockEntity;
 import net.minecraft.world.level.block.Block;
@@ -181,6 +184,22 @@ public class ModBlockEntities {
                             ModBlocks.POSTER.get()
                     ).build(null));
 
+    // 涂鸦文字方块实体类型（单方块 graffiti：存文字/颜色/大小/偏移/字体格式，客户端 GraffitiBER 绘制）
+    public static final RegistryObject<BlockEntityType<GraffitiBlockEntity>> GRAFFITI_BE =
+            BLOCK_ENTITY_TYPES.register("graffiti_be",
+                    () -> BlockEntityType.Builder.of(
+                            GraffitiBlockEntity::new,
+                            ModBlocks.GRAFFITI.get()
+                    ).build(null));
+
+    // 涂鸦形状方块实体类型（单方块 graffiti_shape：存类型/预设/颜色/大小/线宽/旋转/偏移，客户端 BER 绘制）
+    public static final RegistryObject<BlockEntityType<GraffitiShapeBlockEntity>> GRAFFITI_SHAPE_BE =
+            BLOCK_ENTITY_TYPES.register("graffiti_shape_be",
+                    () -> BlockEntityType.Builder.of(
+                            GraffitiShapeBlockEntity::new,
+                            ModBlocks.GRAFFITI_SHAPE.get()
+                    ).build(null));
+
     // 方块探测器方块实体类型（空实体，仅作 CC 外设承载）
     public static final RegistryObject<BlockEntityType<BlockDetectorBlockEntity>> BLOCK_DETECTOR_BE =
             BLOCK_ENTITY_TYPES.register("block_detector_be",
@@ -205,5 +224,25 @@ public class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ConsoleBusBlockEntity::new,
                             ModBlocks.CONSOLE_BUS.get()
+                    ).build(null));
+
+    // 斜面控制台方块实体（只存「所属总线 + 宿主方块/面」，做视觉与交互映射）
+    public static final RegistryObject<BlockEntityType<com.cc_rc.block.console.ConsoleSlopeBlockEntity>>
+            CONSOLE_SLOPE_BE =
+            BLOCK_ENTITY_TYPES.register("controller_slope_be",
+                    () -> BlockEntityType.Builder.of(
+                            com.cc_rc.block.console.ConsoleSlopeBlockEntity::new,
+                            ModBlocks.CONTROLLER_SLOPE.get(),
+                            // 蓝色 / 黑色变体共用同一方块实体类型
+                            ModBlocks.CONTROLLER_SLOPE_BLUE.get(),
+                            ModBlocks.CONTROLLER_SLOPE_BLACK.get()
+                    ).build(null));
+
+    // 音频播放器方块实体（存音效 id / 模式 / 范围 / 衰减 / 起始 / 截至 / 间隔）
+    public static final RegistryObject<BlockEntityType<AudioPlayerBlockEntity>> AUDIO_PLAYER_BE =
+            BLOCK_ENTITY_TYPES.register("audio_player_be",
+                    () -> BlockEntityType.Builder.of(
+                            AudioPlayerBlockEntity::new,
+                            ModBlocks.AUDIO_PLAYER.get()
                     ).build(null));
 }

@@ -237,6 +237,14 @@ public class ConsoleBusBlockEntity extends BlockEntity {
     private int lastSizeY;
     private int lastSizeZ;
 
+    /**
+     * 已登记的斜面控制台映射（成型时扫描六向外表面得到）。
+     *
+     * 只记录「哪块斜面对应哪个宿主方块表面」，组件 / 文字 / 绘图数据仍按宿主面坐标保存，
+     * 斜面渲染器与交互逻辑都从这里反查，不做任何数据搬迁。
+     */
+    private final List<SlopeLink> slopeLinks = new ArrayList<>();
+
     /** 结构表面文字列表（客户端用于渲染，服务端用于编辑）。 */
     private final List<TextEntry> texts = new ArrayList<>();
     /** 下一条文字的自增 id（保证编辑时能稳定引用同一条文字）。 */
@@ -298,6 +306,11 @@ public class ConsoleBusBlockEntity extends BlockEntity {
 
     public BlockPos getOrigin() {
         return this.origin;
+    }
+
+    /** 已登记的斜面映射（成型时扫描得到；未成型时为空）。 */
+    public List<SlopeLink> getSlopeLinks() {
+        return this.slopeLinks;
     }
 
     /** 识别到的结构颜色（未成型时为默认色）。 */
@@ -1466,7 +1479,7 @@ public class ConsoleBusBlockEntity extends BlockEntity {
                 this.varBools[slot] = value;
                 return true;
             }
-            case GAUGE, NUMITRON, GAUGE_V, GAUGE_ARC, GAUGE_F, SYNCHROSCOPE -> {
+            case GAUGE, NUMITRON, GAUGE_V, GAUGE_ARC, GAUGE_F, SYNCHROSCOPE, NUMPAD -> {
                 if (def.type != VarType.FLOAT) {
                     return false;
                 }
@@ -2050,6 +2063,44 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         this.comps.set(index, CompEntry.copyWith(existing, newState, newValue));
         // 玩家手动操作组件后回写绑定变量，保证下次打开程序界面看到的是最新值
         writeBackToVar(this.comps.get(index));
+        sync();
+        return COMP_OK;
+    }
+
+    /**
+     * 数字键盘：把玩家在输入界面确认的数值写入组件（服务端调用）。
+     *
+     * 只接受数字键盘组件；写入后同步回写绑定的浮点变量，
+     * 与「变量 → 组件」的推送方向保持一致（下次打开程序界面看到的是最新值）。
+     *
+     * @param id    组件 id
+     * @param value 玩家输入的浮点值（非有限数视为无效）
+     * @return {@link #COMP_OK} 或对应失败状态
+     */
+    public int applyNumpadSet(int id, float value) {
+        if (this.level == null || this.level.isClientSide) {
+            return COMP_NOT_FORMED;
+        }
+        if (this.formState == State.UNFORMED || this.origin == null) {
+            return COMP_NOT_FORMED;
+        }
+        CompEntry existing = findComp(id);
+        if (existing == null) {
+            return COMP_NOT_FOUND;
+        }
+        if (existing.type != ConsoleCompType.NUMPAD) {
+            return COMP_INVALID;
+        }
+        if (!Float.isFinite(value)) {
+            return COMP_INVALID;
+        }
+        CompEntry updated = withFloatValue(existing, value);
+        if (updated == existing) {
+            return COMP_OK;
+        }
+        this.comps.set(this.comps.indexOf(existing), updated);
+        // 键盘输入属于玩家手动操作：同步更新绑定变量
+        writeBackToVar(updated);
         sync();
         return COMP_OK;
     }
@@ -2988,6 +3039,47 @@ public class ConsoleBusBlockEntity extends BlockEntity {
     }
 
     /**
+     * 一条斜面映射：某块斜面控制台贴合在宿主控制柜的某个面上。
+     *
+     * 这里只保存「位置关系」，不保存任何组件 / 文字数据：
+     * 斜面渲染与交互时按 hostPos + hostFace 回到总线里取该面的内容，
+     * 只是把显示角度换成坡面角度。
+     */
+    public static final class SlopeLink {
+        /** 斜面控制台方块坐标。 */
+        public final BlockPos slopePos;
+        /** 被覆盖的宿主控制柜方块坐标。 */
+        public final BlockPos hostPos;
+        /** 宿主被覆盖的面（竖直侧面或顶面）。 */
+        public final Direction hostFace;
+
+        public SlopeLink(BlockPos slopePos, BlockPos hostPos, Direction hostFace) {
+            this.slopePos = slopePos;
+            this.hostPos = hostPos;
+            this.hostFace = hostFace;
+        }
+
+        /** 写入 NBT。 */
+        public CompoundTag save() {
+            CompoundTag tag = new CompoundTag();
+            tag.putLong("Slope", this.slopePos.asLong());
+            tag.putLong("Host", this.hostPos.asLong());
+            tag.putInt("HostFace", this.hostFace.get3DDataValue());
+            return tag;
+        }
+
+        /** 从 NBT 读取；数据不完整时返回 null。 */
+        public static SlopeLink load(CompoundTag tag) {
+            if (!tag.contains("Slope") || !tag.contains("Host") || !tag.contains("HostFace")) {
+                return null;
+            }
+            return new SlopeLink(BlockPos.of(tag.getLong("Slope")),
+                    BlockPos.of(tag.getLong("Host")),
+                    Direction.from3DDataValue(tag.getInt("HostFace")));
+        }
+    }
+
+    /**
      * 结构表面的一条文字。
      *
      * 位置用「相对该表面中心的像素偏移」表示：结构尺寸变化或结构整体搬动时，
@@ -3897,6 +3989,8 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         }
         // 先清掉旧结构在成员上的标记（外接范围可能和新的不同）
         applyMembers(null, 0);
+        // 旧结构登记的斜面映射也一并清空，成型成功后重新扫描
+        clearSlopeLinks();
 
         ConsoleStructureHelper.Result result =
                 ConsoleStructureHelper.validate(this.level, this.worldPosition);
@@ -3920,6 +4014,8 @@ public class ConsoleBusBlockEntity extends BlockEntity {
             this.memberCount = result.count;
             this.structureColor = result.color;
             applyMembers(this.worldPosition, State.PARTIAL.ordinal());
+            // 成型成功后扫描贴在外表面的斜面控制台并登记映射
+            applySlopeLinks();
         } else {
             this.formState = State.UNFORMED;
             this.origin = null;
@@ -4067,6 +4163,8 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         this.lastSizeY = this.sizeY;
         this.lastSizeZ = this.sizeZ;
         applyMembers(null, 0);
+        // 结构失效：同步解除斜面映射（斜面此时可能已被拆除，按仍存在的处理）
+        clearSlopeLinks();
         this.formState = State.UNFORMED;
         this.origin = null;
         this.sizeX = 0;
@@ -4480,6 +4578,76 @@ public class ConsoleBusBlockEntity extends BlockEntity {
                 member.setLink(busPos, state);
             }
         }
+    }
+
+    /**
+     * 成型成功后扫描结构外表面，登记贴合在外侧的斜面控制台。
+     *
+     * 只识别「背面贴住控制柜表面」的斜面：竖直面要求斜面下坡方向与宿主面一致；
+     * 顶面要求斜面朝向与总线前后方向同轴（正面 / 背面均可，见 {@link ConsoleSlopeGeometry#frame}）。
+     * 斜面颜色必须与结构颜色一致，异色互不识别。
+     * 扫描结果写入斜面方块实体，斜面渲染 / 交互都从那里反查总线与宿主格子。
+     */
+    private void applySlopeLinks() {
+        if (this.level == null || this.origin == null
+                || this.sizeX <= 0 || this.sizeY <= 0 || this.sizeZ <= 0) {
+            clearSlopeLinks();
+            return;
+        }
+        Direction busFacing = ConsoleSurface.busFacing(getBusFacing());
+        List<SlopeLink> found = new ArrayList<>();
+        for (BlockPos pos : BlockPos.betweenClosed(this.origin,
+                this.origin.offset(this.sizeX - 1, this.sizeY - 1, this.sizeZ - 1))) {
+            if (!(this.level.getBlockEntity(pos) instanceof ConsoleBlockEntity)) {
+                continue;
+            }
+            for (Direction dir : Direction.values()) {
+                // 底面不做映射：下方看不到，也没有斜面模型
+                if (dir == Direction.DOWN) {
+                    continue;
+                }
+                BlockPos slopePos = pos.relative(dir);
+                BlockState slopeState = this.level.getBlockState(slopePos);
+                if (!(slopeState.getBlock() instanceof ConsoleSlopeBlock slopeBlock)) {
+                    continue;
+                }
+                // 异色斜面不识别：斜面颜色必须与结构颜色一致
+                if (slopeBlock.color != this.getStructureColor()) {
+                    continue;
+                }
+                Direction facing = slopeState.getValue(ConsoleSlopeBlock.FACING);
+                boolean matches = dir.getAxis().isHorizontal()
+                        ? facing == dir                      // 竖直面：下坡朝外
+                        // 顶面：与总线前后方向对齐即可（正面 / 背面两种朝向下坡都指向柜体，
+                        // 朝向反过来只是让面板从另一侧阅读，U 轴取反在 frame 中处理）
+                        : facing.getAxis() == busFacing.getAxis();
+                if (!matches) {
+                    continue;
+                }
+                found.add(new SlopeLink(slopePos.immutable(), pos.immutable(), dir));
+            }
+        }
+        this.slopeLinks.clear();
+        this.slopeLinks.addAll(found);
+        // 写入斜面方块实体（客户端据此找到总线并渲染映射内容）
+        for (SlopeLink link : found) {
+            if (this.level.getBlockEntity(link.slopePos) instanceof ConsoleSlopeBlockEntity slope) {
+                slope.setLink(this.worldPosition, link.hostPos, link.hostFace);
+            }
+        }
+    }
+
+    /** 清空已登记的斜面映射，并通知仍存在的斜面解除关联。 */
+    private void clearSlopeLinks() {
+        if (this.level != null) {
+            for (SlopeLink link : this.slopeLinks) {
+                if (this.level.getBlockEntity(link.slopePos) instanceof ConsoleSlopeBlockEntity slope
+                        && this.worldPosition.equals(slope.getBusPos())) {
+                    slope.setLink(null, null, null);
+                }
+            }
+        }
+        this.slopeLinks.clear();
     }
 
     /** 标记存档 + 同步客户端（总线自身与成员）。 */
@@ -5323,6 +5491,12 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         }
         tag.put("Comps", compList);
         tag.putInt("NextCompId", this.nextCompId);
+        // 斜面映射：只保存坐标关系；斜面方块实体自身也保存了一份，读取互不依赖
+        ListTag slopeList = new ListTag();
+        for (SlopeLink link : this.slopeLinks) {
+            slopeList.add(link.save());
+        }
+        tag.put("SlopeLinks", slopeList);
 
         // 程序变量表：定义与值都存放在总线（变量表是唯一数据源，aux 只保存定义）
         tag.putFloat("ProgramPeriod", this.programPeriod);
@@ -5429,6 +5603,16 @@ public class ConsoleBusBlockEntity extends BlockEntity {
             }
         }
         this.nextCompId = Math.max(1, tag.getInt("NextCompId"));
+
+        // 斜面映射（旧存档没有该字段时保持空表）
+        this.slopeLinks.clear();
+        ListTag slopeList = tag.getList("SlopeLinks", Tag.TAG_COMPOUND);
+        for (int i = 0; i < slopeList.size(); i++) {
+            SlopeLink link = SlopeLink.load(slopeList.getCompound(i));
+            if (link != null) {
+                this.slopeLinks.add(link);
+            }
+        }
 
         // 程序变量表（旧存档没有该字段时保持空表 / 0 值）
         this.programPeriod = tag.getFloat("ProgramPeriod");
