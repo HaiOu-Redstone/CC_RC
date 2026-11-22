@@ -38,8 +38,10 @@ public class ConsoleMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        // 方块不销毁即可一直打开；按钮操作在网络包服务端再做距离与类型校验
-        return true;
+        // 按钮操作在网络包服务端再做距离与类型校验；这里只负责「走远自动关闭」，
+        // 恒 true 会让界面在方块被拆后仍然挂着
+        return player.distanceToSqr(
+                this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override

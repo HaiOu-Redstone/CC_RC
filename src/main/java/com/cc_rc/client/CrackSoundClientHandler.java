@@ -32,7 +32,12 @@ import net.minecraftforge.fml.common.Mod;
 public class CrackSoundClientHandler {
 
     // 方块坐标 -> 正在播放的循环破解音效
-    private static final Map<BlockPos, CrackLoopingSound> ACTIVE = new HashMap<>();
+    // 这张表同时被主线程（startCrack/stopCrack/stopAll）与声音线程（tick 内的兜底
+    // 清理）读写，必须是并发容器：普通 HashMap 的并发 put/remove 会破坏桶链，
+    // 表现为音效残留、条目莫名丢失，以及 stopAll 迭代时抛
+    // ConcurrentModificationException
+    private static final Map<BlockPos, CrackLoopingSound> ACTIVE =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     /** 开始播放破解音效（若该位置已在播放则先停止旧实例）。 */
     public static void startCrack(BlockPos pos) {
@@ -65,14 +70,14 @@ public class CrackSoundClientHandler {
 
     /** 从 CrackSoundPacket 取包并执行（由客户端主线程通过方法引用调用，服务端不会加载本类）。 */
     public static void dispatchPending() {
-        CrackSoundPacket msg = CrackSoundPacket.consumePending();
-        if (msg == null) {
-            return;
-        }
-        if (msg.isStart()) {
-            startCrack(msg.getPos());
-        } else {
-            stopCrack(msg.getPos());
+        // 按到达顺序处理本批全部包：只取一个会让同 tick 的后续包滞留到下一 tick，
+        // 甚至因为后来者覆盖而丢失（例如先 start 后 stop，stop 被丢掉会留下循环音）
+        for (CrackSoundPacket msg : CrackSoundPacket.consumePending()) {
+            if (msg.isStart()) {
+                startCrack(msg.getPos());
+            } else {
+                stopCrack(msg.getPos());
+            }
         }
     }
 

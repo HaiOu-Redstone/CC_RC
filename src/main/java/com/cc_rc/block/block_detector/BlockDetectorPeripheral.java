@@ -132,47 +132,92 @@ public class BlockDetectorPeripheral implements IPeripheral {
         return level;
     }
 
+    /** NBT → Lua 表的递归深度上限，超限的子树返回 nil，避免恶意/异常 NBT 把主线程栈打爆。 */
+    private static final int MAX_NBT_DEPTH = 12;
+    /** 单次调用允许展开的元素总数上限（含数组元素），防止一次 Lua 调用构造出巨型表。 */
+    private static final int MAX_NBT_ELEMENTS = 8192;
+
     /** 递归把 NBT Tag 转换为 Lua 可表示的对象（Map/List/Number/String/Boolean）。 */
     public static Object nbtToObject(Tag tag) {
+        int[] budget = {MAX_NBT_ELEMENTS};
+        return nbtToObject(tag, MAX_NBT_DEPTH, budget);
+    }
+
+    /**
+     * 带深度与元素预算的转换。
+     *
+     * {@code getBlockEntityData} 是 CC 电脑可直接调用的外设方法，返回的 NBT 完全来自
+     * 目标方块实体（可能是别的模组写进去的任意结构）。没有上限时，一个超深或超宽的
+     * NBT 就能让主线程递归过深（StackOverflowError 会连带崩服）或一次性分配巨量
+     * 对象。超限时按「截断」处理：深度超限返回 null，元素超限后剩余元素直接丢弃。
+     */
+    private static Object nbtToObject(Tag tag, int depth, int[] budget) {
+        if (tag == null) {
+            return null;
+        }
+        if (depth <= 0) {
+            return null;
+        }
+        if (--budget[0] < 0) {
+            return null;
+        }
         switch (tag.getId()) {
             case Tag.TAG_COMPOUND -> {
                 CompoundTag compound = (CompoundTag) tag;
                 Map<String, Object> map = new HashMap<>();
                 for (String key : compound.getAllKeys()) {
-                    map.put(key, nbtToObject(compound.get(key)));
+                    if (budget[0] <= 0) {
+                        break;
+                    }
+                    Object value = nbtToObject(compound.get(key), depth - 1, budget);
+                    if (value != null) {
+                        map.put(key, value);
+                    }
                 }
                 return map;
             }
             case Tag.TAG_LIST -> {
                 ListTag list = (ListTag) tag;
-                List<Object> out = new ArrayList<>(list.size());
+                List<Object> out = new ArrayList<>(Math.min(list.size(), Math.max(budget[0], 0)));
                 for (int i = 0; i < list.size(); i++) {
-                    out.add(nbtToObject(list.get(i)));
+                    if (budget[0] <= 0) {
+                        break;
+                    }
+                    Object value = nbtToObject(list.get(i), depth - 1, budget);
+                    if (value != null) {
+                        out.add(value);
+                    }
                 }
                 return out;
             }
             case Tag.TAG_BYTE_ARRAY -> {
                 byte[] arr = ((ByteArrayTag) tag).getAsByteArray();
-                List<Object> out = new ArrayList<>(arr.length);
-                for (byte b : arr) {
-                    out.add((int) b);
+                int count = Math.min(arr.length, Math.max(budget[0], 0));
+                List<Object> out = new ArrayList<>(count);
+                for (int i = 0; i < count; i++) {
+                    out.add((int) arr[i]);
                 }
+                budget[0] -= count;
                 return out;
             }
             case Tag.TAG_INT_ARRAY -> {
                 int[] arr = ((IntArrayTag) tag).getAsIntArray();
-                List<Object> out = new ArrayList<>(arr.length);
-                for (int v : arr) {
-                    out.add(v);
+                int count = Math.min(arr.length, Math.max(budget[0], 0));
+                List<Object> out = new ArrayList<>(count);
+                for (int i = 0; i < count; i++) {
+                    out.add(arr[i]);
                 }
+                budget[0] -= count;
                 return out;
             }
             case Tag.TAG_LONG_ARRAY -> {
                 long[] arr = ((LongArrayTag) tag).getAsLongArray();
-                List<Object> out = new ArrayList<>(arr.length);
-                for (long v : arr) {
-                    out.add(v);
+                int count = Math.min(arr.length, Math.max(budget[0], 0));
+                List<Object> out = new ArrayList<>(count);
+                for (int i = 0; i < count; i++) {
+                    out.add(arr[i]);
                 }
+                budget[0] -= count;
                 return out;
             }
             case Tag.TAG_STRING -> {

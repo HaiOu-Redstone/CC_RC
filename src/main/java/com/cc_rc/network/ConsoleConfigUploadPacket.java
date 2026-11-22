@@ -60,18 +60,28 @@ public class ConsoleConfigUploadPacket {
             }
             ServerLevel level = player.serverLevel();
             BlockEntity be = level.getBlockEntity(msg.pos);
+            // 每条失败路径都必须回执：客户端 sendConfig() 会置 waiting=true 并禁用
+            // save/load/back 三个按钮，只有收到 ConsoleConfigResultPacket 才会复位。
+            // 静默 return 会让界面永久锁在「已上传，等待服务器校验…」，只能 Esc 退出。
             if (!(be instanceof ConsoleBusBlockEntity bus)) {
+                reply(player, msg.pos, ConsoleBusBlockEntity.CFG_INVALID);
                 return;
             }
             // 距离校验：防止远程改写别人的控制柜
             if (player.distanceToSqr(Vec3.atCenterOf(msg.pos)) > 256.0D) {
+                reply(player, msg.pos, ConsoleBusBlockEntity.CFG_INVALID);
                 return;
             }
             int result = bus.applyConfigJson(msg.json);
             // 回执给该玩家客户端：界面据此显示成功 / 失败原因
-            ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
-                    new ConsoleConfigResultPacket(msg.pos, result));
+            reply(player, msg.pos, result);
         });
         ctx.get().setPacketHandled(true);
+    }
+
+    /** 把处理结果回执给发起请求的玩家（客户端据此解除等待状态）。 */
+    private static void reply(ServerPlayer player, net.minecraft.core.BlockPos pos, int result) {
+        ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                new ConsoleConfigResultPacket(pos, result));
     }
 }

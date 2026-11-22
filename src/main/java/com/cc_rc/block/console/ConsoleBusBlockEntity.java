@@ -676,12 +676,19 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         return this.varBools[slot];
     }
 
-    /** 按名称查找变量槽位（忽略大小写），找不到返回 -1。 */
+    /**
+     * 按名称查找变量槽位（忽略大小写），找不到返回 -1。
+     *
+     * 扫描边界用 varSlots()（= 配置上限）而不是编译期常量 VAR_SLOTS_MAX：
+     * 配置默认远小于 256，而 applyCcOps 每 tick 会按操作数反复调用本方法，
+     * 用常量会让每 tick 多做几十倍的无用遍历。
+     */
     public int findVarSlot(String name) {
         if (name == null) {
             return -1;
         }
-        for (int i = 1; i < VAR_SLOTS_MAX; i++) {
+        int slots = varSlots();
+        for (int i = 1; i < slots; i++) {
             VarDef def = this.varDefs[i];
             if (def != null && def.name.equalsIgnoreCase(name)) {
                 return i;
@@ -2359,8 +2366,12 @@ public class ConsoleBusBlockEntity extends BlockEntity {
      * 同步 RGB 控制器的变量绑定：
      *  - 解除不再使用的通道变量绑定（变量本身保留）；
      *  - 为三个通道名自动创建浮点变量（已存在同名浮点变量时直接绑定）。
+     *
+     * @return 是否真的发生了绑定 / 解绑变化。调用方（applyRgbControllers 的自愈分支）
+     *         必须用返回值判断，否则槽位已满、通道变量永远补建不出来时，
+     *         该分支会每 tick 都判定「需要自愈」并触发一次全量同步，形成永不收敛的活锁。
      */
-    private void syncRgbVars(CompEntry comp) {
+    private boolean syncRgbVars(CompEntry comp) {
         boolean changed = false;
         int slots = varSlots();
         for (int i = 1; i < slots; i++) {
@@ -2384,6 +2395,7 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         if (changed) {
             this.programDirty = true;
         }
+        return changed;
     }
 
     /**
@@ -2710,8 +2722,9 @@ public class ConsoleBusBlockEntity extends BlockEntity {
             if ((!comp.rgbR.isEmpty() && findRgbChannelSlot(comp, comp.rgbR) <= 0)
                     || (!comp.rgbG.isEmpty() && findRgbChannelSlot(comp, comp.rgbG) <= 0)
                     || (!comp.rgbB.isEmpty() && findRgbChannelSlot(comp, comp.rgbB) <= 0)) {
-                syncRgbVars(comp);
-                changed = true;
+                // 只有真的补建/改绑了才算变化：槽位满时这里恒为 false，
+                // 否则会每 tick 触发一次全量同步，永不收敛
+                changed |= syncRgbVars(comp);
             }
             boolean enabled = boolSlot > 0 ? this.varBools[boolSlot] : !comp.showOriginal;
             int rSlot = findRgbChannelSlot(comp, comp.rgbR);
@@ -4848,7 +4861,12 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         ConsoleConfigJson.Root root;
         try {
             root = ConsoleConfigJson.GSON.fromJson(json, ConsoleConfigJson.Root.class);
-        } catch (RuntimeException ex) {
+        } catch (RuntimeException | StackOverflowError ex) {
+            // Gson 对嵌套对象是递归下降：超深 JSON（包体上限 1MB，足够构造十万层
+            // {"left":{"left": ... }}）会抛 StackOverflowError，而它属于 Error 不是
+            // Exception。只 catch RuntimeException 会让这个错误一路冒到服务端主线程
+            // 直接把服务器打崩，因此这里必须一并吞掉。真正的深度校验在后续
+            // buildConfigExpr（见 ProgramIR.Line.MAX_DEPTH）。
             return CFG_BAD_JSON;
         }
         // 格式标识与版本都必须匹配，避免把无关 JSON 或未来版本的文件套用进来
@@ -5567,9 +5585,11 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         }
 
         // 表面文字（旧存档没有该字段时保持空列表）
+        // 数量按 MAX_TEXTS 截断：apply 路径有上限，读档路径原先没有，
+        // 构造出来的超大 NBT 可以绕过所有编辑校验直接灌进内存
         this.texts.clear();
         ListTag textList = tag.getList("Texts", Tag.TAG_COMPOUND);
-        for (int i = 0; i < textList.size(); i++) {
+        for (int i = 0, n = Math.min(textList.size(), MAX_TEXTS); i < n; i++) {
             this.texts.add(TextEntry.load(textList.getCompound(i)));
         }
         this.nextTextId = Math.max(1, tag.getInt("NextTextId"));
@@ -5577,7 +5597,7 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         // 绘图图形（旧存档没有该字段时保持空表）
         this.drawShapes.clear();
         ListTag drawList = tag.getList("Draws", Tag.TAG_COMPOUND);
-        for (int i = 0; i < drawList.size(); i++) {
+        for (int i = 0, n = Math.min(drawList.size(), MAX_DRAW_SHAPES); i < n; i++) {
             ConsoleShape shape = ConsoleShape.load(drawList.getCompound(i));
             this.drawShapes.computeIfAbsent(shape.face, key -> new ArrayList<>()).add(shape);
         }
@@ -5587,7 +5607,7 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         this.comps.clear();
         this.coverDeadlines.clear();
         ListTag compList = tag.getList("Comps", Tag.TAG_COMPOUND);
-        for (int i = 0; i < compList.size(); i++) {
+        for (int i = 0, n = Math.min(compList.size(), MAX_COMPS); i < n; i++) {
             CompEntry entry = CompEntry.load(compList.getCompound(i));
             if (entry != null) {
                 this.comps.add(entry);
@@ -5660,7 +5680,9 @@ public class ConsoleBusBlockEntity extends BlockEntity {
         this.programTimer = 0;
         this.runWarnings.clear();
         ListTag warnList = tag.getList("ProgWarn", Tag.TAG_COMPOUND);
-        for (int i = 0; i < warnList.size(); i++) {
+        // 上限与 addWarning 一致（MAX_WARNINGS）：这条数据会被 getUpdateTag 原样
+        // 回放给所有追踪玩家，若从 NBT 无上限灌入，等于把放大后的同步包再放大一次
+        for (int i = 0, n = Math.min(warnList.size(), ProgramVM.MAX_WARNINGS); i < n; i++) {
             CompoundTag warnTag = warnList.getCompound(i);
             try {
                 ProgramVM.Reason reason = ProgramVM.Reason.valueOf(warnTag.getString("R"));

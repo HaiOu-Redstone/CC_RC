@@ -23,8 +23,15 @@ public class PlaySoundPacket {
     private final ResourceLocation soundId;
     private final float volume;
 
-    /** 客户端派发暂存：handle() 先暂存数据包，再由客户端处理器取走（仅在客户端主线程读写）。 */
-    private static PlaySoundPacket PENDING;
+    /**
+     * 客户端派发暂存队列。
+     *
+     * 原先是单个 PENDING 槽位：同一 tick 收到多个 /ccrc sound 包时只有最后一个能活下来，
+     * 其余被静默丢弃。指令明确支持 @a（全体玩家）与连续多条指令，丢包会让部分玩家
+     * 听不到声音，所以改成队列按序全部消费。
+     */
+    private static final java.util.Queue<PlaySoundPacket> PENDING =
+            new java.util.concurrent.ConcurrentLinkedQueue<>();
 
     public PlaySoundPacket(ResourceLocation soundId, float volume) {
         this.soundId = soundId;
@@ -42,8 +49,9 @@ public class PlaySoundPacket {
 
     public static void handle(PlaySoundPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            // 仅客户端执行：先暂存数据包，再通过无参方法引用交给客户端处理器（避免包类直接引用客户端类导致服务端崩溃）
-            PENDING = msg;
+            // 仅客户端执行：先入队，再通过无参方法引用交给客户端处理器
+            // （避免包类直接引用客户端类导致服务端崩溃）
+            PENDING.add(msg);
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> PlaySoundClientHandler::dispatchPending);
         });
         ctx.get().setPacketHandled(true);
@@ -57,10 +65,13 @@ public class PlaySoundPacket {
         return volume;
     }
 
-    /** 客户端处理器取走暂存的包（一次性）。 */
-    public static PlaySoundPacket consumePending() {
-        PlaySoundPacket p = PENDING;
-        PENDING = null;
-        return p;
+    /** 客户端处理器取走暂存的包（按到达顺序全部取走；无包时返回空表）。 */
+    public static java.util.List<PlaySoundPacket> consumePending() {
+        java.util.List<PlaySoundPacket> out = new java.util.ArrayList<>();
+        PlaySoundPacket p;
+        while ((p = PENDING.poll()) != null) {
+            out.add(p);
+        }
+        return out;
     }
 }

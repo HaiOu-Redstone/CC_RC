@@ -128,7 +128,10 @@ public class DigitalPlotterBlockEntity extends BlockEntity implements ITextDispl
             }
         }
         if (tag.contains("Text")) {
-            text = Component.Serializer.fromJson(tag.getString("Text"));
+            // fromJson 对非法 JSON 返回 null，直接赋值会让后续 getString() NPE
+            // （onDataPacket 会把网络包内容原样喂进 load）
+            Component parsed = Component.Serializer.fromJson(tag.getString("Text"));
+            text = parsed != null ? parsed : Component.empty();
         } else {
             text = Component.empty();
         }

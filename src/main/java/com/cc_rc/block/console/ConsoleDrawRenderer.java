@@ -5,6 +5,7 @@ import com.cc_rc.block.console.draw.ConsoleDrawPresets;
 import com.cc_rc.block.console.draw.ConsoleShape;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.List;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -43,6 +44,9 @@ public final class ConsoleDrawRenderer {
      * （minecraft_mix_light）：平面图案的法线正对玩家时漫反射系数只有约 0.74，
      * 白色会被压成浅灰色、其它颜色整体发灰。这里统一传入「视空间向上」的法线，
      * 漫反射系数恒为 1，图案始终显示为所选颜色（平面图案本就应像发光涂料一样）。
+     *
+     * 注意 Matrix3f 是可变类型，这里是全类共享的只读常量，任何地方都不得改写它
+     * （实测 joml 默认构造即为单位矩阵，恒等变换下传入的 (0,1,0) 原样保留）。
      */
     private static final Matrix3f FLAT_NORMAL = new Matrix3f();
 
@@ -68,13 +72,10 @@ public final class ConsoleDrawRenderer {
         BlockPos busPos = be.getBlockPos();
 
         for (Direction face : Direction.values()) {
-            // 该表面没有任何图形时跳过矩阵构造
-            boolean hasAny = false;
-            for (ConsoleShape shape : be.getDrawShapes(face)) {
-                hasAny = true;
-                break;
-            }
-            if (!hasAny) {
+            List<ConsoleShape> shapes = be.getDrawShapes(face);
+            // 该表面没有任何图形时不构造矩阵（getDrawShapes 每次返回同一份列表引用，
+            // 这里只取一次，避免原先「判空一次 + 每 layer 再遍历一次」的重复遍历）
+            if (shapes.isEmpty()) {
                 continue;
             }
             Vec3 uAxis = ConsoleSurface.u(face, busFacing);
@@ -99,7 +100,7 @@ public final class ConsoleDrawRenderer {
                         (float) center.x, (float) center.y, (float) center.z, 1.0F);
                 Matrix4f matrix = new Matrix4f(poseStack.last().pose()).mul(local);
 
-                for (ConsoleShape shape : be.getDrawShapes(face)) {
+                for (ConsoleShape shape : shapes) {
                     if (shape.layer != layer) {
                         continue;
                     }

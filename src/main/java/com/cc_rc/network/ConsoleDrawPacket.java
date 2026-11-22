@@ -140,8 +140,16 @@ public class ConsoleDrawPacket {
             if (!(be instanceof ConsoleBusBlockEntity bus)) {
                 return;
             }
-            // 距离校验：防止远处伪造编辑包（以总线方块中心为准）
+            // 距离校验：防止远处伪造编辑包（以总线方块中心为准）。
+            // 这里必须先回执再返回：OP_CREATE 的客户端会先置 creating=true，只认
+            // ConsoleDrawCreatedPacket 才复位；静默 return 会让界面上的类型按钮与
+            // 预设格永久失效，玩家只能关掉界面重开。
             if (player.distanceToSqr(bus.getBlockPos().getCenter()) > 100.0D) {
+                if (msg.op == OP_CREATE) {
+                    ModNetwork.CHANNEL.send(
+                            PacketDistributor.PLAYER.with(() -> player),
+                            new ConsoleDrawCreatedPacket(msg.busPos, -1));
+                }
                 return;
             }
 

@@ -91,16 +91,24 @@ public class DigitalDisplayBlockEntity extends BlockEntity implements ITextDispl
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
+        // fromJson 在 JSON 非法或字面量 "null" 时返回 null：直接赋给 text/status 会让
+        // 后续 getString() 在 NPE 里炸，而 onDataPacket 会把网络包内容原样喂进这里
         if (tag.contains("Text")) {
-            text = Component.Serializer.fromJson(tag.getString("Text"));
+            text = parseOr(Component.Serializer.fromJson(tag.getString("Text")), Component.empty());
         } else {
             text = Component.empty();
         }
         if (tag.contains("Status")) {
-            status = Component.Serializer.fromJson(tag.getString("Status"));
+            status = parseOr(Component.Serializer.fromJson(tag.getString("Status")),
+                    Component.literal(DEFAULT_STATUS));
         } else {
             status = Component.literal(DEFAULT_STATUS);
         }
+    }
+
+    /** null 安全包装：解析结果为空时退回默认值。 */
+    private static Component parseOr(@Nullable Component parsed, Component fallback) {
+        return parsed != null ? parsed : fallback;
     }
 
     @Override

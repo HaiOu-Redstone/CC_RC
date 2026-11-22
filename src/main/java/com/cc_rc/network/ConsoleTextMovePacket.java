@@ -63,6 +63,11 @@ public class ConsoleTextMovePacket {
             if (existing == null) {
                 return;
             }
+            // 拒绝非有限数值：Math.max/min 对 NaN 恒返回 NaN，会让下面的距离校验
+            // 因 NaN 比较恒 false 而被绕过（GUI 的 Float.parseFloat 接受 "NaN"）
+            if (!Float.isFinite(msg.u) || !Float.isFinite(msg.v)) {
+                return;
+            }
 
             // 距离校验：以服务端保存的文字位置为准，防止远处伪造包
             Vec3 point = ConsoleSurface.toWorld(origin, bus.getSizeX(), bus.getSizeY(),

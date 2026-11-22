@@ -59,10 +59,11 @@ public class KeyDistributorBlock extends Block implements EntityBlock {
     /** 心跳：驱动 BE 的红石逻辑并持续自调度。 */
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (level.isClientSide) return;
-        if (level.getBlockEntity(pos) instanceof KeyDistributorBlockEntity be) {
-            be.onTick();
+        if (!(level.getBlockEntity(pos) instanceof KeyDistributorBlockEntity be)) {
+            // 方块实体已不存在（被替换 / 已拆除）时不再自调度，避免留下永不停止的调度链
+            return;
         }
+        be.onTick();
         level.scheduleTick(pos, this, 1);
     }
 

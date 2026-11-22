@@ -13,12 +13,15 @@ import com.google.gson.reflect.TypeToken;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.logging.LogUtils;
 import dan200.computercraft.shared.computer.core.ServerContext;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +40,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.slf4j.Logger;
 
 /**
  * /ccrc 指令：查看/强制修改 CC: Tweaked 外设编号计数器。
@@ -61,6 +65,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 @Mod.EventBusSubscriber(modid = CcRc.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CcrcCommand {
 
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     // 与 CC 内部一致：Gson 读写 ids.json（Map<String, Integer>）
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type MAP_TYPE = new TypeToken<Map<String, Integer>>() {}.getType();
@@ -80,6 +86,8 @@ public class CcrcCommand {
                                                         StringArgumentType.getString(ctx, "设备种类名称"),
                                                         IntegerArgumentType.getInteger(ctx, "数字"))))))
                         .then(Commands.literal("get_count")
+                                // 会暴露服务端内部计数器状态（外设类型与已分配编号），需 OP
+                                .requires(src -> src.hasPermission(2))
                                 .then(Commands.argument("设备种类名称", StringArgumentType.word())
                                         .suggests(CcrcCommand::suggestTypes)
                                         .executes(ctx -> runGetCount(ctx.getSource(),
@@ -94,6 +102,8 @@ public class CcrcCommand {
                         .then(Commands.literal("list")
                                 .executes(ctx -> runKeyCabinetList(ctx.getSource())))
                         .then(Commands.literal("add")
+                                // 写方块数据：必须 OP（2 级）。list 是只读，保持开放给所有人
+                                .requires(src -> src.hasPermission(2))
                                 .then(Commands.argument("x", IntegerArgumentType.integer())
                                         .then(Commands.argument("y", IntegerArgumentType.integer())
                                                 .then(Commands.argument("z", IntegerArgumentType.integer())
@@ -102,6 +112,8 @@ public class CcrcCommand {
                                                                 IntegerArgumentType.getInteger(ctx, "y"),
                                                                 IntegerArgumentType.getInteger(ctx, "z")))))))
                         .then(Commands.literal("remove")
+                                // 同上：会改写世界里的钥匙柜记录
+                                .requires(src -> src.hasPermission(2))
                                 .then(Commands.argument("x", IntegerArgumentType.integer())
                                         .then(Commands.argument("y", IntegerArgumentType.integer())
                                                 .then(Commands.argument("z", IntegerArgumentType.integer())
@@ -111,6 +123,8 @@ public class CcrcCommand {
                                                                 IntegerArgumentType.getInteger(ctx, "z"))))))))
                 // sound：音频播放指令（目标玩家必选、音量可选，定向播放给目标玩家 @p/@a 等，无距离限制、无音量衰减）
                 .then(Commands.literal("sound")
+                        // 无距离衰减 + 音量无上界，普通玩家可借此骚扰任意玩家客户端，因此要求 OP
+                        .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("声音ID", ResourceLocationArgument.id())
                                 .suggests(CcrcCommand::suggestSounds)
                                 .then(Commands.argument("目标", EntityArgument.players())
@@ -339,22 +353,51 @@ public class CcrcCommand {
     /** 读取 ids.json，文件缺失/损坏时返回空 Map。 */
     private static Map<String, Integer> readIdsFile(Path idFile) {
         if (!Files.isRegularFile(idFile)) return new HashMap<>();
-        try {
-            Map<String, Integer> result = GSON.fromJson(
-                    Files.newBufferedReader(idFile, StandardCharsets.UTF_8), MAP_TYPE);
+        try (var in = Files.newBufferedReader(idFile, StandardCharsets.UTF_8)) {
+            Map<String, Integer> result = GSON.fromJson(in, MAP_TYPE);
             return result == null ? new HashMap<>() : new HashMap<>(result);
         } catch (Exception e) {
+            // 损坏的计数文件不能让命令静默返回空表：日志里要能看到是哪一份文件坏了
+            LOGGER.warn("读取 CC 外设计数文件失败，按空表处理：{}", idFile, e);
             return new HashMap<>();
         }
     }
 
-    /** 将 Map 以与 CC 相同格式写入 ids.json。 */
+    /**
+     * 将 Map 以与 CC 相同格式写入 ids.json。
+     *
+     * 先写同目录临时文件再原子替换。直接覆盖写入一旦在写到一半时被打断（进程被杀、
+     * 磁盘写满），磁盘上会留下截断的 JSON，CC 下次启动解析失败会退回空表，
+     * 结果是全部外设编号被重置。临时文件与目标放在同一目录，保证 move 不跨卷；
+     * 平台不支持原子移动时退化为普通替换（仍优于直接覆盖）。
+     */
     private static void writeIdsFile(Path idFile, Map<String, Integer> ids) {
+        Path parent = idFile.getParent();
+        Path tmp = null;
         try {
-            if (idFile.getParent() != null) Files.createDirectories(idFile.getParent());
-            GSON.toJson(ids, MAP_TYPE, Files.newBufferedWriter(idFile, StandardCharsets.UTF_8));
+            if (parent != null) Files.createDirectories(parent);
+            tmp = Files.createTempFile(parent, "ids", ".json.tmp");
+            try (var out = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
+                GSON.toJson(ids, MAP_TYPE, out);
+            }
+            try {
+                Files.move(tmp, idFile, StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException ex) {
+                Files.move(tmp, idFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            tmp = null;
         } catch (Exception e) {
-            // 写文件失败不阻塞命令反馈
+            // 写文件失败不阻塞命令反馈，但必须留日志：计数不同步时才有排查线索
+            LOGGER.warn("写入 CC 外设计数文件失败：{}", idFile, e);
+        } finally {
+            if (tmp != null) {
+                try {
+                    Files.deleteIfExists(tmp);
+                } catch (Exception ignored) {
+                    // 残留临时文件不影响功能
+                }
+            }
         }
     }
 

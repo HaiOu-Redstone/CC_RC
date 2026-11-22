@@ -118,15 +118,29 @@ public class ConsoleVarPacket {
                     null, null, 0.0F);
         }
         if (action == ACTION_SAVE_VALUES) {
+            // 防御异常包：两个计数都来自客户端，必须先夹到服务端真实上限再分配数组。
+            // 直接 new float[floatCount] 时，一个 VarInt 长度就能让服务端申请数 GB 内存
+            // （网络字节总数拦不住它），最坏结果是 OOM 或 BufferUnderflow 踢掉整条连接。
             int floatCount = buf.readVarInt();
-            float[] floats = new float[floatCount];
-            for (int i = 0; i < floatCount; i++) {
+            int floatLimit = Math.max(0, Math.min(floatCount,
+                    ConsoleBusBlockEntity.VAR_SLOTS_MAX));
+            float[] floats = new float[floatLimit];
+            for (int i = 0; i < floatLimit; i++) {
                 floats[i] = buf.readFloat();
             }
+            // 超出上限的部分也要读掉，保持读指针与写入端布局一致
+            for (int i = floatLimit; i < floatCount; i++) {
+                buf.readFloat();
+            }
             int boolCount = buf.readVarInt();
-            boolean[] bools = new boolean[boolCount];
-            for (int i = 0; i < boolCount; i++) {
+            int boolLimit = Math.max(0, Math.min(boolCount,
+                    ConsoleBusBlockEntity.VAR_SLOTS_MAX));
+            boolean[] bools = new boolean[boolLimit];
+            for (int i = 0; i < boolLimit; i++) {
                 bools[i] = buf.readBoolean();
+            }
+            for (int i = boolLimit; i < boolCount; i++) {
+                buf.readBoolean();
             }
             return new ConsoleVarPacket(pos, action, 0, null, 0, 0, floats, bools, 0.0F);
         }

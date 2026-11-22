@@ -119,7 +119,16 @@ public class ConsoleTextPacket {
             float cu = (float) Math.max(-halfW, Math.min(halfW, u));
             float cv = (float) Math.max(-halfH, Math.min(halfH, v));
 
-            // 距离校验：防止远处伪造包
+            // 距离校验：防止远处伪造包。
+            // 必须先排除 NaN：Math.min/max 对 NaN 恒返回 NaN，NaN 会一路进入 toWorld，
+            // 使 distanceToSqr 得到 NaN，而 NaN > 64.0 恒为 false —— 距离校验会被直接
+            // 绕过，NaN 坐标随后落进方块实体。GUI 的 Float.parseFloat 接受字符串 "NaN"，
+            // 所以这条路径从客户端界面即可触发。
+            if (!Float.isFinite(cu) || !Float.isFinite(cv)
+                    || !Float.isFinite(msg.scale)) {
+                return;
+            }
+
             Vec3 point = ConsoleSurface.toWorld(origin, bus.getSizeX(), bus.getSizeY(), bus.getSizeZ(),
                     face, busFacing, cu, cv, 0.0D);
             if (player.distanceToSqr(point) > 64.0D) {
