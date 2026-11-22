@@ -438,9 +438,21 @@ public final class ConsoleCcBridge {
         if (shift < 0) {
             return false;
         }
-        // 以当前颜色为基准替换单个通道（当前为原色时从黑色开始组合）
-        Double current = getColor(code);
-        int base = current == null ? 0 : current.intValue();
+        // 以当前颜色为基准替换单个通道（当前为原色时从黑色开始组合）。
+        // 「当前颜色」必须取 overlay（本 tick 内已写入的颜色），否则同一 tick 里
+        // setChannel("r") 之后再 setChannel("g")，后者会用快照里的旧颜色当基准，
+        // 把刚才那个 r 通道覆盖掉；两次 setColor 也已各自入队，最终以队尾那条为准，
+        // 表现就是「连设两通道，前一通道丢失」。
+        String key = info.code.toLowerCase(Locale.ROOT);
+        int base;
+        this.lock.lock();
+        try {
+            Integer overlay = this.rgbColorOverlay.get(key);
+            int current = overlay != null ? overlay : info.color;
+            base = current == ConsoleBusBlockEntity.CompEntry.NO_COLOR ? 0 : current;
+        } finally {
+            this.lock.unlock();
+        }
         int packed = (base & ~(0xFF << shift)) | (clampChannel(value) << shift);
         return setColor(code, packed);
     }
@@ -520,6 +532,12 @@ public final class ConsoleCcBridge {
             float[] next = copyHistory(historyOf(info, key));
             next[internal] = (float) clamped;
             this.historyOverlay.put(key, next);
+            // 主线程侧 withPoint() 对 index == 0（Lua 索引 1，即最新一点）会同步更新
+            // 组件当前值，因此这里必须跟着写 overlay，否则 Lua 写完第 1 点再读
+            // getComponentValue，拿到的还是上一 tick 的旧值，违反本类的「读己之写」契约
+            if (internal == 0) {
+                this.compFloatOverlay.put(key, clamped);
+            }
             return true;
         } finally {
             this.lock.unlock();

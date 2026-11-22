@@ -187,8 +187,9 @@ public class ConsoleDrawMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        // 实际校验在网络包服务端处理（成型状态 + 距离）
-        return true;
+        // 实际校验在网络包服务端处理（成型状态 + 距离）；这里只负责「走远自动关闭」
+        return player.distanceToSqr(
+                this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
     // 无物品槽位

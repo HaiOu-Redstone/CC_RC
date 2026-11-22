@@ -40,12 +40,23 @@ public record KeyCabinetRecord(BlockPos pos, Direction facing) {
         return tag;
     }
 
+    /** 记录列表上限：存档里的 Count 完全不可信，必须有硬上限兜住内存。 */
+    public static final int MAX_RECORDS = 256;
+
     /** 反序列化整个记录列表 */
     public static List<KeyCabinetRecord> loadList(CompoundTag tag) {
         List<KeyCabinetRecord> records = new ArrayList<>();
-        int count = tag.getInt("Count");
+        // Count 来自存档，没有任何一致性校验：手工改档 / 区块损坏 / 其它模组误写
+        // 都可能给出 Integer.MAX_VALUE，原样循环会把 Rec0..RecN 的空 Compound 全塞进
+        // 列表直到 OOM（getCompound 缺失时返回空 tag，load 不会报错）
+        int count = Math.min(tag.getInt("Count"), MAX_RECORDS);
         for (int i = 0; i < count; i++) {
-            records.add(load(tag.getCompound("Rec" + i)));
+            String key = "Rec" + i;
+            if (!tag.contains(key)) {
+                // 编号不连续说明数据已经损坏，后面的记录不再可信
+                break;
+            }
+            records.add(load(tag.getCompound(key)));
         }
         return records;
     }

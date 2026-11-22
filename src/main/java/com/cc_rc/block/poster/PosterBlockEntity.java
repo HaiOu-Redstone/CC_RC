@@ -53,12 +53,19 @@ public class PosterBlockEntity extends BlockEntity {
         return this.dz;
     }
 
-    /** 设置全部配置（越界值统一夹取），并标记存档需要保存。 */
+    /**
+     * 设置全部配置（越界值统一夹取），并标记存档需要保存。
+     *
+     * 三个浮点参数都必须先排掉 NaN：Math.max/min 对 NaN 恒返回 NaN，夹取形同虚设，
+     * NaN 会被持久化进方块实体并直接参与 PosterBER 的位姿计算（贴图整块消失）。
+     * 客户端 GUI 的 Float.parseFloat 接受字符串 "NaN"，所以这是可被玩家触发的路径。
+     */
     public void setConfig(int image, float scale, float dy, float dz) {
         this.image = Math.max(0, Math.min(PosterImages.size() - 1, image));
-        this.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-        this.dy = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, dy));
-        this.dz = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, dz));
+        this.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE,
+                Float.isFinite(scale) ? scale : 1.0F));
+        this.dy = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Float.isFinite(dy) ? dy : 0.0F));
+        this.dz = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Float.isFinite(dz) ? dz : 0.0F));
         this.setChanged();
     }
 
@@ -105,7 +112,11 @@ public class PosterBlockEntity extends BlockEntity {
         this.image = Math.max(0, Math.min(PosterImages.size() - 1, tag.getInt("Image")));
         this.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE,
                 tag.contains("Scale") ? tag.getFloat("Scale") : 1.0F));
-        this.dy = tag.getFloat("Dy");
-        this.dz = tag.getFloat("Dz");
+        // 与 setConfig 保持一致：手工改档可写入 1e30，不夹取会让渲染顶点跑到天文数字，
+        // getRenderBoundingBox 的 inflate 拦不住，导致大范围强制渲染
+        float dy = tag.getFloat("Dy");
+        float dz = tag.getFloat("Dz");
+        this.dy = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Float.isFinite(dy) ? dy : 0.0F));
+        this.dz = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Float.isFinite(dz) ? dz : 0.0F));
     }
 }

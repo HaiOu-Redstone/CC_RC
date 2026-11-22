@@ -25,6 +25,11 @@ public class KeyDistributorBlockEntity extends BlockEntity {
     // 上一 tick 的红石信号强度（用于上升沿检测：脉冲只触发一次分发）
     private int lastSignal = 0;
 
+    /** 记录校验的执行间隔（tick）：每次校验要遍历全部记录并逐个查方块。 */
+    private static final int VALIDATE_INTERVAL = 20;
+    /** 记录校验节流计数器。 */
+    private int validateCounter = 0;
+
     public KeyDistributorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.KEY_DISTRIBUTOR_BE.get(), pos, state);
     }
@@ -38,14 +43,24 @@ public class KeyDistributorBlockEntity extends BlockEntity {
         if (level == null || level.isClientSide) return;
         if (!(getBlockState().getBlock() instanceof KeyDistributorBlock block)) return;
 
+        // 记录校验只在低频（每 VALIDATE_INTERVAL tick）执行：它要遍历全部记录并对每个
+        // 位置做 getBlockState，而这个方块每 tick 都在自调度，放到每 tick 里就是
+        // 「记录数 × 每秒 20 次」的方块查询
+        if (++this.validateCounter >= VALIDATE_INTERVAL) {
+            this.validateCounter = 0;
+            if (level.getBestNeighborSignal(worldPosition) <= KeyDistributorBlock.TRIGGER_STRENGTH) {
+                block.validateRecords(level, this);
+            }
+        }
+
         int signal = level.getBestNeighborSignal(worldPosition);
         int last = this.lastSignal;
         this.lastSignal = signal;
 
+        // 上升沿：分发一次钥匙。信号回落期间的低频记录校验已在上面完成，
+        // 原先这里还有一条「每 tick 校验」的分支，已并入 VALIDATE_INTERVAL 节流
         if (signal > KeyDistributorBlock.TRIGGER_STRENGTH && last <= KeyDistributorBlock.TRIGGER_STRENGTH) {
             block.distributeKeys(level, this);
-        } else if (signal <= KeyDistributorBlock.TRIGGER_STRENGTH) {
-            block.validateRecords(level, this);
         }
     }
 

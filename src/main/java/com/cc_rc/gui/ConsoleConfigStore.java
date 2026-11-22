@@ -3,7 +3,10 @@ package com.cc_rc.gui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -73,13 +76,39 @@ public final class ConsoleConfigStore {
         }
     }
 
-    /** 写入文件（UTF-8，自动创建目录）。 */
+    /**
+     * 写入文件（UTF-8，自动创建目录）。
+     *
+     * 先写同目录临时文件再原子替换：配置可能被反复覆盖保存，直接写入期间一旦异常退出
+     * 就会留下截断的 JSON，下次读取解析失败等于配置丢失。临时文件与目标同目录，
+     * 保证 move 不跨卷；平台不支持原子移动时退化为普通替换。
+     */
     public static void write(String name, String json) throws IOException {
         File dir = dir();
         if (!dir.isDirectory() && !dir.mkdirs()) {
             throw new IOException("无法创建目录 " + dir.getAbsolutePath());
         }
-        Files.writeString(fileOf(name).toPath(), json, StandardCharsets.UTF_8);
+        File target = fileOf(name);
+        Path tmp = Files.createTempFile(dir.toPath(), "cfg", ".json.tmp");
+        boolean moved = false;
+        try {
+            Files.writeString(tmp, json, StandardCharsets.UTF_8);
+            try {
+                Files.move(tmp, target.toPath(), StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException ex) {
+                Files.move(tmp, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            moved = true;
+        } finally {
+            if (!moved) {
+                try {
+                    Files.deleteIfExists(tmp);
+                } catch (IOException ignored) {
+                    // 残留临时文件不影响功能
+                }
+            }
+        }
     }
 
     /**

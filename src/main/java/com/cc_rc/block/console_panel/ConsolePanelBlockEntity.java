@@ -51,10 +51,16 @@ public class ConsolePanelBlockEntity extends BlockEntity implements ITextDisplay
     /**
      * 应用染料颜色到显示文字：仅覆写文字颜色（保留原文内容与粗体/斜体等其他格式）。
      * 面板文字允许为空（先染色后写入文字），样式随空文字一并持久化。
+     *
+     * 注意这里必须用 {@link Component#plainCopy()} 而不是
+     * {@code Component.literal(getString())}：后者会把任意 Component 拉平成纯字符串，
+     * 再包一层 literal，于是 ItemStack 自定义名带来的斜体/粗体/颜色以及
+     * translatable 翻译键全部丢失，客户端还会因为失去翻译键而显示成英文原文。
+     * plainCopy 保留内容与 siblings，只是去掉根节点的样式，随后叠加染料颜色。
      */
     public void applyDyeColor(DyeColor dyeColor) {
         Style style = text.getStyle().withColor(TextColor.fromRgb(dyeColor.getTextColor()));
-        setText(Component.literal(text.getString()).withStyle(style));
+        setText(text.plainCopy().withStyle(style));
     }
 
     public int getTicksRemaining() {
@@ -69,7 +75,9 @@ public class ConsolePanelBlockEntity extends BlockEntity implements ITextDisplay
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        if (!text.getString().isEmpty()) {
+        // 空文本但有样式时也要存：先染色后写字是受支持的操作（见 applyDyeColor），
+        // 只按内容判空会让这份颜色在重载后丢失
+        if (!text.getString().isEmpty() || !text.getStyle().isEmpty()) {
             tag.putString("Text", Component.Serializer.toJson(text));
         }
         if (ticksRemaining > 0) {
@@ -81,7 +89,10 @@ public class ConsolePanelBlockEntity extends BlockEntity implements ITextDisplay
     public void load(CompoundTag tag) {
         super.load(tag);
         if (tag.contains("Text")) {
-            text = Component.Serializer.fromJson(tag.getString("Text"));
+            // fromJson 在 JSON 非法或字面量 "null" 时返回 null，后续 getString() 会 NPE；
+            // 而 onDataPacket 会把网络收到的 tag 直接喂进来，等于可被外部同步包触发
+            Component parsed = Component.Serializer.fromJson(tag.getString("Text"));
+            text = parsed != null ? parsed : Component.empty();
         }
         ticksRemaining = tag.contains("TicksRemaining") ? tag.getInt("TicksRemaining") : 0;
     }

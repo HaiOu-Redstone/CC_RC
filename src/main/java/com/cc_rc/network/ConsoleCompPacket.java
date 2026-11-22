@@ -202,6 +202,12 @@ public class ConsoleCompPacket {
             if (existing == null) {
                 return;
             }
+            // 拒绝非有限数值：GUI 的 Float.parseFloat 接受 "NaN"/"Infinity"，
+            // 而 Math.max/min 对 NaN 恒返回 NaN，会让下面的距离校验被 NaN 比较绕过，
+            // 并把这个值一路写进方块实体（坐标/缩放全部失效）
+            if (!Float.isFinite(msg.u) || !Float.isFinite(msg.v) || !Float.isFinite(msg.scale)) {
+                return;
+            }
 
             // 距离校验：以服务端保存的组件位置为准，防止远处伪造包
             Vec3 point = ConsoleSurface.toWorld(bus.getOrigin(), bus.getSizeX(), bus.getSizeY(),

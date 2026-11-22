@@ -1046,6 +1046,10 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
         float leftU = (tall ? PLOT_L_LEFT_U : PLOT_LEFT_U) * k;
         float baseV = (tall ? PLOT_L_BASE_V : PLOT_BASE_V) * k;
         float heightV = (tall ? PLOT_L_HEIGHT : PLOT_MAX_HEIGHT) * k;
+        // 循环外算一次坐标帧：frameOf 在 fixedFrame 为 null 时每次都会新建 ConsoleFrame
+        // 与若干 Vec3，而这一列循环固定跑 50 次，放在循环里等于每个记录仪每帧白造约
+        // 350 个临时对象
+        ConsoleFrame frame = frameOf(be, comp.face, fixedFrame);
         for (int i = 0; i < ConsoleBusBlockEntity.CompEntry.HISTORY_LEN; i++) {
             // 索引 0 = 最新值 → 画在最右列；越靠左的历史越旧
             int column = ConsoleBusBlockEntity.CompEntry.HISTORY_LEN - 1 - i;
@@ -1059,8 +1063,7 @@ public class ConsoleBusBER implements BlockEntityRenderer<ConsoleBusBlockEntity>
             // 数值对应的线中心高度：0 在基线，100 在最高处
             float v = comp.v + baseV + heightV * value / PLOT_VALUE_MAX;
             // 垂直居中对齐时字形中心比锚点高 0.5 个字体像素，这里把锚点下移同样距离使点居中
-            drawTextScaled(poseStack, bufferSource, font,
-                    frameOf(be, comp.face, fixedFrame),
+            drawTextScaled(poseStack, bufferSource, font, frame,
                     u, v - 0.5F * scaleV, 1, 1, scaleU, scaleV,
                     outset, block, color);
         }

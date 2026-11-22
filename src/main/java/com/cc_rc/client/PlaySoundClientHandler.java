@@ -16,17 +16,20 @@ public class PlaySoundClientHandler {
 
     /** 从 PlaySoundPacket 取包并执行播放（由客户端主线程调用）。 */
     public static void dispatchPending() {
-        PlaySoundPacket msg = PlaySoundPacket.consumePending();
-        if (msg == null || Minecraft.getInstance().level == null) {
+        if (Minecraft.getInstance().level == null) {
+            // 世界还没就绪：本批包无法播放，直接丢弃（避免队列在非游戏状态下堆积）
+            PlaySoundPacket.consumePending();
             return;
         }
-        // 声音注册表查找：服务端已校验过存在性，这里再兜底一次
-        SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(msg.getSoundId());
-        if (event == null) {
-            return;
+        for (PlaySoundPacket msg : PlaySoundPacket.consumePending()) {
+            // 声音注册表查找：服务端已校验过存在性，这里再兜底一次
+            SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(msg.getSoundId());
+            if (event == null) {
+                continue;
+            }
+            // 无距离衰减 + 指令音量播放（主音量 MASTER）
+            Minecraft.getInstance().getSoundManager()
+                    .play(new CommandSoundInstance(event, msg.getVolume()));
         }
-        // 无距离衰减 + 指令音量播放（主音量 MASTER）
-        Minecraft.getInstance().getSoundManager()
-                .play(new CommandSoundInstance(event, msg.getVolume()));
     }
 }

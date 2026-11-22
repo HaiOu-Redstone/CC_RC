@@ -23,6 +23,12 @@ import net.minecraft.server.packs.resources.Resource;
  */
 public final class SoundDurations {
 
+    /**
+     * 缓存上限。音效事件本身有限（原版 + 各模组），但资源包切换会带来新的
+     * ResourceLocation，长时间切包会让这张静态表只增不减；给个上限兜住内存。
+     */
+    private static final int MAX_CACHE = 512;
+
     private static final Map<ResourceLocation, Integer> CACHE = new HashMap<>();
 
     private SoundDurations() {
@@ -35,7 +41,18 @@ public final class SoundDurations {
         if (soundEventId == null) {
             return -1;
         }
-        return CACHE.computeIfAbsent(soundEventId, SoundDurations::readTicks);
+        Integer cached = CACHE.get(soundEventId);
+        if (cached != null) {
+            return cached;
+        }
+        int ticks = readTicks(soundEventId);
+        // 超限后整表清空，而不是逐条淘汰：这里缓存的是「读文件算出来的常量」，
+        // 重算代价远低于维护 LRU 的复杂度，且不会在竞态下取到半淘汰状态。
+        if (CACHE.size() >= MAX_CACHE) {
+            CACHE.clear();
+        }
+        CACHE.put(soundEventId, ticks);
+        return ticks;
     }
 
     private static int readTicks(ResourceLocation soundEventId) {

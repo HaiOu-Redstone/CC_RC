@@ -21,8 +21,15 @@ public class CrackSoundPacket {
     private final BlockPos pos;
     private final boolean start;
 
-    /** 客户端派发暂存：handle() 先把数据包暂存，再由客户端处理器取走（仅在客户端主线程读写）。 */
-    private static CrackSoundPacket PENDING;
+    /**
+     * 客户端派发暂存队列。
+     *
+     * 原先是单个 PENDING 槽位：同一 tick 内收到 start + stop 两个包时，后一个会覆盖
+     * 前一个，前一个包被永久丢弃。丢掉 stop 包会留下永不结束的循环音效（只能靠
+     * 音效自身的兜底 tick 慢慢收敛），所以这里改成队列，客户端按顺序全部消费。
+     */
+    private static final java.util.Queue<CrackSoundPacket> PENDING =
+            new java.util.concurrent.ConcurrentLinkedQueue<>();
 
     public CrackSoundPacket(BlockPos pos, boolean start) {
         this.pos = pos;
@@ -40,8 +47,9 @@ public class CrackSoundPacket {
 
     public static void handle(CrackSoundPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            // 仅客户端执行：先暂存数据包，再通过无参方法引用交给客户端处理器（避免包类直接引用客户端类导致服务端崩溃）
-            PENDING = msg;
+            // 仅客户端执行：先入队，再通过无参方法引用交给客户端处理器
+            // （避免包类直接引用客户端类导致服务端崩溃）
+            PENDING.add(msg);
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> CrackSoundClientHandler::dispatchPending);
         });
         ctx.get().setPacketHandled(true);
@@ -55,10 +63,13 @@ public class CrackSoundPacket {
         return start;
     }
 
-    /** 客户端处理器取走暂存的包（一次性）。 */
-    public static CrackSoundPacket consumePending() {
-        CrackSoundPacket p = PENDING;
-        PENDING = null;
-        return p;
+    /** 客户端处理器取走暂存的包（按到达顺序全部取走；无包时返回空表）。 */
+    public static java.util.List<CrackSoundPacket> consumePending() {
+        java.util.List<CrackSoundPacket> out = new java.util.ArrayList<>();
+        CrackSoundPacket p;
+        while ((p = PENDING.poll()) != null) {
+            out.add(p);
+        }
+        return out;
     }
 }

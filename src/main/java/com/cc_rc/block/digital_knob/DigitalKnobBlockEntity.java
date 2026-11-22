@@ -124,7 +124,10 @@ public class DigitalKnobBlockEntity extends BlockEntity implements ITextDisplay 
         value = tag.contains("Value") ? tag.getInt("Value") : DEFAULT_VALUE;
         percentMode = tag.contains("PercentMode") ? tag.getBoolean("PercentMode") : true;
         if (tag.contains("Text")) {
-            text = Component.Serializer.fromJson(tag.getString("Text"));
+            // fromJson 对非法 JSON 返回 null，直接赋值会让后续 getString() NPE
+            // （onDataPacket 会把网络包内容原样喂进 load）
+            Component parsed = Component.Serializer.fromJson(tag.getString("Text"));
+            text = parsed != null ? parsed : Component.empty();
         } else {
             text = Component.empty();
         }

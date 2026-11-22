@@ -40,8 +40,11 @@ public class ConsoleProgramMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        // 变量操作在网络包服务端再做距离与成型状态校验
-        return true;
+        // 变量操作在网络包服务端再做距离与成型状态校验；
+        // 这里只需保证「太远就自动关闭界面」——原先恒 true 会让玩家走远后
+        // 界面仍开着，而客户端读不到方块实体时会走空指针路径
+        return player.distanceToSqr(
+                this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override
